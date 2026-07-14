@@ -238,6 +238,8 @@ function SearchResults({
   )
 }
 
+type PackCardView = 'obtained' | 'all'
+
 function PackSection({
   pack,
   collection,
@@ -251,12 +253,19 @@ function PackSection({
   onSelectCard: (card: CollectedCard) => void
   requiresSignIn?: boolean
 }) {
+  const [cardView, setCardView] = useState<PackCardView>('obtained')
   const summary = summarizeSet(collection, pack.id, pack.total)
   const ownedCards = cardsForSet(collection, pack.id)
   const { cards: catalogue, loading, error } = useSetCatalogue(pack.id)
   const binderCards = catalogue
     ? binderCardsForSet(catalogue, collection, pack.id)
     : ownedCards.map((card) => ({ ...card, owned: true as const }))
+  const displayedCards =
+    cardView === 'obtained'
+      ? ownedCards.map((card) => ({ ...card, owned: true as const }))
+      : binderCards
+  const showCatalogueLoading =
+    cardView === 'all' && loading && displayedCards.length === 0
   const pct =
     summary.poolTotal > 0 ? Math.round(summary.completion * 100) : 0
 
@@ -305,13 +314,26 @@ function PackSection({
         </div>
       )}
 
-      <div className="mt-4 grid grid-cols-3 gap-2.5 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8">
-        {loading && binderCards.length === 0 ? (
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          {cardView === 'obtained'
+            ? `${ownedCards.length} obtained`
+            : `${summary.uniqueOwned} / ${summary.poolTotal || '?'} in set`}
+        </p>
+        <PackCardViewToggle value={cardView} onChange={setCardView} />
+      </div>
+
+      <div className="mt-3 grid grid-cols-3 gap-2.5 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8">
+        {showCatalogueLoading ? (
           <p className="col-span-full py-4 text-center text-sm text-muted-foreground">
             Loading set catalogue…
           </p>
+        ) : displayedCards.length === 0 ? (
+          <p className="col-span-full py-4 text-center text-sm text-muted-foreground">
+            No cards obtained from this set yet.
+          </p>
         ) : (
-          binderCards.map((card) => (
+          displayedCards.map((card) => (
             <CollectionCardThumb
               key={card.id}
               card={card}
@@ -324,12 +346,50 @@ function PackSection({
           ))
         )}
       </div>
-      {error && (
+      {error && cardView === 'all' && (
         <p className="mt-2 text-center text-xs text-muted-foreground">
           Could not load the full set — showing owned cards only.
         </p>
       )}
     </section>
+  )
+}
+
+function PackCardViewToggle({
+  value,
+  onChange,
+}: {
+  value: PackCardView
+  onChange: (value: PackCardView) => void
+}) {
+  return (
+    <div
+      role="group"
+      aria-label="Card view"
+      className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5"
+    >
+      {(
+        [
+          ['obtained', 'Obtained'],
+          ['all', 'All cards'],
+        ] as const
+      ).map(([mode, label]) => (
+        <button
+          key={mode}
+          type="button"
+          aria-pressed={value === mode}
+          onClick={() => onChange(mode)}
+          className={cn(
+            'rounded-md px-2.5 py-1 text-xs font-semibold transition-colors',
+            value === mode
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground',
+          )}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
   )
 }
 

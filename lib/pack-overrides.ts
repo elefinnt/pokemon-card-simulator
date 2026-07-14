@@ -21,6 +21,11 @@ export const CURATED_SET_IDS = [
   'swsh45',
   'swsh12pt5',
   'sv3pt5',
+  'sv8pt5',
+  'sv9',
+  'sv10',
+  'zsv10pt5',
+  'rsv10pt5',
 ] as const
 
 export type CuratedSetId = (typeof CURATED_SET_IDS)[number]
@@ -63,6 +68,31 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
     accentTo: '#7f1d1d',
     blurb: 'The original 151, reimagined with modern chase cards.',
   },
+  sv8pt5: {
+    accentFrom: '#a855f7',
+    accentTo: '#ec4899',
+    blurb: 'Prismatic Evolutions — chase the Eeveelution ex cards and radiant artwork.',
+  },
+  sv9: {
+    accentFrom: '#06b6d4',
+    accentTo: '#1e40af',
+    blurb: 'Team up with partners old and new across Paldea and beyond.',
+  },
+  sv10: {
+    accentFrom: '#ef4444',
+    accentTo: '#581c87',
+    blurb: 'Legendary rivals clash — hunt the Trainer Gallery and chase ex cards.',
+  },
+  zsv10pt5: {
+    accentFrom: '#171717',
+    accentTo: '#2563eb',
+    blurb: 'Black Bolt — Unova legends return with striking artwork and powerful ex.',
+  },
+  rsv10pt5: {
+    accentFrom: '#f97316',
+    accentTo: '#fef3c7',
+    blurb: 'White Flare — Reshiram and friends light up every pack with fiery chase cards.',
+  },
 }
 
 /** Minimal fallback when the API is unreachable during pack catalogue build. */
@@ -77,4 +107,34 @@ export const FALLBACK_SET_META: Record<
   swsh45: { name: 'Shining Fates', series: 'Sword & Shield', year: '2021', total: 73 },
   swsh12pt5: { name: 'Crown Zenith', series: 'Sword & Shield', year: '2023', total: 160 },
   sv3pt5: { name: '151', series: 'Scarlet & Violet', year: '2023', total: 207 },
+  sv8pt5: {
+    name: 'Prismatic Evolutions',
+    series: 'Scarlet & Violet',
+    year: '2025',
+    total: 180,
+  },
+  sv9: {
+    name: 'Journey Together',
+    series: 'Scarlet & Violet',
+    year: '2025',
+    total: 190,
+  },
+  sv10: {
+    name: 'Destined Rivals',
+    series: 'Scarlet & Violet',
+    year: '2025',
+    total: 244,
+  },
+  zsv10pt5: {
+    name: 'Black Bolt',
+    series: 'Scarlet & Violet',
+    year: '2025',
+    total: 172,
+  },
+  rsv10pt5: {
+    name: 'White Flare',
+    series: 'Scarlet & Violet',
+    year: '2025',
+    total: 173,
+  },
 }
