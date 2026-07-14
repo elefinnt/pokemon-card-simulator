@@ -1,6 +1,15 @@
-import { getPack } from './packs'
+import { ensurePacksLoaded, getPack } from './packs'
+import { getCardsForSet } from './pokemontcg/cards'
+import {
+  classifyTier,
+  isFoilCard,
+  isRainbowCard,
+  TIER_RANK,
+  type CardTier,
+} from './pokemontcg/rarity'
+import type { RawCard } from './pokemontcg/types'
 
-export type CardTier = 'common' | 'uncommon' | 'rare' | 'ultra'
+export type { CardTier }
 
 export interface PokemonCard {
   id: string
@@ -25,59 +34,15 @@ export interface OpenedPack {
   /** Index of the guaranteed "hit" (rare slot) card within `cards` */
   hitIndex: number
   bestTier: CardTier
-  /** Total number of unique, pullable cards in this set (the completion denominator) */
+  /** Official set total used as the completion denominator */
   poolTotal: number
-}
-
-interface RawCard {
-  id: string
-  name: string
-  number?: string
-  rarity?: string
-  supertype?: string
-  types?: string[]
-  artist?: string
-  images?: { small?: string; large?: string }
-}
-
-const ULTRA_KEYS = [
-  'ex',
-  'gx',
-  ' v',
-  'vmax',
-  'vstar',
-  'ultra',
-  'rainbow',
-  'secret',
-  'illustration',
-  'amazing',
-  'double rare',
-  'hyper',
-  'shiny',
-  'full art',
-  'radiant',
-  'trainer gallery',
-  'prism',
-]
-
-function classify(rarity: string): CardTier {
-  const r = rarity.toLowerCase().trim()
-  if (r === '' || r === 'common') return 'common'
-  if (r === 'uncommon') return 'uncommon'
-  if (ULTRA_KEYS.some((k) => r.includes(k))) return 'ultra'
-  return 'rare'
 }
 
 function toCard(raw: RawCard): PokemonCard {
   const rarity = raw.rarity ?? 'Common'
-  const tier = classify(rarity)
-  const r = rarity.toLowerCase()
-  const rainbow =
-    tier === 'ultra' &&
-    ['rainbow', 'secret', 'hyper', 'illustration', 'shiny'].some((k) =>
-      r.includes(k),
-    )
-  const foil = tier === 'ultra' || r.includes('holo') || rainbow
+  const tier = classifyTier(rarity, raw.subtypes ?? [])
+  const rainbow = isRainbowCard(rarity, tier)
+  const foil = isFoilCard(rarity, tier, rainbow)
   return {
     id: raw.id,
     name: raw.name,
@@ -96,55 +61,26 @@ function toCard(raw: RawCard): PokemonCard {
 
 type Pool = Record<CardTier, PokemonCard[]>
 
-const API_BASE = 'https://api.pokemontcg.io/v2'
-
-async function fetchPool(setId: string): Promise<Pool> {
-  const url = `${API_BASE}/cards?q=set.id:${encodeURIComponent(
-    setId,
-  )}&pageSize=250&select=id,name,number,rarity,supertype,types,artist,images`
-
-  const headers: Record<string, string> = {}
-  if (process.env.POKEMONTCG_API_KEY) {
-    headers['X-Api-Key'] = process.env.POKEMONTCG_API_KEY
-  }
-
-  // The public Pokémon TCG API can be slow/flaky, so retry a couple of times
-  // with a per-attempt timeout before giving up.
-  let lastErr: unknown
-  let json: { data?: RawCard[] } | undefined
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const res = await fetch(url, {
-        headers,
-        signal: AbortSignal.timeout(8000),
-        // Card lists are static per set — cache for a day.
-        next: { revalidate: 86400 },
-      })
-      if (!res.ok) {
-        throw new Error(`Pokémon TCG API responded with ${res.status}`)
-      }
-      json = (await res.json()) as { data?: RawCard[] }
-      break
-    } catch (err) {
-      lastErr = err
-    }
-  }
-
-  if (!json) {
-    throw lastErr instanceof Error
-      ? lastErr
-      : new Error('Failed to reach the Pokémon TCG API')
-  }
-
+async function buildPool(setId: string): Promise<Pool> {
+  const raw = await getCardsForSet(setId)
   const pool: Pool = { common: [], uncommon: [], rare: [], ultra: [] }
 
-  for (const raw of json.data ?? []) {
-    if (!raw.images?.small) continue
-    const card = toCard(raw)
-    pool[card.tier].push(card)
+  for (const card of raw) {
+    if (!card.images?.small) continue
+    const mapped = toCard(card)
+    pool[mapped.tier].push(mapped)
   }
 
   return pool
+}
+
+function pullableCount(pool: Pool): number {
+  return (
+    pool.common.length +
+    pool.uncommon.length +
+    pool.rare.length +
+    pool.ultra.length
+  )
 }
 
 function randInt(max: number): number {
@@ -168,26 +104,15 @@ function draw(
   return out
 }
 
-const TIER_RANK: Record<CardTier, number> = {
-  common: 0,
-  uncommon: 1,
-  rare: 2,
-  ultra: 3,
-}
-
 export async function openPack(setId: string): Promise<OpenedPack> {
+  await ensurePacksLoaded()
   const def = getPack(setId)
   if (!def) throw new Error(`Unknown pack: ${setId}`)
 
-  const pool = await fetchPool(setId)
+  const pool = await buildPool(setId)
   const size = def.packSize
-  const poolTotal =
-    pool.common.length +
-    pool.uncommon.length +
-    pool.rare.length +
-    pool.ultra.length
+  const poolTotal = def.total > 0 ? def.total : pullableCount(pool)
 
-  // Layout: mostly commons, a few uncommons, one guaranteed rare-or-better hit.
   const commonCount = Math.max(1, size - 4)
   const uncommonCount = 3
 
@@ -195,7 +120,6 @@ export async function openPack(setId: string): Promise<OpenedPack> {
   cards.push(...draw(commonCount, pool.common, pool.uncommon, pool.rare))
   cards.push(...draw(uncommonCount, pool.uncommon, pool.common, pool.rare))
 
-  // The hit slot: ~16% chance for an ultra chase card when available.
   const wantUltra = pool.ultra.length > 0 && Math.random() < 0.16
   const hit = wantUltra
     ? draw(1, pool.ultra, pool.rare, pool.uncommon)[0]

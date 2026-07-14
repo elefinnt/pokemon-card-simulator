@@ -208,12 +208,13 @@ export interface SetSummary {
 export function summarizeSet(
   data: CollectionData,
   setId: string,
+  fallbackTotal = 0,
 ): SetSummary {
   const set = data.sets[setId]
   const cards = Object.values(data.cards).filter((c) => c.setId === setId)
   const uniqueOwned = cards.length
   const totalPulled = cards.reduce((n, c) => n + c.count, 0)
-  const poolTotal = set?.poolTotal ?? 0
+  const poolTotal = set?.poolTotal || fallbackTotal || 0
   return {
     setId,
     poolTotal,
@@ -237,6 +238,18 @@ export function cardsForSet(
       if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn
       return a.number.localeCompare(b.number)
     })
+}
+
+/** Search owned cards by name (case-insensitive substring match). */
+export function searchCards(
+  data: CollectionData,
+  query: string,
+): CollectedCard[] {
+  const q = query.trim().toLowerCase()
+  if (!q) return []
+  return Object.values(data.cards)
+    .filter((c) => c.name.toLowerCase().includes(q))
+    .sort((a, b) => a.name.localeCompare(b.name))
 }
 
 // ---- Hooks -----------------------------------------------------------------

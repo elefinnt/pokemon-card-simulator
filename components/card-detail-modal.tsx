@@ -1,12 +1,14 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { X, RotateCcw } from 'lucide-react'
+import { X, RotateCcw, Loader2 } from 'lucide-react'
 import type { CollectedCard } from '@/lib/collection'
+import type { CardDetail } from '@/lib/pokemontcg/types'
 import { TIER_META } from '@/lib/rarity'
 import { cn } from '@/lib/utils'
+import { CardDetailInfo } from './card-detail-info'
 
-const MAX_TILT = 18 // degrees
+const MAX_TILT = 18
 
 export function CardDetailModal({
   card,
@@ -18,24 +20,21 @@ export function CardDetailModal({
   const cardRef = useRef<HTMLDivElement>(null)
   const glareRef = useRef<HTMLDivElement>(null)
   const [interacting, setInteracting] = useState(false)
+  const [detail, setDetail] = useState<CardDetail | null>(null)
+  const [loadingDetail, setLoadingDetail] = useState(false)
 
-  // Reset transform helper.
   const resetTilt = useCallback(() => {
     const el = cardRef.current
-    if (el) {
-      el.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)'
-    }
-    if (glareRef.current) {
-      glareRef.current.style.opacity = '0'
-    }
+    if (el) el.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)'
+    if (glareRef.current) glareRef.current.style.opacity = '0'
   }, [])
 
   const handleMove = useCallback((clientX: number, clientY: number) => {
     const el = cardRef.current
     if (!el) return
     const rect = el.getBoundingClientRect()
-    const px = (clientX - rect.left) / rect.width // 0..1
-    const py = (clientY - rect.top) / rect.height // 0..1
+    const px = (clientX - rect.left) / rect.width
+    const py = (clientY - rect.top) / rect.height
     const rotateY = (px - 0.5) * 2 * MAX_TILT
     const rotateX = -(py - 0.5) * 2 * MAX_TILT
     el.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.04)`
@@ -45,7 +44,31 @@ export function CardDetailModal({
     }
   }, [])
 
-  // Close on Escape + lock body scroll while open.
+  useEffect(() => {
+    if (!card) {
+      setDetail(null)
+      return
+    }
+
+    let cancelled = false
+    setLoadingDetail(true)
+    setDetail(null)
+
+    fetch(`/api/cards/${card.id}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: CardDetail | null) => {
+        if (!cancelled && data) setDetail(data)
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoadingDetail(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [card?.id])
+
   useEffect(() => {
     if (!card) return
     const onKey = (e: KeyboardEvent) => {
@@ -85,7 +108,6 @@ export function CardDetailModal({
         className="flex w-full max-w-sm flex-col items-center"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Tilt stage */}
         <div
           className="w-full select-none"
           style={{ perspective: '1200px' }}
@@ -124,16 +146,12 @@ export function CardDetailModal({
               className="absolute inset-0 h-full w-full object-cover"
               draggable={false}
             />
-
-            {/* Holo / rainbow foil overlays reused from globals */}
             {card.rainbow && (
               <div className="holo-rainbow pointer-events-none absolute inset-0 rounded-2xl" />
             )}
             {card.foil && (
               <div className="holo-shine pointer-events-none absolute inset-0" />
             )}
-
-            {/* Mouse-following glare */}
             <div
               ref={glareRef}
               className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 mix-blend-overlay"
@@ -141,7 +159,6 @@ export function CardDetailModal({
           </div>
         </div>
 
-        {/* Meta */}
         <div className="mt-5 w-full rounded-xl border border-border bg-card p-4 text-center">
           <div className="flex items-center justify-center gap-2">
             <h3 className="font-display text-xl font-black text-foreground">
@@ -167,7 +184,17 @@ export function CardDetailModal({
             </span>
             <span className="text-muted-foreground">No. {card.number}</span>
           </div>
-          <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+
+          {loadingDetail && (
+            <p className="mt-4 inline-flex items-center gap-2 text-xs text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin" />
+              Loading card details…
+            </p>
+          )}
+
+          {detail && <CardDetailInfo detail={detail} />}
+
+          <p className="mt-4 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
             <RotateCcw className="size-3.5" />
             Move your cursor over the card to tilt it
           </p>

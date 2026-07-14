@@ -1,10 +1,16 @@
+import { ensurePacksLoaded } from '@/lib/packs'
+import { warmCuratedPools } from '@/lib/pokemontcg/warm'
 import { PackSimulator } from '@/components/pack-simulator'
 import { Pokeball } from '@/components/poke-card'
 
-export default function Page() {
+export default async function Page() {
+  const packs = await ensurePacksLoaded()
+
+  // Fire-and-forget: warm card pools in the background after the page renders.
+  warmCuratedPools().catch(() => {})
+
   return (
     <main className="relative min-h-screen overflow-hidden">
-      {/* Ambient background glow */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[520px]"
@@ -26,7 +32,7 @@ export default function Page() {
         </span>
       </header>
 
-      <PackSimulator />
+      <PackSimulator packs={packs} />
     </main>
   )
 }
