@@ -1,10 +1,12 @@
 import {
   boolean,
+  index,
   int,
   mysqlTable,
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   varchar,
 } from 'drizzle-orm/mysql-core'
 
@@ -16,6 +18,7 @@ export const users = mysqlTable('user', {
   email: varchar('email', { length: 255 }),
   emailVerified: timestamp('emailVerified', { mode: 'date', fsp: 3 }),
   image: varchar('image', { length: 255 }),
+  friendCode: varchar('friend_code', { length: 12 }).unique(),
 })
 
 export const accounts = mysqlTable(
@@ -66,9 +69,15 @@ export const verificationTokens = mysqlTable(
 
 // ---- Collection tables -----------------------------------------------------
 
+// Surrogate `id` primary keys are used on app tables (with a unique index for
+// the natural key) instead of composite PKs. This avoids a drizzle-kit push bug
+// where composite PKs backing a foreign-key index are dropped/recreated on every
+// push and fail with ER_DROP_INDEX_FK.
+
 export const collectedCards = mysqlTable(
   'collected_cards',
   {
+    id: int('id').autoincrement().primaryKey(),
     userId: varchar('user_id', { length: 255 })
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
@@ -93,13 +102,17 @@ export const collectedCards = mysqlTable(
     }).notNull(),
   },
   (t) => ({
-    pk: primaryKey({ columns: [t.userId, t.cardId] }),
+    userCard: uniqueIndex('collected_cards_user_id_card_id_unique').on(
+      t.userId,
+      t.cardId,
+    ),
   }),
 )
 
 export const setProgress = mysqlTable(
   'set_progress',
   {
+    id: int('id').autoincrement().primaryKey(),
     userId: varchar('user_id', { length: 255 })
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
@@ -108,14 +121,52 @@ export const setProgress = mysqlTable(
     packsOpened: int('packs_opened').notNull().default(0),
   },
   (t) => ({
-    pk: primaryKey({ columns: [t.userId, t.setId] }),
+    userSet: uniqueIndex('set_progress_user_id_set_id_unique').on(
+      t.userId,
+      t.setId,
+    ),
   }),
 )
 
-export const userStats = mysqlTable('user_stats', {
-  userId: varchar('user_id', { length: 255 })
-    .primaryKey()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  totalPacksOpened: int('total_packs_opened').notNull().default(0),
-  totalCardsPulled: int('total_cards_pulled').notNull().default(0),
-})
+export const userStats = mysqlTable(
+  'user_stats',
+  {
+    id: int('id').autoincrement().primaryKey(),
+    userId: varchar('user_id', { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    totalPacksOpened: int('total_packs_opened').notNull().default(0),
+    totalCardsPulled: int('total_cards_pulled').notNull().default(0),
+  },
+  (t) => ({
+    user: uniqueIndex('user_stats_user_id_unique').on(t.userId),
+  }),
+)
+
+// ---- Friends tables --------------------------------------------------------
+
+export const friendships = mysqlTable(
+  'friendships',
+  {
+    id: int('id').autoincrement().primaryKey(),
+    requesterId: varchar('requester_id', { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    addresseeId: varchar('addressee_id', { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    // 'pending' until the addressee accepts, then 'accepted'.
+    status: varchar('status', { length: 16 }).notNull().default('pending'),
+    createdAt: timestamp('created_at', { mode: 'date', fsp: 3 }).notNull(),
+    respondedAt: timestamp('responded_at', { mode: 'date', fsp: 3 }),
+  },
+  (t) => ({
+    pair: uniqueIndex('friendships_requester_id_addressee_id_unique').on(
+      t.requesterId,
+      t.addresseeId,
+    ),
+    // Dedicated index so the addressee FK doesn't rely on the unique index
+    // (which only covers addressee_id as a non-leading column).
+    addressee: index('friendships_addressee_id_idx').on(t.addresseeId),
+  }),
+)
