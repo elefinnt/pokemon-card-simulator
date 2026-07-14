@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { LibraryBig, Layers, Copy, Sparkles, Trash2 } from 'lucide-react'
-import { PACKS, type PackDef, packLogo, packSymbol } from '@/lib/packs'
+import { useMemo, useState } from 'react'
+import { LibraryBig, Layers, Copy, Sparkles, Trash2, Search } from 'lucide-react'
+import { type PackDef, packSymbol } from '@/lib/packs'
 import {
   type CollectionData,
   type CollectedCard,
   cardsForSet,
+  searchCards,
   summarizeSet,
   resetCollection,
 } from '@/lib/collection'
@@ -16,17 +17,31 @@ import { Button } from '@/components/ui/button'
 import { CardDetailModal } from './card-detail-modal'
 
 export function CollectionView({
+  packs,
   collection,
   onOpenPack,
 }: {
+  packs: PackDef[]
   collection: CollectionData
   onOpenPack: (pack: PackDef) => void
 }) {
   const [confirmReset, setConfirmReset] = useState(false)
   const [selectedCard, setSelectedCard] = useState<CollectedCard | null>(null)
+  const [query, setQuery] = useState('')
+
+  const packById = useMemo(
+    () => new Map(packs.map((p) => [p.id, p])),
+    [packs],
+  )
 
   const uniqueOwned = Object.keys(collection.cards).length
-  const collectedPacks = PACKS.filter(
+  const searchResults = useMemo(
+    () => searchCards(collection, query),
+    [collection, query],
+  )
+  const isSearching = query.trim().length > 0
+
+  const collectedPacks = packs.filter(
     (p) => (collection.sets[p.id]?.packsOpened ?? 0) > 0,
   )
 
@@ -47,7 +62,18 @@ export function CollectionView({
 
   return (
     <div className="space-y-8">
-      {/* Overall stats */}
+      <div className="relative mx-auto max-w-md">
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search your collection…"
+          aria-label="Search collection"
+          className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        />
+      </div>
+
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard
           icon={<Layers className="size-4" />}
@@ -71,18 +97,24 @@ export function CollectionView({
         />
       </div>
 
-      {/* Per-pack sections */}
-      {collectedPacks.map((pack) => (
-        <PackSection
-          key={pack.id}
-          pack={pack}
-          collection={collection}
-          onOpenPack={onOpenPack}
+      {isSearching ? (
+        <SearchResults
+          results={searchResults}
+          packById={packById}
           onSelectCard={setSelectedCard}
         />
-      ))}
+      ) : (
+        collectedPacks.map((pack) => (
+          <PackSection
+            key={pack.id}
+            pack={pack}
+            collection={collection}
+            onOpenPack={onOpenPack}
+            onSelectCard={setSelectedCard}
+          />
+        ))
+      )}
 
-      {/* Reset */}
       <div className="flex items-center justify-center pt-4">
         {confirmReset ? (
           <div className="flex items-center gap-3 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2">
@@ -150,6 +182,45 @@ function StatCard({
   )
 }
 
+function SearchResults({
+  results,
+  packById,
+  onSelectCard,
+}: {
+  results: CollectedCard[]
+  packById: Map<string, PackDef>
+  onSelectCard: (card: CollectedCard) => void
+}) {
+  if (results.length === 0) {
+    return (
+      <p className="py-8 text-center text-sm text-muted-foreground">
+        No cards match your search.
+      </p>
+    )
+  }
+
+  return (
+    <section className="rounded-2xl border border-border bg-card/40 p-4 sm:p-5">
+      <h3 className="font-display text-lg font-extrabold text-foreground">
+        Search results
+        <span className="ml-2 text-sm font-semibold text-muted-foreground">
+          ({results.length})
+        </span>
+      </h3>
+      <div className="mt-4 grid grid-cols-3 gap-2.5 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8">
+        {results.map((card) => (
+          <CollectionCardThumb
+            key={card.id}
+            card={card}
+            subtitle={packById.get(card.setId)?.name ?? card.setId}
+            onSelect={() => onSelectCard(card)}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}
+
 function PackSection({
   pack,
   collection,
@@ -161,7 +232,7 @@ function PackSection({
   onOpenPack: (pack: PackDef) => void
   onSelectCard: (card: CollectedCard) => void
 }) {
-  const summary = summarizeSet(collection, pack.id)
+  const summary = summarizeSet(collection, pack.id, pack.total)
   const cards = cardsForSet(collection, pack.id)
   const pct =
     summary.poolTotal > 0 ? Math.round(summary.completion * 100) : 0
@@ -212,48 +283,69 @@ function PackSection({
       )}
 
       <div className="mt-4 grid grid-cols-3 gap-2.5 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8">
-        {cards.map((card) => {
-          const meta = TIER_META[card.tier]
-          return (
-            <button
-              key={card.id}
-              type="button"
-              onClick={() => onSelectCard(card)}
-              aria-label={`View ${card.name}`}
-              className="group relative rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <div
-                className={cn(
-                  'relative overflow-hidden rounded-lg border bg-muted transition-transform duration-200 group-hover:-translate-y-1 group-hover:shadow-lg',
-                )}
-                style={{
-                  borderColor: card.count > 1 ? meta.color : undefined,
-                }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={card.imageSmall || '/placeholder.svg'}
-                  alt={card.name}
-                  crossOrigin="anonymous"
-                  loading="lazy"
-                  className="aspect-[2.5/3.5] w-full object-cover"
-                />
-                {card.count > 1 && (
-                  <span
-                    className="absolute right-1 top-1 rounded-md px-1.5 py-0.5 text-[0.7rem] font-black text-black shadow"
-                    style={{ backgroundColor: meta.color }}
-                  >
-                    &times;{card.count}
-                  </span>
-                )}
-              </div>
-              <p className="mt-1 truncate text-center text-[0.7rem] text-muted-foreground">
-                {card.name}
-              </p>
-            </button>
-          )
-        })}
+        {cards.map((card) => (
+          <CollectionCardThumb
+            key={card.id}
+            card={card}
+            onSelect={() => onSelectCard(card)}
+          />
+        ))}
       </div>
     </section>
+  )
+}
+
+function CollectionCardThumb({
+  card,
+  subtitle,
+  onSelect,
+}: {
+  card: CollectedCard
+  subtitle?: string
+  onSelect: () => void
+}) {
+  const meta = TIER_META[card.tier]
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-label={`View ${card.name}`}
+      className="group relative rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    >
+      <div
+        className={cn(
+          'relative overflow-hidden rounded-lg border bg-muted transition-transform duration-200 group-hover:-translate-y-1 group-hover:shadow-lg',
+        )}
+        style={{
+          borderColor: card.count > 1 ? meta.color : undefined,
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={card.imageSmall || '/placeholder.svg'}
+          alt={card.name}
+          crossOrigin="anonymous"
+          loading="lazy"
+          className="aspect-[2.5/3.5] w-full object-cover"
+        />
+        {card.count > 1 && (
+          <span
+            className="absolute right-1 top-1 rounded-md px-1.5 py-0.5 text-[0.7rem] font-black text-black shadow"
+            style={{ backgroundColor: meta.color }}
+          >
+            &times;{card.count}
+          </span>
+        )}
+      </div>
+      <p className="mt-1 truncate text-center text-[0.7rem] text-muted-foreground">
+        {card.name}
+      </p>
+      {subtitle && (
+        <p className="truncate text-center text-[0.65rem] text-muted-foreground/70">
+          {subtitle}
+        </p>
+      )}
+    </button>
   )
 }
