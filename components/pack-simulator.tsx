@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { ArrowLeft, AlertCircle, Layers, LibraryBig } from 'lucide-react'
+import { ArrowLeft, AlertCircle } from 'lucide-react'
 import type { PackDef } from '@/lib/packs'
 import type { OpenedPack } from '@/lib/pokemon'
 import { useCollection } from '@/lib/collection'
@@ -11,12 +11,12 @@ import { CardReveal } from './card-reveal'
 import { PulledCardsGrid } from './pulled-cards-grid'
 import { CollectionView } from './collection-view'
 import { CollectionStatus } from './collection-status'
+import { FriendsView } from './friends/friends-view'
 import { SignInPrompt } from './sign-in-prompt'
+import { ViewTabs, type View } from './view-tabs'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 
 type Stage = 'select' | 'sealed' | 'revealing' | 'summary'
-type View = 'packs' | 'collection'
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
@@ -29,6 +29,10 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
   const [prefetching, setPrefetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { data: collection, record, reset, isAuthenticated } = useCollection()
+
+  useEffect(() => {
+    if (!isAuthenticated && view === 'friends') setView('packs')
+  }, [isAuthenticated, view])
 
   const selectPack = useCallback((p: PackDef) => {
     setPack(p)
@@ -99,43 +103,14 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
           </div>
 
           <div className="mt-8 flex justify-center">
-            <div
-              role="tablist"
-              aria-label="View"
-              className="inline-flex items-center gap-1 rounded-full border border-border bg-card p-1"
-            >
-              <button
-                role="tab"
-                aria-selected={view === 'packs'}
-                onClick={() => setView('packs')}
-                className={cn(
-                  'inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold transition-colors',
-                  view === 'packs'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                <Layers className="size-4" />
-                Open packs
-              </button>
-              <button
-                role="tab"
-                aria-selected={view === 'collection'}
-                onClick={() => setView('collection')}
-                className={cn(
-                  'inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold transition-colors',
-                  view === 'collection'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                <LibraryBig className="size-4" />
-                Collection
-              </button>
-            </div>
+            <ViewTabs
+              view={view}
+              onChange={setView}
+              isAuthenticated={isAuthenticated}
+            />
           </div>
 
-          {view === 'packs' ? (
+          {view === 'packs' && (
             <div className="mt-8">
               <PackPicker
                 packs={packs}
@@ -144,7 +119,9 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
                 requiresSignIn={!isAuthenticated}
               />
             </div>
-          ) : (
+          )}
+
+          {view === 'collection' && (
             <div className="mt-8">
               <CollectionView
                 packs={packs}
@@ -153,6 +130,12 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
                 onReset={reset}
                 requiresSignIn={!isAuthenticated}
               />
+            </div>
+          )}
+
+          {view === 'friends' && (
+            <div className="mt-8">
+              <FriendsView requiresSignIn={!isAuthenticated} />
             </div>
           )}
         </section>
