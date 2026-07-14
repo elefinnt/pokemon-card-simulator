@@ -1,33 +1,85 @@
-# pokemon-card-simulator
+# PackRip
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+**Rip open Pokémon booster packs — no scissors required.**
 
-## Built with v0
+PackRip is a free pack-opening simulator built for collectors and nostalgia hunters. Pick a set, tear open a digital booster, flip your cards one by one, and build a binder that tracks every pull. From 1999 Base Set to the latest Scarlet & Violet expansions — the chase is always on.
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+![PackRip home screen — pick a booster pack to open](./public/readme/home.png)
 
-[Continue working on v0 →](https://v0.app/chat/projects/prj_JgQabAnGRKt7AzKwU4Q4A6S5k6T7)
+---
 
-## Getting Started
+## Why you'll love it
 
-First, run the development server:
+- **The full rip experience** — Sealed pack → tear it open → flip cards one at a time. Confetti when you hit something special.
+- **Real sets, real cards** — Curated catalogue spanning Base, Sword & Shield, and Scarlet & Violet, powered by the [Pokémon TCG API](https://pokemontcg.io/).
+- **Your personal binder** — Sign in with Discord and every card you pull is saved. Track duplicates, completion %, and packs opened per set.
+- **Chase the hits** — Holos, full arts, and Ultra Rares. That little rush when the foil catches the light? We tried to capture it.
+
+---
+
+## See it in action
+
+### Pick your pack
+
+Browse classic and modern sets, filter by era, and jump straight into the one you've been wanting to rip.
+
+![Browse packs from Base Set to Scarlet & Violet](./public/readme/modern-sets.png)
+
+### Tear it open
+
+Each pack gets its own artwork, glow, and animation. Tap to rip — then reveal your pulls card by card.
+
+![Celebrations booster pack ready to open](./public/readme/pack-ready.png)
+
+### Build your collection
+
+Every pull goes into your binder. Search your cards, check set completion, and keep opening until the set is done.
+
+![Collection binder — sign in to start tracking pulls](./public/readme/collection.png)
+
+---
+
+## How it works
+
+1. **Browse** — Pick a set from the pack picker.
+2. **Sign in** — Connect with Discord to open packs and save your collection.
+3. **Rip** — Tap the sealed booster and watch it tear open.
+4. **Reveal** — Flip each card. Celebrate the bangers.
+5. **Collect** — Check your binder, chase completion, open another.
+
+---
+
+## Sets available
+
+| Era | Highlights |
+| --- | --- |
+| **Base** | Base Set, Jungle, Fossil — where it all began |
+| **Sword & Shield** | Celebrations, Shining Fates, Crown Zenith & more |
+| **Scarlet & Violet** | 151, Prismatic Evolutions, Journey Together, Destined Rivals & more |
+
+---
+
+## Run it locally
+
+Want to spin it up on your machine? You'll need [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/).
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) and start ripping.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+For Discord sign-in and cloud collection saving, copy `.env.example` to `.env` and fill in your credentials. A Pokémon TCG API key is optional but recommended for higher rate limits.
 
-## Learn More
+---
 
-To learn more, take a look at the following resources:
+## Disclaimer
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+PackRip is a fan-made simulator for entertainment only. It is not affiliated with, endorsed by, or connected to The Pokémon Company, Nintendo, Creatures Inc., or GAME FREAK. Card images and set data are sourced from the Pokémon TCG API.
+
+---
+
+<p align="center">
+  <strong>Pick a pack. Chase the hit. Fill the binder.</strong>
+</p>
