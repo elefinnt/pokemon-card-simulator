@@ -106,17 +106,34 @@ async function fetchPool(setId: string): Promise<Pool> {
     headers['X-Api-Key'] = process.env.POKEMONTCG_API_KEY
   }
 
-  const res = await fetch(url, {
-    headers,
-    // Card lists are static per set — cache for a day.
-    next: { revalidate: 86400 },
-  })
-
-  if (!res.ok) {
-    throw new Error(`Pokémon TCG API responded with ${res.status}`)
+  // The public Pokémon TCG API can be slow/flaky, so retry a couple of times
+  // with a per-attempt timeout before giving up.
+  let lastErr: unknown
+  let json: { data?: RawCard[] } | undefined
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch(url, {
+        headers,
+        signal: AbortSignal.timeout(8000),
+        // Card lists are static per set — cache for a day.
+        next: { revalidate: 86400 },
+      })
+      if (!res.ok) {
+        throw new Error(`Pokémon TCG API responded with ${res.status}`)
+      }
+      json = (await res.json()) as { data?: RawCard[] }
+      break
+    } catch (err) {
+      lastErr = err
+    }
   }
 
-  const json = (await res.json()) as { data?: RawCard[] }
+  if (!json) {
+    throw lastErr instanceof Error
+      ? lastErr
+      : new Error('Failed to reach the Pokémon TCG API')
+  }
+
   const pool: Pool = { common: [], uncommon: [], rare: [], ultra: [] }
 
   for (const raw of json.data ?? []) {

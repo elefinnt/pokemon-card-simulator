@@ -79,7 +79,12 @@ export function CardReveal({
           aria-label={flipped ? `${card.name}, ${meta.label}` : 'Flip card'}
           className="block w-full cursor-pointer rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <div className={cn('flip-inner', flipped && 'is-flipped')}>
+          <div
+            className={cn(
+              'flip-inner aspect-[2.5/3.5] w-full',
+              flipped && 'is-flipped',
+            )}
+          >
             <div className="flip-face">
               <PokeCardBack
                 accentFrom={pack.accentFrom}
