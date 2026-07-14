@@ -17,6 +17,7 @@ import {
 } from './collection-local'
 
 export type {
+  BinderCard,
   CollectedCard,
   CollectionData,
   SetProgress,
@@ -24,6 +25,7 @@ export type {
 } from './collection-types'
 
 export {
+  binderCardsForSet,
   cardsForSet,
   searchCards,
   summarizeSet,

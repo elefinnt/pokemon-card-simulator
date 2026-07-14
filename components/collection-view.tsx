@@ -6,6 +6,8 @@ import { type PackDef, packSymbol } from '@/lib/packs'
 import {
   type CollectionData,
   type CollectedCard,
+  type BinderCard,
+  binderCardsForSet,
   cardsForSet,
   searchCards,
   summarizeSet,
@@ -15,6 +17,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { CardDetailModal } from './card-detail-modal'
 import { SignInPrompt } from './sign-in-prompt'
+import { useSetCatalogue } from './use-set-catalogue'
 
 export function CollectionView({
   packs,
@@ -249,7 +252,11 @@ function PackSection({
   requiresSignIn?: boolean
 }) {
   const summary = summarizeSet(collection, pack.id, pack.total)
-  const cards = cardsForSet(collection, pack.id)
+  const ownedCards = cardsForSet(collection, pack.id)
+  const { cards: catalogue, loading, error } = useSetCatalogue(pack.id)
+  const binderCards = catalogue
+    ? binderCardsForSet(catalogue, collection, pack.id)
+    : ownedCards.map((card) => ({ ...card, owned: true as const }))
   const pct =
     summary.poolTotal > 0 ? Math.round(summary.completion * 100) : 0
 
@@ -299,14 +306,29 @@ function PackSection({
       )}
 
       <div className="mt-4 grid grid-cols-3 gap-2.5 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8">
-        {cards.map((card) => (
-          <CollectionCardThumb
-            key={card.id}
-            card={card}
-            onSelect={() => onSelectCard(card)}
-          />
-        ))}
+        {loading && binderCards.length === 0 ? (
+          <p className="col-span-full py-4 text-center text-sm text-muted-foreground">
+            Loading set catalogue…
+          </p>
+        ) : (
+          binderCards.map((card) => (
+            <CollectionCardThumb
+              key={card.id}
+              card={card}
+              onSelect={
+                card.owned && collection.cards[card.id]
+                  ? () => onSelectCard(collection.cards[card.id])
+                  : undefined
+              }
+            />
+          ))
+        )}
       </div>
+      {error && (
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          Could not load the full set — showing owned cards only.
+        </p>
+      )}
     </section>
   )
 }
@@ -316,25 +338,23 @@ function CollectionCardThumb({
   subtitle,
   onSelect,
 }: {
-  card: CollectedCard
+  card: BinderCard | CollectedCard
   subtitle?: string
-  onSelect: () => void
+  onSelect?: () => void
 }) {
   const meta = TIER_META[card.tier]
+  const owned = 'owned' in card ? card.owned : true
+  const count = card.count
 
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-label={`View ${card.name}`}
-      className="group relative rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-primary"
-    >
+  const inner = (
+    <>
       <div
         className={cn(
-          'relative overflow-hidden rounded-lg border bg-muted transition-transform duration-200 group-hover:-translate-y-1 group-hover:shadow-lg',
+          'relative overflow-hidden rounded-lg border bg-muted transition-transform duration-200',
+          owned && 'group-hover:-translate-y-1 group-hover:shadow-lg',
         )}
         style={{
-          borderColor: card.count > 1 ? meta.color : undefined,
+          borderColor: count > 1 ? meta.color : undefined,
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -343,18 +363,26 @@ function CollectionCardThumb({
           alt={card.name}
           crossOrigin="anonymous"
           loading="lazy"
-          className="aspect-[2.5/3.5] w-full object-cover"
+          className={cn(
+            'aspect-[2.5/3.5] w-full object-cover transition-[filter,opacity]',
+            !owned && 'grayscale opacity-45',
+          )}
         />
-        {card.count > 1 && (
+        {count > 1 && (
           <span
             className="absolute right-1 top-1 rounded-md px-1.5 py-0.5 text-[0.7rem] font-black text-black shadow"
             style={{ backgroundColor: meta.color }}
           >
-            &times;{card.count}
+            &times;{count}
           </span>
         )}
       </div>
-      <p className="mt-1 truncate text-center text-[0.7rem] text-muted-foreground">
+      <p
+        className={cn(
+          'mt-1 truncate text-center text-[0.7rem]',
+          owned ? 'text-muted-foreground' : 'text-muted-foreground/50',
+        )}
+      >
         {card.name}
       </p>
       {subtitle && (
@@ -362,6 +390,28 @@ function CollectionCardThumb({
           {subtitle}
         </p>
       )}
+    </>
+  )
+
+  if (!onSelect) {
+    return (
+      <div
+        className="relative rounded-lg text-left"
+        aria-label={`${card.name} — not collected`}
+      >
+        {inner}
+      </div>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-label={`View ${card.name}`}
+      className="group relative rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    >
+      {inner}
     </button>
   )
 }

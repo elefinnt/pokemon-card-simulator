@@ -1,4 +1,4 @@
-import type { CardTier } from './pokemon'
+import type { CardTier, PokemonCard } from './pokemon'
 
 export const COLLECTION_SCHEMA_VERSION = 1
 
@@ -91,6 +91,68 @@ export function cardsForSet(
       if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn
       return a.number.localeCompare(b.number)
     })
+}
+
+export interface BinderCard {
+  id: string
+  setId: string
+  name: string
+  number: string
+  rarity: string
+  tier: CardTier
+  foil: boolean
+  rainbow: boolean
+  imageSmall: string
+  imageLarge: string
+  owned: boolean
+  count: number
+}
+
+/** Merge a set catalogue with owned cards for the binder grid. */
+export function binderCardsForSet(
+  catalogue: PokemonCard[],
+  data: CollectionData,
+  setId: string,
+): BinderCard[] {
+  const ownedById = new Map(
+    Object.values(data.cards)
+      .filter((c) => c.setId === setId)
+      .map((c) => [c.id, c]),
+  )
+
+  return catalogue.map((card) => {
+    const owned = ownedById.get(card.id)
+    if (owned) {
+      return {
+        id: owned.id,
+        setId: owned.setId,
+        name: owned.name,
+        number: owned.number,
+        rarity: owned.rarity,
+        tier: owned.tier,
+        foil: owned.foil,
+        rainbow: owned.rainbow,
+        imageSmall: owned.imageSmall,
+        imageLarge: owned.imageLarge,
+        owned: true,
+        count: owned.count,
+      }
+    }
+    return {
+      id: card.id,
+      setId,
+      name: card.name,
+      number: card.number,
+      rarity: card.rarity,
+      tier: card.tier,
+      foil: card.foil,
+      rainbow: card.rainbow,
+      imageSmall: card.imageSmall,
+      imageLarge: card.imageLarge,
+      owned: false,
+      count: 0,
+    }
+  })
 }
 
 /** Search owned cards by name (case-insensitive substring match). */
