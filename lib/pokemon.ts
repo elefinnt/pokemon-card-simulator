@@ -25,6 +25,8 @@ export interface OpenedPack {
   /** Index of the guaranteed "hit" (rare slot) card within `cards` */
   hitIndex: number
   bestTier: CardTier
+  /** Total number of unique, pullable cards in this set (the completion denominator) */
+  poolTotal: number
 }
 
 interface RawCard {
@@ -179,6 +181,11 @@ export async function openPack(setId: string): Promise<OpenedPack> {
 
   const pool = await fetchPool(setId)
   const size = def.packSize
+  const poolTotal =
+    pool.common.length +
+    pool.uncommon.length +
+    pool.rare.length +
+    pool.ultra.length
 
   // Layout: mostly commons, a few uncommons, one guaranteed rare-or-better hit.
   const commonCount = Math.max(1, size - 4)
@@ -202,5 +209,5 @@ export async function openPack(setId: string): Promise<OpenedPack> {
     'common',
   )
 
-  return { setId, cards, hitIndex, bestTier }
+  return { setId, cards, hitIndex, bestTier, poolTotal }
 }

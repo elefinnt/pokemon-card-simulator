@@ -1,25 +1,31 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { ArrowLeft, AlertCircle } from 'lucide-react'
+import { ArrowLeft, AlertCircle, Layers, LibraryBig } from 'lucide-react'
 import { PACKS, type PackDef } from '@/lib/packs'
 import type { OpenedPack } from '@/lib/pokemon'
+import { useCollection, summarizeSet } from '@/lib/collection'
 import { PackTile } from './pack-tile'
 import { BoosterPack } from './booster-pack'
 import { CardReveal } from './card-reveal'
 import { PulledCardsGrid } from './pulled-cards-grid'
+import { CollectionView } from './collection-view'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 type Stage = 'select' | 'sealed' | 'revealing' | 'summary'
+type View = 'packs' | 'collection'
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 export function PackSimulator() {
+  const [view, setView] = useState<View>('packs')
   const [stage, setStage] = useState<Stage>('select')
   const [pack, setPack] = useState<PackDef | null>(null)
   const [opened, setOpened] = useState<OpenedPack | null>(null)
   const [ripping, setRipping] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { data: collection, record } = useCollection()
 
   const selectPack = useCallback((p: PackDef) => {
     setPack(p)
@@ -39,6 +45,7 @@ export function PackSimulator() {
       const data = (await res.json()) as OpenedPack
       // Keep the rip animation on screen for a beat.
       await delay(Math.max(0, 1200 - (Date.now() - started)))
+      record(data)
       setOpened(data)
       setStage('revealing')
     } catch (err) {
@@ -47,7 +54,7 @@ export function PackSimulator() {
     } finally {
       setRipping(false)
     }
-  }, [pack, ripping])
+  }, [pack, ripping, record])
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-20">
@@ -66,11 +73,62 @@ export function PackSimulator() {
             </p>
           </div>
 
-          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {PACKS.map((p) => (
-              <PackTile key={p.id} pack={p} onSelect={selectPack} />
-            ))}
+          <div className="mt-8 flex justify-center">
+            <div
+              role="tablist"
+              aria-label="View"
+              className="inline-flex items-center gap-1 rounded-full border border-border bg-card p-1"
+            >
+              <button
+                role="tab"
+                aria-selected={view === 'packs'}
+                onClick={() => setView('packs')}
+                className={cn(
+                  'inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold transition-colors',
+                  view === 'packs'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                <Layers className="size-4" />
+                Open packs
+              </button>
+              <button
+                role="tab"
+                aria-selected={view === 'collection'}
+                onClick={() => setView('collection')}
+                className={cn(
+                  'inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold transition-colors',
+                  view === 'collection'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                <LibraryBig className="size-4" />
+                Collection
+              </button>
+            </div>
           </div>
+
+          {view === 'packs' ? (
+            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {PACKS.map((p) => (
+                <PackTile
+                  key={p.id}
+                  pack={p}
+                  onSelect={selectPack}
+                  summary={summarizeSet(collection, p.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-8">
+              <CollectionView
+                collection={collection}
+                onOpenPack={selectPack}
+              />
+            </div>
+          )}
         </section>
       )}
 

@@ -1,14 +1,23 @@
 'use client'
 
 import { type PackDef, packLogo, packSymbol } from '@/lib/packs'
+import type { SetSummary } from '@/lib/collection'
 
 export function PackTile({
   pack,
   onSelect,
+  summary,
 }: {
   pack: PackDef
   onSelect: (pack: PackDef) => void
+  summary?: SetSummary
 }) {
+  const hasProgress = !!summary && summary.packsOpened > 0
+  const pct =
+    summary && summary.poolTotal > 0
+      ? Math.round(summary.completion * 100)
+      : 0
+
   return (
     <button
       type="button"
@@ -56,9 +65,34 @@ export function PackTile({
         {pack.blurb}
       </p>
 
-      <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-        Open pack &rarr;
-      </span>
+      {hasProgress ? (
+        <div className="mt-3">
+          <div className="flex items-center justify-between text-xs font-semibold">
+            <span className="text-muted-foreground">
+              {summary!.uniqueOwned}
+              <span className="text-muted-foreground/60">
+                {' / '}
+                {summary!.poolTotal || '?'} collected
+              </span>
+            </span>
+            <span className="text-primary">{pct}%</span>
+          </div>
+          <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <p className="mt-1.5 text-[0.7rem] text-muted-foreground">
+            {summary!.packsOpened} pack{summary!.packsOpened === 1 ? '' : 's'}{' '}
+            opened · {summary!.duplicates} dupes
+          </p>
+        </div>
+      ) : (
+        <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          Open pack &rarr;
+        </span>
+      )}
     </button>
   )
 }
