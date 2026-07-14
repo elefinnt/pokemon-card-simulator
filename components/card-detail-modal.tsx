@@ -1,12 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { X, RotateCcw, Loader2 } from 'lucide-react'
+import { X } from 'lucide-react'
 import type { CollectedCard } from '@/lib/collection'
-import type { CardDetail } from '@/lib/pokemontcg/types'
 import { TIER_META } from '@/lib/rarity'
 import { cn } from '@/lib/utils'
-import { CardDetailInfo } from './card-detail-info'
 
 const MAX_TILT = 18
 
@@ -20,8 +18,6 @@ export function CardDetailModal({
   const cardRef = useRef<HTMLDivElement>(null)
   const glareRef = useRef<HTMLDivElement>(null)
   const [interacting, setInteracting] = useState(false)
-  const [detail, setDetail] = useState<CardDetail | null>(null)
-  const [loadingDetail, setLoadingDetail] = useState(false)
 
   const resetTilt = useCallback(() => {
     const el = cardRef.current
@@ -43,31 +39,6 @@ export function CardDetailModal({
       glareRef.current.style.background = `radial-gradient(circle at ${px * 100}% ${py * 100}%, rgba(255,255,255,0.45), rgba(255,255,255,0) 55%)`
     }
   }, [])
-
-  useEffect(() => {
-    if (!card) {
-      setDetail(null)
-      return
-    }
-
-    let cancelled = false
-    setLoadingDetail(true)
-    setDetail(null)
-
-    fetch(`/api/cards/${card.id}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: CardDetail | null) => {
-        if (!cancelled && data) setDetail(data)
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoadingDetail(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [card?.id])
 
   useEffect(() => {
     if (!card) return
@@ -157,47 +128,6 @@ export function CardDetailModal({
               className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 mix-blend-overlay"
             />
           </div>
-        </div>
-
-        <div className="mt-5 w-full rounded-xl border border-border bg-card p-4 text-center">
-          <div className="flex items-center justify-center gap-2">
-            <h3 className="font-display text-xl font-black text-foreground">
-              {card.name}
-            </h3>
-            {card.count > 1 && (
-              <span
-                className="rounded-md px-1.5 py-0.5 text-xs font-black text-black"
-                style={{ backgroundColor: meta.color }}
-              >
-                &times;{card.count}
-              </span>
-            )}
-          </div>
-          <div className="mt-2 flex items-center justify-center gap-2 text-sm">
-            <span
-              className={cn(
-                'rounded-full border px-2.5 py-0.5 text-xs font-bold',
-                meta.badgeClass,
-              )}
-            >
-              {card.rarity || meta.label}
-            </span>
-            <span className="text-muted-foreground">No. {card.number}</span>
-          </div>
-
-          {loadingDetail && (
-            <p className="mt-4 inline-flex items-center gap-2 text-xs text-muted-foreground">
-              <Loader2 className="size-3.5 animate-spin" />
-              Loading card details…
-            </p>
-          )}
-
-          {detail && <CardDetailInfo detail={detail} />}
-
-          <p className="mt-4 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-            <RotateCcw className="size-3.5" />
-            Move your cursor over the card to tilt it
-          </p>
         </div>
       </div>
     </div>
