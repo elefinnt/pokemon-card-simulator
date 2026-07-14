@@ -7,22 +7,35 @@ import { Pokeball } from './poke-card'
 export function BoosterPack({
   pack,
   ripping,
+  locked = false,
   onOpen,
 }: {
   pack: PackDef
   ripping: boolean
+  locked?: boolean
   onOpen: () => void
 }) {
   return (
     <div className="flex flex-col items-center gap-8">
       <button
         type="button"
-        onClick={onOpen}
-        disabled={ripping}
-        aria-label={`Open the ${pack.name} booster pack`}
+        onClick={locked ? undefined : onOpen}
+        disabled={ripping || locked}
+        aria-label={
+          locked
+            ? `Sign in to open the ${pack.name} booster pack`
+            : `Open the ${pack.name} booster pack`
+        }
         className={cn(
-          'group relative w-[240px] max-w-[70vw] cursor-pointer select-none rounded-[1.75rem] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default',
-          ripping ? 'animate-rip-shake' : 'animate-float-slow hover:scale-[1.03]',
+          'group relative w-[240px] max-w-[70vw] select-none rounded-[1.75rem] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default',
+          locked
+            ? 'cursor-not-allowed opacity-80'
+            : 'cursor-pointer',
+          ripping
+            ? 'animate-rip-shake'
+            : locked
+              ? 'animate-float-slow'
+              : 'animate-float-slow hover:scale-[1.03]',
         )}
       >
         {/* Glow */}
@@ -70,7 +83,11 @@ export function BoosterPack({
       </button>
 
       <p className="text-sm font-medium text-muted-foreground">
-        {ripping ? 'Ripping open…' : 'Tap the pack to rip it open'}
+        {ripping
+          ? 'Ripping open…'
+          : locked
+            ? 'Sign in to rip this pack open'
+            : 'Tap the pack to rip it open'}
       </p>
     </div>
   )

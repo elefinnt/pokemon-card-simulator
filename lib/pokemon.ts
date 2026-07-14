@@ -104,6 +104,22 @@ function draw(
   return out
 }
 
+function sortByNumber<T extends { number: string }>(cards: T[]): T[] {
+  return [...cards].sort((a, b) => {
+    const an = parseInt(a.number, 10)
+    const bn = parseInt(b.number, 10)
+    if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn
+    return a.number.localeCompare(b.number)
+  })
+}
+
+/** All pullable cards in a set, sorted by number — used for the collection binder. */
+export async function getSetCatalogue(setId: string): Promise<PokemonCard[]> {
+  const raw = await getCardsForSet(setId)
+  const cards = raw.filter((c) => c.images?.small).map(toCard)
+  return sortByNumber(cards)
+}
+
 export async function openPack(setId: string): Promise<OpenedPack> {
   await ensurePacksLoaded()
   const def = getPack(setId)

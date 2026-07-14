@@ -2,6 +2,7 @@ import { ensurePacksLoaded } from '@/lib/packs'
 import { warmCuratedPools } from '@/lib/pokemontcg/warm'
 import { PackSimulator } from '@/components/pack-simulator'
 import { Pokeball } from '@/components/poke-card'
+import { AuthButton } from '@/components/auth-button'
 
 export default async function Page() {
   const packs = await ensurePacksLoaded()
@@ -27,9 +28,7 @@ export default async function Page() {
             PackRip
           </span>
         </div>
-        <span className="text-xs font-medium text-muted-foreground">
-          Card data by pokemontcg.io
-        </span>
+        <AuthButton />
       </header>
 
       <PackSimulator packs={packs} />
