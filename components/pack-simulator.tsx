@@ -1,11 +1,11 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ArrowLeft, AlertCircle, Layers, LibraryBig } from 'lucide-react'
-import { PACKS, type PackDef } from '@/lib/packs'
+import type { PackDef } from '@/lib/packs'
 import type { OpenedPack } from '@/lib/pokemon'
-import { useCollection, summarizeSet } from '@/lib/collection'
-import { PackTile } from './pack-tile'
+import { useCollection } from '@/lib/collection'
+import { PackPicker } from './pack-picker'
 import { BoosterPack } from './booster-pack'
 import { CardReveal } from './card-reveal'
 import { PulledCardsGrid } from './pulled-cards-grid'
@@ -18,12 +18,13 @@ type View = 'packs' | 'collection'
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-export function PackSimulator() {
+export function PackSimulator({ packs }: { packs: PackDef[] }) {
   const [view, setView] = useState<View>('packs')
   const [stage, setStage] = useState<Stage>('select')
   const [pack, setPack] = useState<PackDef | null>(null)
   const [opened, setOpened] = useState<OpenedPack | null>(null)
   const [ripping, setRipping] = useState(false)
+  const [prefetching, setPrefetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { data: collection, record } = useCollection()
 
@@ -34,6 +35,21 @@ export function PackSimulator() {
     setStage('sealed')
   }, [])
 
+  // Pre-fetch the card pool as soon as a pack is selected so the rip is fast.
+  useEffect(() => {
+    if (!pack || stage !== 'sealed') return
+    let cancelled = false
+    setPrefetching(true)
+    fetch(`/api/pool/${pack.id}`)
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setPrefetching(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [pack, stage])
+
   const rip = useCallback(async () => {
     if (!pack || ripping) return
     setRipping(true)
@@ -41,16 +57,22 @@ export function PackSimulator() {
     const started = Date.now()
     try {
       const res = await fetch(`/api/open/${pack.id}`)
-      if (!res.ok) throw new Error(`status ${res.status}`)
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as {
+          error?: string
+        } | null
+        throw new Error(body?.error ?? `status ${res.status}`)
+      }
       const data = (await res.json()) as OpenedPack
-      // Keep the rip animation on screen for a beat.
       await delay(Math.max(0, 1200 - (Date.now() - started)))
       record(data)
       setOpened(data)
       setStage('revealing')
     } catch (err) {
-      console.log('[v0] rip failed:', err instanceof Error ? err.message : err)
-      setError('Could not reach the card server. Please try again.')
+      const message =
+        err instanceof Error ? err.message : 'Could not reach the card server.'
+      console.log('[rip] failed:', message)
+      setError(message)
     } finally {
       setRipping(false)
     }
@@ -111,19 +133,17 @@ export function PackSimulator() {
           </div>
 
           {view === 'packs' ? (
-            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {PACKS.map((p) => (
-                <PackTile
-                  key={p.id}
-                  pack={p}
-                  onSelect={selectPack}
-                  summary={summarizeSet(collection, p.id)}
-                />
-              ))}
+            <div className="mt-8">
+              <PackPicker
+                packs={packs}
+                collection={collection}
+                onSelect={selectPack}
+              />
             </div>
           ) : (
             <div className="mt-8">
               <CollectionView
+                packs={packs}
                 collection={collection}
                 onOpenPack={selectPack}
               />
@@ -152,6 +172,11 @@ export function PackSimulator() {
             <p className="text-sm text-muted-foreground">
               {pack.series} Series · {pack.year}
             </p>
+            {prefetching && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Loading card pool…
+              </p>
+            )}
           </div>
 
           <div className="flex min-h-[26rem] items-center">
