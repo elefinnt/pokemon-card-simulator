@@ -5,6 +5,7 @@ import { LibraryBig, Layers, Copy, Sparkles, Trash2 } from 'lucide-react'
 import { PACKS, type PackDef, packLogo, packSymbol } from '@/lib/packs'
 import {
   type CollectionData,
+  type CollectedCard,
   cardsForSet,
   summarizeSet,
   resetCollection,
@@ -12,6 +13,7 @@ import {
 import { TIER_META } from '@/lib/rarity'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { CardDetailModal } from './card-detail-modal'
 
 export function CollectionView({
   collection,
@@ -21,6 +23,7 @@ export function CollectionView({
   onOpenPack: (pack: PackDef) => void
 }) {
   const [confirmReset, setConfirmReset] = useState(false)
+  const [selectedCard, setSelectedCard] = useState<CollectedCard | null>(null)
 
   const uniqueOwned = Object.keys(collection.cards).length
   const collectedPacks = PACKS.filter(
@@ -75,6 +78,7 @@ export function CollectionView({
           pack={pack}
           collection={collection}
           onOpenPack={onOpenPack}
+          onSelectCard={setSelectedCard}
         />
       ))}
 
@@ -115,6 +119,11 @@ export function CollectionView({
           </Button>
         )}
       </div>
+
+      <CardDetailModal
+        card={selectedCard}
+        onClose={() => setSelectedCard(null)}
+      />
     </div>
   )
 }
@@ -145,10 +154,12 @@ function PackSection({
   pack,
   collection,
   onOpenPack,
+  onSelectCard,
 }: {
   pack: PackDef
   collection: CollectionData
   onOpenPack: (pack: PackDef) => void
+  onSelectCard: (card: CollectedCard) => void
 }) {
   const summary = summarizeSet(collection, pack.id)
   const cards = cardsForSet(collection, pack.id)
@@ -204,10 +215,16 @@ function PackSection({
         {cards.map((card) => {
           const meta = TIER_META[card.tier]
           return (
-            <div key={card.id} className="group relative">
+            <button
+              key={card.id}
+              type="button"
+              onClick={() => onSelectCard(card)}
+              aria-label={`View ${card.name}`}
+              className="group relative rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
               <div
                 className={cn(
-                  'relative overflow-hidden rounded-lg border bg-muted',
+                  'relative overflow-hidden rounded-lg border bg-muted transition-transform duration-200 group-hover:-translate-y-1 group-hover:shadow-lg',
                 )}
                 style={{
                   borderColor: card.count > 1 ? meta.color : undefined,
@@ -233,7 +250,7 @@ function PackSection({
               <p className="mt-1 truncate text-center text-[0.7rem] text-muted-foreground">
                 {card.name}
               </p>
-            </div>
+            </button>
           )
         })}
       </div>
