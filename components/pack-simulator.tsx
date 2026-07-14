@@ -10,6 +10,8 @@ import { BoosterPack } from './booster-pack'
 import { CardReveal } from './card-reveal'
 import { PulledCardsGrid } from './pulled-cards-grid'
 import { CollectionView } from './collection-view'
+import { CollectionStatus } from './collection-status'
+import { SignInPrompt } from './sign-in-prompt'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -26,7 +28,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
   const [ripping, setRipping] = useState(false)
   const [prefetching, setPrefetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { data: collection, record } = useCollection()
+  const { data: collection, record, reset, isAuthenticated } = useCollection()
 
   const selectPack = useCallback((p: PackDef) => {
     setPack(p)
@@ -35,9 +37,9 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
     setStage('sealed')
   }, [])
 
-  // Pre-fetch the card pool as soon as a pack is selected so the rip is fast.
+  // Pre-fetch the card pool once a pack is selected and the user is signed in.
   useEffect(() => {
-    if (!pack || stage !== 'sealed') return
+    if (!pack || stage !== 'sealed' || !isAuthenticated) return
     let cancelled = false
     setPrefetching(true)
     fetch(`/api/pool/${pack.id}`)
@@ -48,15 +50,15 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
     return () => {
       cancelled = true
     }
-  }, [pack, stage])
+  }, [pack, stage, isAuthenticated])
 
   const rip = useCallback(async () => {
-    if (!pack || ripping) return
+    if (!pack || ripping || !isAuthenticated) return
     setRipping(true)
     setError(null)
     const started = Date.now()
     try {
-      const res = await fetch(`/api/open/${pack.id}`)
+      const res = await fetch(`/api/open/${pack.id}`, { method: 'POST' })
       if (!res.ok) {
         const body = (await res.json().catch(() => null)) as {
           error?: string
@@ -76,7 +78,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
     } finally {
       setRipping(false)
     }
-  }, [pack, ripping, record])
+  }, [pack, ripping, record, isAuthenticated])
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-20">
@@ -93,6 +95,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
               Pick a pack, tear it open, and reveal every card one by one. Chase
               the holos and hit that Ultra Rare.
             </p>
+            <CollectionStatus />
           </div>
 
           <div className="mt-8 flex justify-center">
@@ -138,6 +141,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
                 packs={packs}
                 collection={collection}
                 onSelect={selectPack}
+                requiresSignIn={!isAuthenticated}
               />
             </div>
           ) : (
@@ -146,6 +150,8 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
                 packs={packs}
                 collection={collection}
                 onOpenPack={selectPack}
+                onReset={reset}
+                requiresSignIn={!isAuthenticated}
               />
             </div>
           )}
@@ -179,8 +185,19 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
             )}
           </div>
 
-          <div className="flex min-h-[26rem] items-center">
-            <BoosterPack pack={pack} ripping={ripping} onOpen={rip} />
+          <div className="flex min-h-[26rem] flex-col items-center gap-6">
+            <BoosterPack
+              pack={pack}
+              ripping={ripping}
+              locked={!isAuthenticated}
+              onOpen={rip}
+            />
+            {!isAuthenticated && (
+              <SignInPrompt
+                variant="compact"
+                description="Your pack is ready — sign in with Discord to tear it open."
+              />
+            )}
           </div>
 
           {error && (

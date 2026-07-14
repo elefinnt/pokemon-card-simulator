@@ -7,10 +7,12 @@ export function PackTile({
   pack,
   onSelect,
   summary,
+  requiresSignIn = false,
 }: {
   pack: PackDef
   onSelect: (pack: PackDef) => void
   summary?: SetSummary
+  requiresSignIn?: boolean
 }) {
   const hasProgress = !!summary && summary.packsOpened > 0
   const pct =
@@ -90,7 +92,7 @@ export function PackTile({
         </div>
       ) : (
         <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          Open pack &rarr;
+          {requiresSignIn ? 'Preview pack' : 'Open pack'} &rarr;
         </span>
       )}
     </button>

@@ -5,16 +5,19 @@ import { type PackDef, seriesOptions } from '@/lib/packs'
 import type { CollectionData } from '@/lib/collection'
 import { summarizeSet } from '@/lib/collection'
 import { PackTile } from './pack-tile'
+import { SignInPrompt } from './sign-in-prompt'
 import { cn } from '@/lib/utils'
 
 export function PackPicker({
   packs,
   collection,
   onSelect,
+  requiresSignIn = false,
 }: {
   packs: PackDef[]
   collection: CollectionData
   onSelect: (pack: PackDef) => void
+  requiresSignIn?: boolean
 }) {
   const [series, setSeries] = useState<string>('All')
   const seriesList = useMemo(() => seriesOptions(packs), [packs])
@@ -24,6 +27,13 @@ export function PackPicker({
 
   return (
     <div className="space-y-5">
+      {/* {requiresSignIn && (
+        <SignInPrompt
+          variant="banner"
+          description="Browse packs below, then sign in when you're ready to rip."
+        />
+      )} */}
+
       <div
         role="group"
         aria-label="Filter by series"
@@ -56,6 +66,7 @@ export function PackPicker({
               pack={pack}
               onSelect={onSelect}
               summary={summarizeSet(collection, pack.id, pack.total)}
+              requiresSignIn={requiresSignIn}
             />
           ))}
         </div>

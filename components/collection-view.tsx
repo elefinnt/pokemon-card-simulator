@@ -9,21 +9,25 @@ import {
   cardsForSet,
   searchCards,
   summarizeSet,
-  resetCollection,
 } from '@/lib/collection'
 import { TIER_META } from '@/lib/rarity'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { CardDetailModal } from './card-detail-modal'
+import { SignInPrompt } from './sign-in-prompt'
 
 export function CollectionView({
   packs,
   collection,
   onOpenPack,
+  onReset,
+  requiresSignIn = false,
 }: {
   packs: PackDef[]
   collection: CollectionData
   onOpenPack: (pack: PackDef) => void
+  onReset: () => void | Promise<void>
+  requiresSignIn?: boolean
 }) {
   const [confirmReset, setConfirmReset] = useState(false)
   const [selectedCard, setSelectedCard] = useState<CollectedCard | null>(null)
@@ -46,6 +50,15 @@ export function CollectionView({
   )
 
   if (uniqueOwned === 0) {
+    if (requiresSignIn) {
+      return (
+        <SignInPrompt
+          title="Your binder is waiting"
+          description="Sign in with Discord to start opening packs. Every card you pull will be tracked here, duplicates and all."
+        />
+      )
+    }
+
     return (
       <div className="mx-auto max-w-md rounded-2xl border border-dashed border-border bg-card/50 px-6 py-14 text-center">
         <LibraryBig className="mx-auto size-10 text-muted-foreground" />
@@ -111,6 +124,7 @@ export function CollectionView({
             collection={collection}
             onOpenPack={onOpenPack}
             onSelectCard={setSelectedCard}
+            requiresSignIn={requiresSignIn}
           />
         ))
       )}
@@ -125,7 +139,7 @@ export function CollectionView({
               size="sm"
               variant="destructive"
               onClick={() => {
-                resetCollection()
+                void onReset()
                 setConfirmReset(false)
               }}
             >
@@ -226,11 +240,13 @@ function PackSection({
   collection,
   onOpenPack,
   onSelectCard,
+  requiresSignIn = false,
 }: {
   pack: PackDef
   collection: CollectionData
   onOpenPack: (pack: PackDef) => void
   onSelectCard: (card: CollectedCard) => void
+  requiresSignIn?: boolean
 }) {
   const summary = summarizeSet(collection, pack.id, pack.total)
   const cards = cardsForSet(collection, pack.id)
@@ -268,7 +284,7 @@ function PackSection({
             variant="secondary"
             onClick={() => onOpenPack(pack)}
           >
-            Open more
+            {requiresSignIn ? 'Preview pack' : 'Open more'}
           </Button>
         </div>
       </div>
