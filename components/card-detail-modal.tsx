@@ -113,7 +113,6 @@ export function CardDetailModal({
             <img
               src={card.imageLarge || card.imageSmall || '/placeholder.svg'}
               alt={`${card.name} — ${card.rarity}`}
-              crossOrigin="anonymous"
               className="absolute inset-0 h-full w-full object-cover"
               draggable={false}
             />

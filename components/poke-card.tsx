@@ -34,7 +34,6 @@ export function PokeCardFace({
       <img
         src={card.imageLarge || '/placeholder.svg'}
         alt={`${card.name} — ${card.rarity}`}
-        crossOrigin="anonymous"
         loading="lazy"
         className="absolute inset-0 h-full w-full object-cover"
         draggable={false}

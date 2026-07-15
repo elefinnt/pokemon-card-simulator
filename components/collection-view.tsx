@@ -284,7 +284,6 @@ function PackSection({
           src={packSymbol(pack.id) || '/placeholder.svg'}
           alt=""
           aria-hidden="true"
-          crossOrigin="anonymous"
           className="h-6 w-6 shrink-0 object-contain"
         />
         <div className="min-w-0 flex-1">
@@ -428,7 +427,6 @@ function CollectionCardThumb({
         <img
           src={card.imageSmall || '/placeholder.svg'}
           alt={card.name}
-          crossOrigin="anonymous"
           loading="lazy"
           className={cn(
             'aspect-[2.5/3.5] w-full object-cover transition-[filter,opacity]',

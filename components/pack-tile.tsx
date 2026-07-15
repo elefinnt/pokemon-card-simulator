@@ -38,7 +38,6 @@ export function PackTile({
         <img
           src={packLogo(pack.id) || '/placeholder.svg'}
           alt={`${pack.name} logo`}
-          crossOrigin="anonymous"
           className="relative z-10 max-h-[60%] w-auto max-w-[85%] object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-105"
         />
         <span className="absolute right-3 top-3 z-10 rounded-full bg-black/30 px-2 py-0.5 text-[0.65rem] font-semibold text-white/90 backdrop-blur">
@@ -53,7 +52,6 @@ export function PackTile({
           src={packSymbol(pack.id) || '/placeholder.svg'}
           alt=""
           aria-hidden="true"
-          crossOrigin="anonymous"
           className="mt-0.5 h-5 w-5 shrink-0 object-contain"
         />
         <div className="min-w-0">

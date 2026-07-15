@@ -68,7 +68,6 @@ export function BoosterPack({
             <img
               src={packLogo(pack.id) || '/placeholder.svg'}
               alt={`${pack.name} logo`}
-              crossOrigin="anonymous"
               className="w-[80%] object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.55)]"
             />
             <span className="rounded-full bg-black/25 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white/90 backdrop-blur">
