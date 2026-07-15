@@ -64,6 +64,52 @@ export async function ensureFriendCode(userId: string): Promise<string> {
   throw new FriendError('Could not generate a friend code', 500)
 }
 
+/**
+ * Return true when the two users have an accepted friendship (either
+ * direction). Used to gate friend-only features such as trades.
+ */
+export async function areFriends(
+  userId: string,
+  otherId: string,
+): Promise<boolean> {
+  const db = requireDb()
+
+  const rows = await db
+    .select({ id: friendships.id })
+    .from(friendships)
+    .where(
+      and(
+        eq(friendships.status, 'accepted'),
+        or(
+          and(
+            eq(friendships.requesterId, userId),
+            eq(friendships.addresseeId, otherId),
+          ),
+          and(
+            eq(friendships.requesterId, otherId),
+            eq(friendships.addresseeId, userId),
+          ),
+        ),
+      ),
+    )
+    .limit(1)
+
+  return rows.length > 0
+}
+
+/** Throw a FriendError unless the two users are accepted friends. */
+export async function assertFriends(
+  userId: string,
+  otherId: string,
+): Promise<void> {
+  if (userId === otherId) {
+    throw new FriendError('You cannot trade with yourself', 400)
+  }
+  if (!(await areFriends(userId, otherId))) {
+    throw new FriendError('You are not friends with this player', 403)
+  }
+}
+
 export async function getFriendsOverview(
   userId: string,
 ): Promise<FriendsOverview> {
