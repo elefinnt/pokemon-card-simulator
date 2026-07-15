@@ -147,7 +147,6 @@ export function CardReveal({
                   src={c.imageSmall || '/placeholder.svg'}
                   alt=""
                   aria-hidden="true"
-                  crossOrigin="anonymous"
                   className="h-full w-full object-cover"
                 />
               ) : (
