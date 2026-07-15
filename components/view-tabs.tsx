@@ -21,10 +21,12 @@ export function ViewTabs({
   view,
   onChange,
   isAuthenticated = false,
+  badges,
 }: {
   view: View
   onChange: (view: View) => void
   isAuthenticated?: boolean
+  badges?: Partial<Record<View, number>>
 }) {
   const tabs = TABS.filter((tab) => !tab.authOnly || isAuthenticated)
 
@@ -34,23 +36,38 @@ export function ViewTabs({
       aria-label="View"
       className="inline-flex items-center gap-1 rounded-full border border-border bg-card p-1"
     >
-      {tabs.map(({ id, label, icon: Icon }) => (
-        <button
-          key={id}
-          role="tab"
-          aria-selected={view === id}
-          onClick={() => onChange(id)}
-          className={cn(
-            'inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold transition-colors',
-            view === id
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground',
-          )}
-        >
-          <Icon className="size-4" />
-          {label}
-        </button>
-      ))}
+      {tabs.map(({ id, label, icon: Icon }) => {
+        const badge = badges?.[id] ?? 0
+        return (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={view === id}
+            onClick={() => onChange(id)}
+            className={cn(
+              'relative inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold transition-colors',
+              view === id
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            <Icon className="size-4" />
+            {label}
+            {badge > 0 && (
+              <span
+                className={cn(
+                  'inline-flex min-w-4 items-center justify-center rounded-full px-1 text-[0.65rem] font-black leading-4',
+                  view === id
+                    ? 'bg-primary-foreground/25 text-primary-foreground'
+                    : 'bg-primary text-primary-foreground',
+                )}
+              >
+                {badge}
+              </span>
+            )}
+          </button>
+        )
+      })}
     </div>
   )
 }
