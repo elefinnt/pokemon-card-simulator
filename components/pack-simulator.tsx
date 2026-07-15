@@ -11,6 +11,7 @@ import { CardReveal } from './card-reveal'
 import { PulledCardsGrid } from './pulled-cards-grid'
 import { CollectionView } from './collection-view'
 import { CollectionStatus } from './collection-status'
+import { CommunityFeed } from './community/community-feed'
 import { FriendsView } from './friends/friends-view'
 import { SignInPrompt } from './sign-in-prompt'
 import { ViewTabs, type View } from './view-tabs'
@@ -130,6 +131,12 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
                 onReset={reset}
                 requiresSignIn={!isAuthenticated}
               />
+            </div>
+          )}
+
+          {view === 'community' && (
+            <div className="mt-8">
+              <CommunityFeed isAuthenticated={isAuthenticated} />
             </div>
           )}
 

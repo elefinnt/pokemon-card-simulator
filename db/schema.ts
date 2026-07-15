@@ -2,6 +2,7 @@ import {
   boolean,
   index,
   int,
+  json,
   mysqlTable,
   primaryKey,
   text,
@@ -9,6 +10,7 @@ import {
   uniqueIndex,
   varchar,
 } from 'drizzle-orm/mysql-core'
+import type { PokemonCard } from '@/lib/pokemon'
 
 // ---- Auth.js tables --------------------------------------------------------
 
@@ -168,5 +170,52 @@ export const friendships = mysqlTable(
     // Dedicated index so the addressee FK doesn't rely on the unique index
     // (which only covers addressee_id as a non-leading column).
     addressee: index('friendships_addressee_id_idx').on(t.addresseeId),
+  }),
+)
+
+// ---- Community feed tables -------------------------------------------------
+
+export const packOpenings = mysqlTable(
+  'pack_openings',
+  {
+    id: int('id').autoincrement().primaryKey(),
+    userId: varchar('user_id', { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    setId: varchar('set_id', { length: 255 }).notNull(),
+    packName: varchar('pack_name', { length: 255 }).notNull(),
+    series: varchar('series', { length: 255 }).notNull(),
+    bestTier: varchar('best_tier', { length: 32 }).notNull(),
+    cardCount: int('card_count').notNull().default(0),
+    // Denormalised snapshot of the pulled cards so the feed renders without
+    // re-fetching from the Pokémon TCG API.
+    cards: json('cards').$type<PokemonCard[]>().notNull(),
+    createdAt: timestamp('created_at', { mode: 'date', fsp: 3 }).notNull(),
+  },
+  (t) => ({
+    recent: index('pack_openings_created_at_idx').on(t.createdAt),
+    user: index('pack_openings_user_id_idx').on(t.userId),
+  }),
+)
+
+export const packOpeningReactions = mysqlTable(
+  'pack_opening_reactions',
+  {
+    id: int('id').autoincrement().primaryKey(),
+    openingId: int('opening_id')
+      .notNull()
+      .references(() => packOpenings.id, { onDelete: 'cascade' }),
+    userId: varchar('user_id', { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    // One reaction per user per opening; switching updates this row.
+    reaction: varchar('reaction', { length: 16 }).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date', fsp: 3 }).notNull(),
+  },
+  (t) => ({
+    openingUser: uniqueIndex(
+      'pack_opening_reactions_opening_id_user_id_unique',
+    ).on(t.openingId, t.userId),
+    user: index('pack_opening_reactions_user_id_idx').on(t.userId),
   }),
 )

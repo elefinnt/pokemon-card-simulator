@@ -4,6 +4,7 @@ import { openPack } from '@/lib/pokemon'
 import { ensurePacksLoaded, getPack } from '@/lib/packs'
 import { RateLimitError } from '@/lib/pokemontcg/client'
 import { recordPackForUser } from '@/lib/collection-db'
+import { recordPackOpening } from '@/lib/community/community-db'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,13 +59,30 @@ export async function POST(
   const { setId } = await params
 
   await ensurePacksLoaded()
-  if (!getPack(setId)) {
+  const def = getPack(setId)
+  if (!def) {
     return NextResponse.json({ error: 'Unknown pack' }, { status: 404 })
   }
 
   try {
     const pack = await openPack(setId)
     await recordPackForUser(session.user.id, pack)
+
+    // Publish to the community feed — never let this break the pack open.
+    try {
+      await recordPackOpening(session.user.id, {
+        setId,
+        packName: def.name,
+        series: def.series,
+        opened: pack,
+      })
+    } catch (feedErr) {
+      console.log(
+        '[open] community record failed:',
+        feedErr instanceof Error ? feedErr.message : feedErr,
+      )
+    }
+
     return NextResponse.json(pack)
   } catch (err) {
     console.log('[open] POST failed:', err instanceof Error ? err.message : err)

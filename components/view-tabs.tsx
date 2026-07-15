@@ -1,9 +1,9 @@
 'use client'
 
-import { Layers, LibraryBig, Users } from 'lucide-react'
+import { Globe, Layers, LibraryBig, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-export type View = 'packs' | 'collection' | 'friends'
+export type View = 'packs' | 'collection' | 'community' | 'friends'
 
 const TABS: {
   id: View
@@ -13,6 +13,7 @@ const TABS: {
 }[] = [
   { id: 'packs', label: 'Open packs', icon: Layers },
   { id: 'collection', label: 'Collection', icon: LibraryBig },
+  { id: 'community', label: 'Community', icon: Globe },
   { id: 'friends', label: 'Friends', icon: Users, authOnly: true },
 ]
 
