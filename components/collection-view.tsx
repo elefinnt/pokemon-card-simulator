@@ -48,8 +48,15 @@ export function CollectionView({
   )
   const isSearching = query.trim().length > 0
 
+  // Show a set if any pack was opened from it OR the user owns a card in it
+  // (e.g. a card received through a trade from a set they never opened).
+  const ownedSetIds = useMemo(
+    () => new Set(Object.values(collection.cards).map((c) => c.setId)),
+    [collection],
+  )
   const collectedPacks = packs.filter(
-    (p) => (collection.sets[p.id]?.packsOpened ?? 0) > 0,
+    (p) =>
+      (collection.sets[p.id]?.packsOpened ?? 0) > 0 || ownedSetIds.has(p.id),
   )
 
   if (uniqueOwned === 0) {

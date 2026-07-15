@@ -219,3 +219,62 @@ export const packOpeningReactions = mysqlTable(
     user: index('pack_opening_reactions_user_id_idx').on(t.userId),
   }),
 )
+
+// ---- Trade tables ----------------------------------------------------------
+
+export const tradeOffers = mysqlTable(
+  'trade_offers',
+  {
+    id: int('id').autoincrement().primaryKey(),
+    // The player who composed and sent the offer.
+    fromUserId: varchar('from_user_id', { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    // The player who receives it and may accept/decline/modify.
+    toUserId: varchar('to_user_id', { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    // 'pending' until the recipient responds. 'countered' means the recipient
+    // modified it, superseding this offer with a new reversed one.
+    status: varchar('status', { length: 16 }).notNull().default('pending'),
+    message: varchar('message', { length: 280 }),
+    // Points back to the offer this one supersedes (a counter-offer).
+    replacesId: int('replaces_id'),
+    createdAt: timestamp('created_at', { mode: 'date', fsp: 3 }).notNull(),
+    respondedAt: timestamp('responded_at', { mode: 'date', fsp: 3 }),
+  },
+  (t) => ({
+    recipient: index('trade_offers_to_user_id_idx').on(t.toUserId),
+    sender: index('trade_offers_from_user_id_idx').on(t.fromUserId),
+    status: index('trade_offers_status_idx').on(t.status),
+  }),
+)
+
+export const tradeOfferItems = mysqlTable(
+  'trade_offer_items',
+  {
+    id: int('id').autoincrement().primaryKey(),
+    offerId: int('offer_id')
+      .notNull()
+      .references(() => tradeOffers.id, { onDelete: 'cascade' }),
+    // 'from' = a card the sender is giving; 'to' = a card requested from the
+    // recipient. Both parties' cards live in this one table.
+    side: varchar('side', { length: 4 }).notNull(),
+    cardId: varchar('card_id', { length: 255 }).notNull(),
+    quantity: int('quantity').notNull().default(1),
+    // Denormalised card snapshot so an offer renders correctly even after the
+    // underlying card has been traded away (mirrors collected_cards).
+    setId: varchar('set_id', { length: 255 }).notNull(),
+    name: varchar('name', { length: 255 }).notNull(),
+    number: varchar('number', { length: 64 }).notNull(),
+    rarity: varchar('rarity', { length: 128 }).notNull(),
+    tier: varchar('tier', { length: 32 }).notNull(),
+    foil: boolean('foil').notNull().default(false),
+    rainbow: boolean('rainbow').notNull().default(false),
+    imageSmall: text('image_small').notNull(),
+    imageLarge: text('image_large').notNull(),
+  },
+  (t) => ({
+    offer: index('trade_offer_items_offer_id_idx').on(t.offerId),
+  }),
+)

@@ -5,6 +5,7 @@ import { ArrowLeft, AlertCircle } from 'lucide-react'
 import type { PackDef } from '@/lib/packs'
 import type { OpenedPack } from '@/lib/pokemon'
 import { useCollection } from '@/lib/collection'
+import { useTrades } from '@/lib/trades'
 import { PackPicker } from './pack-picker'
 import { BoosterPack } from './booster-pack'
 import { CardReveal } from './card-reveal'
@@ -30,6 +31,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
   const [prefetching, setPrefetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { data: collection, record, reset, isAuthenticated } = useCollection()
+  const { data: trades } = useTrades()
 
   useEffect(() => {
     if (!isAuthenticated && view === 'friends') setView('packs')
@@ -108,6 +110,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
               view={view}
               onChange={setView}
               isAuthenticated={isAuthenticated}
+              badges={{ friends: trades.incomingCount }}
             />
           </div>
 
