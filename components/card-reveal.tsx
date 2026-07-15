@@ -80,6 +80,7 @@ export function CardReveal({
           className="block w-full cursor-pointer rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <div
+            key={index}
             className={cn(
               'flip-inner aspect-[2.5/3.5] w-full',
               flipped && 'is-flipped',
