@@ -40,7 +40,6 @@ export function SignInPrompt({
       </div>
     )
   }
-
   if (variant === 'compact') {
     return (
       <div className={cn('flex flex-col items-center gap-3 text-center', className)}>
