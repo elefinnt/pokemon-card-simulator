@@ -11,6 +11,8 @@ import {
   type TradePartner,
 } from '@/components/trades/trade-builder'
 import { TradeDetailModal } from '@/components/trades/trade-detail-modal'
+import { PublicProfileModal } from '@/components/profile/public-profile-modal'
+import { resolveDisplayName } from '@/lib/profile-types'
 import { AddFriend } from './add-friend'
 import { FriendRequests } from './friend-requests'
 import { FriendList } from './friend-list'
@@ -43,6 +45,7 @@ export function FriendsView({
     initial?: TradeBuilderInitial
   } | null>(null)
   const [detailOffers, setDetailOffers] = useState<TradeOffer[] | null>(null)
+  const [profileUserId, setProfileUserId] = useState<string | null>(null)
 
   const incomingByFriend = useMemo(
     () => groupBy(trades.incoming, (o) => o.from.id),
@@ -110,6 +113,7 @@ export function FriendsView({
               outgoingByFriend={outgoingByFriend}
               onTrade={openTradeWith}
               onOpenOffers={setDetailOffers}
+              onOpenProfile={(friend) => setProfileUserId(friend.id)}
             />
           </>
         )}
@@ -131,6 +135,23 @@ export function FriendsView({
           onClose={() => setDetailOffers(null)}
           onRespond={respondTrade}
           onModify={startCounter}
+        />
+      )}
+
+      {profileUserId && (
+        <PublicProfileModal
+          userId={profileUserId}
+          onClose={() => setProfileUserId(null)}
+          onTrade={(profile) => {
+            setProfileUserId(null)
+            setBuilder({
+              partner: {
+                id: profile.userId,
+                name: resolveDisplayName(profile.displayName, profile.name),
+                image: profile.image,
+              },
+            })
+          }}
         />
       )}
     </div>

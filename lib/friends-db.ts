@@ -1,7 +1,9 @@
 import { randomInt } from 'node:crypto'
 import { and, eq, inArray, or } from 'drizzle-orm'
 import { requireDb } from '@/db'
-import { friendships, users } from '@/db/schema'
+import { friendships, profiles, users } from '@/db/schema'
+import type { ShowcaseCard } from './profile-types'
+import { SHOWCASE_MAX } from './profile-types'
 import {
   FRIEND_CODE_ALPHABET,
   FRIEND_CODE_LENGTH,
@@ -110,6 +112,57 @@ export async function assertFriends(
   }
 }
 
+interface ProfilePreview {
+  displayName: string | null
+  bio: string | null
+  accent: string | null
+  showcase: ShowcaseCard[]
+}
+
+/**
+ * Load lightweight profile previews for a set of users. Defensive by design:
+ * if the profiles table has not been migrated yet, this returns an empty map
+ * so the friends list keeps working.
+ */
+async function loadProfilePreviews(
+  ids: string[],
+): Promise<Map<string, ProfilePreview>> {
+  const map = new Map<string, ProfilePreview>()
+  if (ids.length === 0) return map
+
+  try {
+    const db = requireDb()
+    const rows = await db
+      .select({
+        userId: profiles.userId,
+        displayName: profiles.displayName,
+        bio: profiles.bio,
+        accent: profiles.accent,
+        showcase: profiles.showcase,
+      })
+      .from(profiles)
+      .where(inArray(profiles.userId, ids))
+
+    for (const row of rows) {
+      map.set(row.userId, {
+        displayName: row.displayName ?? null,
+        bio: row.bio ?? null,
+        accent: row.accent ?? null,
+        showcase: Array.isArray(row.showcase)
+          ? (row.showcase as ShowcaseCard[]).slice(0, SHOWCASE_MAX)
+          : [],
+      })
+    }
+  } catch (err) {
+    console.log(
+      '[friends] profile preview load skipped:',
+      err instanceof Error ? err.message : err,
+    )
+  }
+
+  return map
+}
+
 export async function getFriendsOverview(
   userId: string,
 ): Promise<FriendsOverview> {
@@ -133,7 +186,7 @@ export async function getFriendsOverview(
     otherIds.add(row.requesterId === userId ? row.addresseeId : row.requesterId)
   }
 
-  const profiles = await db
+  const friendUsers = await db
     .select({
       id: users.id,
       name: users.name,
@@ -143,7 +196,8 @@ export async function getFriendsOverview(
     .from(users)
     .where(inArray(users.id, [...otherIds]))
 
-  const profileById = new Map(profiles.map((p) => [p.id, p]))
+  const profileById = new Map(friendUsers.map((p) => [p.id, p]))
+  const previewById = await loadProfilePreviews([...otherIds])
 
   const overview = emptyOverview()
 
@@ -154,12 +208,17 @@ export async function getFriendsOverview(
     if (!profile) continue
 
     if (row.status === 'accepted') {
+      const preview = previewById.get(otherId)
       const friend: Friend = {
         id: profile.id,
         name: profile.name,
         image: profile.image,
         friendCode: profile.friendCode,
         since: row.respondedAt?.getTime() ?? null,
+        displayName: preview?.displayName ?? null,
+        bio: preview?.bio ?? null,
+        accent: preview?.accent ?? null,
+        showcase: preview?.showcase ?? [],
       }
       overview.friends.push(friend)
       continue

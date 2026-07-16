@@ -11,6 +11,7 @@ import {
   varchar,
 } from 'drizzle-orm/mysql-core'
 import type { PokemonCard } from '@/lib/pokemon'
+import type { ShowcaseCard } from '@/lib/profile-types'
 
 // ---- Auth.js tables --------------------------------------------------------
 
@@ -66,6 +67,31 @@ export const verificationTokens = mysqlTable(
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
+  }),
+)
+
+// ---- Profile tables --------------------------------------------------------
+
+export const profiles = mysqlTable(
+  'profiles',
+  {
+    id: int('id').autoincrement().primaryKey(),
+    userId: varchar('user_id', { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    // Player-chosen display name shown across the app in place of the Discord
+    // name. Falls back to the auth `name` when unset.
+    displayName: varchar('display_name', { length: 50 }),
+    bio: varchar('bio', { length: 280 }),
+    // Key into the ACCENTS palette (see lib/profile-types). Purely cosmetic.
+    accent: varchar('accent', { length: 16 }),
+    // Up to three favourite cards, stored as denormalised snapshots so a
+    // profile renders without touching the owner's collection.
+    showcase: json('showcase').$type<ShowcaseCard[]>(),
+    updatedAt: timestamp('updated_at', { mode: 'date', fsp: 3 }),
+  },
+  (t) => ({
+    user: uniqueIndex('profiles_user_id_unique').on(t.userId),
   }),
 )
 

@@ -1,3 +1,5 @@
+import type { ShowcaseCard } from './profile-types'
+
 /** A confirmed friend (an accepted friendship). */
 export interface Friend {
   id: string
@@ -5,6 +7,12 @@ export interface Friend {
   image: string | null
   friendCode: string | null
   since: number | null
+  // Profile preview fields (populated when the profiles table is available)
+  // so hover cards render instantly without a per-friend fetch.
+  displayName?: string | null
+  bio?: string | null
+  accent?: string | null
+  showcase?: ShowcaseCard[]
 }
 
 /** A pending friend request, either incoming or outgoing. */
