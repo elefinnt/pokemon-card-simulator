@@ -1,14 +1,12 @@
-import { ensurePacksLoaded } from '@/lib/packs'
-import { warmCuratedPools } from '@/lib/pokemontcg/warm'
-import { PackSimulator } from '@/components/pack-simulator'
+import type { Metadata } from 'next'
 import { SiteHeader } from '@/components/site-header'
+import { ProfilePageContent } from '@/components/profile/profile-page-content'
 
-export default async function Page() {
-  const packs = await ensurePacksLoaded()
+export const metadata: Metadata = {
+  title: 'Your profile · PackRip',
+}
 
-  // Fire-and-forget: warm card pools in the background after the page renders.
-  warmCuratedPools().catch(() => {})
-
+export default function ProfilePage() {
   return (
     <main className="relative min-h-screen overflow-hidden">
       <div
@@ -22,7 +20,9 @@ export default async function Page() {
 
       <SiteHeader />
 
-      <PackSimulator packs={packs} />
+      <div className="mx-auto w-full max-w-5xl px-4 pb-20 pt-4">
+        <ProfilePageContent />
+      </div>
     </main>
   )
 }

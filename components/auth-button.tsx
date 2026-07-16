@@ -1,11 +1,16 @@
 'use client'
 
+import Link from 'next/link'
 import { signIn, signOut, useSession } from 'next-auth/react'
 import { LogIn, LogOut, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { UserAvatar } from '@/components/user-avatar'
+import { useProfile } from '@/lib/profile'
+import { accentColor, resolveDisplayName } from '@/lib/profile-types'
 
 export function AuthButton() {
   const { data: session, status } = useSession()
+  const { data: profile } = useProfile()
 
   if (status === 'loading') {
     return (
@@ -16,19 +21,25 @@ export function AuthButton() {
   }
 
   if (session?.user) {
+    const name = resolveDisplayName(profile.displayName, session.user.name)
+
     return (
       <div className="flex items-center gap-2">
-        {session.user.image && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={session.user.image}
-            alt=""
-            className="size-7 rounded-full border border-border"
+        <Link
+          href="/profile"
+          className="flex items-center gap-2 rounded-full py-0.5 pl-0.5 pr-1 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label="Open your profile"
+          title="Your profile"
+        >
+          <UserAvatar
+            name={name}
+            image={session.user.image}
+            accent={accentColor(profile.accent)}
           />
-        )}
-        <span className="hidden text-sm font-medium text-foreground sm:inline">
-          {session.user.name}
-        </span>
+          <span className="hidden max-w-32 truncate text-sm font-medium text-foreground sm:inline">
+            {name}
+          </span>
+        </Link>
         <Button
           variant="outline"
           size="sm"

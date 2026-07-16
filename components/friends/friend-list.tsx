@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ActionResult, Friend } from '@/lib/friends'
 import type { TradeOffer } from '@/lib/trades'
+import { accentColor, resolveDisplayName } from '@/lib/profile-types'
 import { FriendAvatar } from './friend-avatar'
+import { FriendHoverCard } from './friend-hover-card'
 
 export function FriendList({
   friends,
@@ -15,6 +17,7 @@ export function FriendList({
   outgoingByFriend,
   onTrade,
   onOpenOffers,
+  onOpenProfile,
 }: {
   friends: Friend[]
   onRemove: (id: string) => Promise<ActionResult>
@@ -22,6 +25,7 @@ export function FriendList({
   outgoingByFriend: Record<string, TradeOffer[]>
   onTrade: (friend: Friend) => void
   onOpenOffers: (offers: TradeOffer[]) => void
+  onOpenProfile: (friend: Friend) => void
 }) {
   if (friends.length === 0) {
     return (
@@ -54,6 +58,7 @@ export function FriendList({
             outgoing={outgoingByFriend[friend.id] ?? []}
             onTrade={onTrade}
             onOpenOffers={onOpenOffers}
+            onOpenProfile={onOpenProfile}
           />
         ))}
       </ul>
@@ -68,6 +73,7 @@ function FriendRow({
   outgoing,
   onTrade,
   onOpenOffers,
+  onOpenProfile,
 }: {
   friend: Friend
   onRemove: (id: string) => Promise<ActionResult>
@@ -75,12 +81,14 @@ function FriendRow({
   outgoing: TradeOffer[]
   onTrade: (friend: Friend) => void
   onOpenOffers: (offers: TradeOffer[]) => void
+  onOpenProfile: (friend: Friend) => void
 }) {
   const [busy, setBusy] = useState(false)
   const [confirming, setConfirming] = useState(false)
 
   const hasIncoming = incoming.length > 0
   const hasOutgoing = outgoing.length > 0
+  const name = resolveDisplayName(friend.displayName, friend.name)
 
   const remove = async () => {
     setBusy(true)
@@ -97,12 +105,24 @@ function FriendRow({
           : 'border-border bg-card',
       )}
     >
-      <FriendAvatar name={friend.name} image={friend.image} />
-
       <div className="flex min-w-0 flex-1 items-center gap-2">
-        <span className="min-w-0 truncate font-semibold text-foreground">
-          {friend.name ?? 'Unknown player'}
-        </span>
+        <FriendHoverCard friend={friend} onOpen={() => onOpenProfile(friend)}>
+          <button
+            type="button"
+            onClick={() => onOpenProfile(friend)}
+            className="flex min-w-0 items-center gap-3 rounded-lg text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label={`View ${name}'s profile`}
+          >
+            <FriendAvatar
+              name={friend.name}
+              image={friend.image}
+              accent={accentColor(friend.accent)}
+            />
+            <span className="min-w-0 truncate font-semibold text-foreground transition-colors hover:text-primary">
+              {name}
+            </span>
+          </button>
+        </FriendHoverCard>
         {hasIncoming && (
           <button
             type="button"
