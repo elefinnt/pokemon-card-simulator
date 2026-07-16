@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { MOCK_FEED_EVENTS } from './mock-feed'
 import { type FeedEvent, type ReactionKey } from './types'
 
 export type { FeedEvent, ReactionKey } from './types'
@@ -28,8 +29,10 @@ function applyReaction(
 }
 
 export function useCommunityFeed(isAuthenticated: boolean) {
-  const [events, setEvents] = useState<FeedEvent[]>([])
-  const [loading, setLoading] = useState(true)
+  const [events, setEvents] = useState<FeedEvent[]>(() =>
+    isAuthenticated ? [] : MOCK_FEED_EVENTS,
+  )
+  const [loading, setLoading] = useState(isAuthenticated)
   const [error, setError] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
@@ -48,6 +51,14 @@ export function useCommunityFeed(isAuthenticated: boolean) {
   }, [])
 
   useEffect(() => {
+    // Signed-out visitors see a static, mocked preview — no network needed.
+    if (!isAuthenticated) {
+      setEvents(MOCK_FEED_EVENTS)
+      setError(null)
+      setLoading(false)
+      return
+    }
+
     let cancelled = false
     setLoading(true)
     refresh().finally(() => {

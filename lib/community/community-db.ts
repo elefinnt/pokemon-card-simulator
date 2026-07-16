@@ -1,6 +1,7 @@
 import { and, desc, eq, gte, inArray, sql } from 'drizzle-orm'
 import { requireDb } from '@/db'
 import { packOpenings, packOpeningReactions, users } from '@/db/schema'
+import { getAcceptedFriendIds } from '@/lib/friends-db'
 import type { CardTier, OpenedPack, PokemonCard } from '@/lib/pokemon'
 import {
   type FeedEvent,
@@ -34,12 +35,25 @@ export async function recordPackOpening(
   })
 }
 
+/**
+ * Build the community feed for a signed-in viewer. The feed is scoped to the
+ * viewer's accepted friends plus the viewer's own openings, so players only
+ * see activity from people they're connected with. A null viewer (signed-out)
+ * has no friends and therefore gets an empty feed — the client renders a
+ * mocked preview in that case.
+ */
 export async function getCommunityFeed(
   viewerId: string | null,
 ): Promise<FeedEvent[]> {
+  if (!viewerId) return []
+
   const db = requireDb()
   const now = Date.now()
   const cutoff = new Date(now - FEED_WINDOW_MINUTES * 60_000)
+
+  const friendIds = await getAcceptedFriendIds(viewerId)
+  // Include the viewer's own openings so their pulls show up in the feed too.
+  const authorIds = [...new Set([viewerId, ...friendIds])]
 
   const rows = await db
     .select({
@@ -56,7 +70,12 @@ export async function getCommunityFeed(
     })
     .from(packOpenings)
     .innerJoin(users, eq(users.id, packOpenings.userId))
-    .where(gte(packOpenings.createdAt, cutoff))
+    .where(
+      and(
+        gte(packOpenings.createdAt, cutoff),
+        inArray(packOpenings.userId, authorIds),
+      ),
+    )
     .orderBy(desc(packOpenings.createdAt))
     .limit(FEED_LIMIT)
 
