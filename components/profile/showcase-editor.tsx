@@ -1,12 +1,18 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Check, Loader2, Search } from 'lucide-react'
+import { Check, Loader2 } from 'lucide-react'
 import type { CollectionData, CollectedCard } from '@/lib/collection'
 import type { MyProfile, ProfileActionResult } from '@/lib/profile'
 import { SHOWCASE_MAX } from '@/lib/profile-types'
+import {
+  DEFAULT_FILTERS,
+  type ShowcaseFilters,
+  filterShowcaseCards,
+} from '@/lib/showcase-filters'
 import { Button } from '@/components/ui/button'
 import { TradeCardThumb } from '@/components/trades/trade-card-thumb'
+import { ShowcaseFilterBar } from './showcase-filter-bar'
 import { ShowcaseStrip } from './showcase-strip'
 import { cn } from '@/lib/utils'
 
@@ -22,24 +28,20 @@ export function ShowcaseEditor({
   const [selected, setSelected] = useState<string[]>(
     profile.showcase.map((c) => c.id).slice(0, SHOWCASE_MAX),
   )
-  const [query, setQuery] = useState('')
+  const [filters, setFilters] = useState<ShowcaseFilters>(DEFAULT_FILTERS)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
 
   const cards = useMemo(
-    () =>
-      Object.values(collection.cards).sort((a, b) =>
-        a.name.localeCompare(b.name),
-      ),
+    () => Object.values(collection.cards),
     [collection],
   )
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return cards
-    return cards.filter((c) => c.name.toLowerCase().includes(q))
-  }, [cards, query])
+  const filtered = useMemo(
+    () => filterShowcaseCards(cards, filters),
+    [cards, filters],
+  )
 
   const previewCards = useMemo(
     () =>
@@ -90,26 +92,20 @@ export function ShowcaseEditor({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="space-y-3">
         <p className="text-sm text-muted-foreground">
           Pick up to {SHOWCASE_MAX} favourites ({selected.length}/{SHOWCASE_MAX})
         </p>
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Filter cards…"
-            aria-label="Filter cards"
-            className="w-40 rounded-lg border border-border bg-card py-1.5 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </div>
+        <ShowcaseFilterBar
+          cards={cards}
+          filters={filters}
+          onChange={setFilters}
+        />
       </div>
 
       {filtered.length === 0 ? (
         <p className="py-6 text-center text-xs text-muted-foreground">
-          No cards match that search.
+          No cards match these filters.
         </p>
       ) : (
         <div className="grid max-h-72 grid-cols-3 gap-2 overflow-y-auto pr-1 sm:grid-cols-4">
