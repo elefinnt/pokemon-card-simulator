@@ -7,6 +7,7 @@ import type { PokemonCard } from '@/lib/pokemon'
 import type { PackDef } from '@/lib/packs'
 import { TIER_META } from '@/lib/rarity'
 import { PokeCardFace } from './poke-card'
+import { TiltCard } from './tilt-card'
 import { Button } from '@/components/ui/button'
 
 const TIER_ORDER = ['ultra', 'rare', 'uncommon', 'common'] as const
@@ -59,7 +60,8 @@ export function PulledCardsGrid({
             key={card.id + i}
             type="button"
             onClick={() => setActive(card)}
-            className="animate-card-in rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label={`View ${card.name}`}
+            className="animate-card-in rounded-xl transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             style={{ animationDelay: `${i * 45}ms` }}
           >
             <PokeCardFace card={card} showShine={card.tier === 'ultra'} />
@@ -132,7 +134,7 @@ function CardModal({
           <X className="size-4" />
         </button>
 
-        <PokeCardFace card={card} className="w-full" />
+        <TiltCard card={card} />
 
         <div className="w-full rounded-xl border border-border bg-card p-4 text-center">
           <h3 className="font-display text-xl font-extrabold text-card-foreground">
