@@ -14,11 +14,14 @@ export function PackTile({
   summary?: SetSummary
   requiresSignIn?: boolean
 }) {
-  const hasProgress = !!summary && summary.packsOpened > 0
   const pct =
     summary && summary.poolTotal > 0
       ? Math.round(summary.completion * 100)
       : 0
+  const uniqueOwned = summary?.uniqueOwned ?? 0
+  const poolTotal = summary?.poolTotal ?? pack.total
+  const packsOpened = summary?.packsOpened ?? 0
+  const duplicates = summary?.duplicates ?? 0
 
   return (
     <button
@@ -65,34 +68,40 @@ export function PackTile({
         {pack.blurb}
       </p>
 
-      {hasProgress ? (
-        <div className="mt-3">
-          <div className="flex items-center justify-between text-xs font-semibold">
-            <span className="text-muted-foreground">
-              {summary!.uniqueOwned}
-              <span className="text-muted-foreground/60">
-                {' / '}
-                {summary!.poolTotal || '?'} collected
+      {/* Progress stays hidden for a clean resting card and drops down on
+          hover / keyboard focus. */}
+      <div className="grid grid-rows-[0fr] opacity-0 transition-[grid-template-rows,opacity] duration-300 ease-out group-hover:grid-rows-[1fr] group-hover:opacity-100 group-focus-visible:grid-rows-[1fr] group-focus-visible:opacity-100">
+        <div className="overflow-hidden">
+          <div className="pt-3">
+            <div className="flex items-center justify-between text-xs font-semibold">
+              <span className="text-muted-foreground">
+                {uniqueOwned}
+                <span className="text-muted-foreground/60">
+                  {' / '}
+                  {poolTotal || '?'} collected
+                </span>
               </span>
-            </span>
-            <span className="text-primary">{pct}%</span>
+              <span className="text-primary">{pct}%</span>
+            </div>
+            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <p className="text-[0.7rem] text-muted-foreground">
+                {packsOpened > 0
+                  ? `${packsOpened} pack${packsOpened === 1 ? '' : 's'} opened · ${duplicates} dupes`
+                  : 'Not opened yet'}
+              </p>
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                {requiresSignIn ? 'Preview' : 'Open'} &rarr;
+              </span>
+            </div>
           </div>
-          <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-          <p className="mt-1.5 text-[0.7rem] text-muted-foreground">
-            {summary!.packsOpened} pack{summary!.packsOpened === 1 ? '' : 's'}{' '}
-            opened · {summary!.duplicates} dupes
-          </p>
         </div>
-      ) : (
-        <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          {requiresSignIn ? 'Preview pack' : 'Open pack'} &rarr;
-        </span>
-      )}
+      </div>
     </button>
   )
 }

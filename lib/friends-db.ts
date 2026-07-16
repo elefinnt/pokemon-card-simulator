@@ -99,6 +99,34 @@ export async function areFriends(
   return rows.length > 0
 }
 
+/**
+ * Return the ids of every user the given user has an accepted friendship with
+ * (in either direction). Used to scope the community feed to friends only.
+ */
+export async function getAcceptedFriendIds(userId: string): Promise<string[]> {
+  const db = requireDb()
+
+  const rows = await db
+    .select({
+      requesterId: friendships.requesterId,
+      addresseeId: friendships.addresseeId,
+    })
+    .from(friendships)
+    .where(
+      and(
+        eq(friendships.status, 'accepted'),
+        or(
+          eq(friendships.requesterId, userId),
+          eq(friendships.addresseeId, userId),
+        ),
+      ),
+    )
+
+  return rows.map((row) =>
+    row.requesterId === userId ? row.addresseeId : row.requesterId,
+  )
+}
+
 /** Throw a FriendError unless the two users are accepted friends. */
 export async function assertFriends(
   userId: string,
