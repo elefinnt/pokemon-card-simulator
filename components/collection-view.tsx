@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { LibraryBig, Layers, Copy, Sparkles, Trash2, Search } from 'lucide-react'
 import { type PackDef, packSymbol } from '@/lib/packs'
 import {
@@ -17,7 +17,13 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { CardDetailModal } from './card-detail-modal'
 import { SignInPrompt } from './sign-in-prompt'
+import { SetCardFilterBar } from './collection/set-card-filter-bar'
 import { useSetCatalogue } from './use-set-catalogue'
+import {
+  DEFAULT_SET_CARD_FILTERS,
+  filterSetCards,
+  type SetCardFilters,
+} from '@/lib/set-card-filters'
 
 export function CollectionView({
   packs,
@@ -261,16 +267,29 @@ function PackSection({
   requiresSignIn?: boolean
 }) {
   const [cardView, setCardView] = useState<PackCardView>('obtained')
+  const [filters, setFilters] = useState<SetCardFilters>(DEFAULT_SET_CARD_FILTERS)
   const summary = summarizeSet(collection, pack.id, pack.total)
   const ownedCards = cardsForSet(collection, pack.id)
   const { cards: catalogue, loading, error } = useSetCatalogue(pack.id)
   const binderCards = catalogue
     ? binderCardsForSet(catalogue, collection, pack.id)
     : ownedCards.map((card) => ({ ...card, owned: true as const }))
-  const displayedCards =
+  const sourceCards =
     cardView === 'obtained'
       ? ownedCards.map((card) => ({ ...card, owned: true as const }))
       : binderCards
+  const displayedCards = useMemo(
+    () => filterSetCards(sourceCards, filters),
+    [sourceCards, filters],
+  )
+
+  useEffect(() => {
+    if (filters.tier === 'all') return
+    const tierStillPresent = sourceCards.some((card) => card.tier === filters.tier)
+    if (!tierStillPresent) {
+      setFilters((current) => ({ ...current, tier: 'all' }))
+    }
+  }, [sourceCards, filters.tier])
   const showCatalogueLoading =
     cardView === 'all' && loading && displayedCards.length === 0
   const pct =
@@ -325,9 +344,25 @@ function PackSection({
           {cardView === 'obtained'
             ? `${ownedCards.length} obtained`
             : `${summary.uniqueOwned} / ${summary.poolTotal || '?'} in set`}
+          {displayedCards.length !== sourceCards.length && (
+            <span>
+              {' '}
+              · showing {displayedCards.length}
+            </span>
+          )}
         </p>
         <PackCardViewToggle value={cardView} onChange={setCardView} />
       </div>
+
+      {sourceCards.length > 0 && (
+        <div className="mt-3">
+          <SetCardFilterBar
+            cards={sourceCards}
+            filters={filters}
+            onChange={setFilters}
+          />
+        </div>
+      )}
 
       <div className="mt-3 grid grid-cols-3 gap-2.5 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8">
         {showCatalogueLoading ? (
@@ -336,7 +371,9 @@ function PackSection({
           </p>
         ) : displayedCards.length === 0 ? (
           <p className="col-span-full py-4 text-center text-sm text-muted-foreground">
-            No cards obtained from this set yet.
+            {sourceCards.length === 0
+              ? 'No cards obtained from this set yet.'
+              : 'No cards match the current filters.'}
           </p>
         ) : (
           displayedCards.map((card) => (

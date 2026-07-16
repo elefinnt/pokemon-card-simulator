@@ -1,3 +1,4 @@
+import { compareCardNumber } from './card-order'
 import type { CardTier, PokemonCard } from './pokemon'
 
 export const COLLECTION_SCHEMA_VERSION = 1
@@ -85,12 +86,7 @@ export function cardsForSet(
 ): CollectedCard[] {
   return Object.values(data.cards)
     .filter((c) => c.setId === setId)
-    .sort((a, b) => {
-      const an = parseInt(a.number, 10)
-      const bn = parseInt(b.number, 10)
-      if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn
-      return a.number.localeCompare(b.number)
-    })
+    .sort((a, b) => compareCardNumber(a.number, b.number))
 }
 
 export interface BinderCard {
