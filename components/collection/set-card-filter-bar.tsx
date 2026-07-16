@@ -8,11 +8,10 @@ import {
 } from '@/lib/set-card-filters'
 import { cn } from '@/lib/utils'
 
-const SORT_LABELS: Record<SetCardSort, string> = {
-  number: 'Card number',
-  name: 'Name',
-  rarity: 'Rarity',
-}
+const SORT_OPTIONS: { value: SetCardSort; label: string }[] = [
+  { value: 'number', label: 'Card number' },
+  { value: 'name', label: 'Alphabetical' },
+]
 
 export function SetCardFilterBar({
   cards,
@@ -33,7 +32,7 @@ export function SetCardFilterBar({
   if (tiers.length === 0) return null
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
       <div
         role="group"
         aria-label="Filter by rarity"
@@ -54,18 +53,28 @@ export function SetCardFilterBar({
         ))}
       </div>
 
-      <select
-        value={filters.sort}
-        onChange={(e) => set('sort', e.target.value as SetCardSort)}
+      <div
+        role="group"
         aria-label="Sort cards"
-        className="rounded-lg border border-border bg-card py-1.5 pl-2.5 pr-7 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="inline-flex shrink-0 rounded-lg border border-border bg-muted/40 p-0.5"
       >
-        {(Object.keys(SORT_LABELS) as SetCardSort[]).map((mode) => (
-          <option key={mode} value={mode}>
-            Sort: {SORT_LABELS[mode]}
-          </option>
+        {SORT_OPTIONS.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            aria-pressed={filters.sort === option.value}
+            onClick={() => set('sort', option.value)}
+            className={cn(
+              'rounded-md px-2.5 py-1 text-xs font-semibold transition-colors',
+              filters.sort === option.value
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            {option.label}
+          </button>
         ))}
-      </select>
+      </div>
     </div>
   )
 }

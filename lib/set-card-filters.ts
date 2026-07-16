@@ -5,7 +5,7 @@ import { TIER_RANK } from './pokemontcg/rarity'
 import { TIER_META } from './rarity'
 
 export type SetTierFilter = CardTier | 'all'
-export type SetCardSort = 'number' | 'name' | 'rarity'
+export type SetCardSort = 'number' | 'name'
 
 export interface SetCardFilters {
   tier: SetTierFilter
@@ -38,11 +38,6 @@ function compareCards(a: BinderCard, b: BinderCard, sort: SetCardSort): number {
   switch (sort) {
     case 'name':
       return a.name.localeCompare(b.name)
-    case 'rarity':
-      return (
-        TIER_RANK[b.tier] - TIER_RANK[a.tier] ||
-        compareCardNumber(a.number, b.number)
-      )
     case 'number':
     default:
       return compareCardNumber(a.number, b.number)
