@@ -33,8 +33,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${rubik.variable} bg-background`}>
-      <body className="font-sans antialiased">
+    <html
+      lang="en"
+      className={`${inter.variable} ${rubik.variable} bg-background`}
+      suppressHydrationWarning
+    >
+      <body className="font-sans antialiased" suppressHydrationWarning>
         <AuthProvider>{children}</AuthProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
