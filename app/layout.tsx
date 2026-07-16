@@ -19,7 +19,6 @@ export const metadata: Metadata = {
   title: 'PackRip — Pokémon Card Pack Opening Simulator',
   description:
     'Rip open classic and modern Pokémon booster packs and reveal your pulls with holo shine, sparkles, and rare-hit celebrations.',
-  generator: 'v0.app',
 }
 
 export const viewport: Viewport = {
