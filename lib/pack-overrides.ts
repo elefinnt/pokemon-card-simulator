@@ -17,10 +17,14 @@ export const CURATED_SET_IDS = [
   'base1',
   'base2',
   'base3',
+  'xy12',
   'cel25',
   'swsh45',
+  'swsh7',
   'swsh12pt5',
+  'sv3',
   'sv3pt5',
+  'sv8',
   'sv8pt5',
   'sv9',
   'sv10',
@@ -46,6 +50,11 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
     accentTo: '#451a03',
     blurb: 'Ancient Pokémon revived from fossils.',
   },
+  xy12: {
+    accentFrom: '#f59e0b',
+    accentTo: '#b91c1c',
+    blurb: 'The Base Set reborn — classic artwork with modern foils.',
+  },
   cel25: {
     accentFrom: '#eab308',
     accentTo: '#713f12',
@@ -57,16 +66,31 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
     accentTo: '#831843',
     blurb: 'A sea of Shiny Pokémon and dazzling foils.',
   },
+  swsh7: {
+    accentFrom: '#0ea5e9',
+    accentTo: '#4c1d95',
+    blurb: 'Dragons soar again — chase the coveted alt-art VMAX cards.',
+  },
   swsh12pt5: {
     accentFrom: '#8b5cf6',
     accentTo: '#4c1d95',
     blurb:
       'The Galarian Gallery and stunning artwork make every pack a treasure.',
   },
+  sv3: {
+    accentFrom: '#ea580c',
+    accentTo: '#450a0a',
+    blurb: 'Obsidian Flames — the Charizard ex blazes across every pack.',
+  },
   sv3pt5: {
     accentFrom: '#f43f5e',
     accentTo: '#7f1d1d',
     blurb: 'The original 151, reimagined with modern chase cards.',
+  },
+  sv8: {
+    accentFrom: '#facc15',
+    accentTo: '#1d4ed8',
+    blurb: 'Surging Sparks — Pikachu ex leads a set crackling with energy.',
   },
   sv8pt5: {
     accentFrom: '#a855f7',
@@ -103,10 +127,19 @@ export const FALLBACK_SET_META: Record<
   base1: { name: 'Base', series: 'Base', year: '1999', total: 102 },
   base2: { name: 'Jungle', series: 'Base', year: '1999', total: 64 },
   base3: { name: 'Fossil', series: 'Base', year: '1999', total: 62 },
+  xy12: { name: 'Evolutions', series: 'XY', year: '2016', total: 113 },
   cel25: { name: 'Celebrations', series: 'Sword & Shield', year: '2021', total: 25 },
   swsh45: { name: 'Shining Fates', series: 'Sword & Shield', year: '2021', total: 73 },
+  swsh7: { name: 'Evolving Skies', series: 'Sword & Shield', year: '2021', total: 237 },
   swsh12pt5: { name: 'Crown Zenith', series: 'Sword & Shield', year: '2023', total: 160 },
+  sv3: { name: 'Obsidian Flames', series: 'Scarlet & Violet', year: '2023', total: 230 },
   sv3pt5: { name: '151', series: 'Scarlet & Violet', year: '2023', total: 207 },
+  sv8: {
+    name: 'Surging Sparks',
+    series: 'Scarlet & Violet',
+    year: '2024',
+    total: 252,
+  },
   sv8pt5: {
     name: 'Prismatic Evolutions',
     series: 'Scarlet & Violet',

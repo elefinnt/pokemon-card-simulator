@@ -3,9 +3,7 @@
 import { useMemo, useState } from 'react'
 import { type PackDef, seriesOptions } from '@/lib/packs'
 import type { CollectionData } from '@/lib/collection'
-import { summarizeSet } from '@/lib/collection'
-import { PackTile } from './pack-tile'
-import { SignInPrompt } from './sign-in-prompt'
+import { PackSeriesRow } from './pack-series-row'
 import { cn } from '@/lib/utils'
 
 export function PackPicker({
@@ -22,18 +20,27 @@ export function PackPicker({
   const [series, setSeries] = useState<string>('All')
   const seriesList = useMemo(() => seriesOptions(packs), [packs])
 
-  const filtered =
-    series === 'All' ? packs : packs.filter((p) => p.series === series)
+  // Order series newest-first so the freshest sets lead the page.
+  const orderedSeries = useMemo(() => {
+    const latestYear = new Map<string, string>()
+    for (const p of packs) {
+      const current = latestYear.get(p.series)
+      if (!current || p.year > current) latestYear.set(p.series, p.year)
+    }
+    return [...seriesList].sort((a, b) =>
+      (latestYear.get(b) ?? '').localeCompare(latestYear.get(a) ?? ''),
+    )
+  }, [packs, seriesList])
+
+  const groups = useMemo(() => {
+    const visible = series === 'All' ? orderedSeries : [series]
+    return visible
+      .map((s) => ({ series: s, items: packs.filter((p) => p.series === s) }))
+      .filter((g) => g.items.length > 0)
+  }, [packs, series, orderedSeries])
 
   return (
-    <div className="space-y-5">
-      {/* {requiresSignIn && (
-        <SignInPrompt
-          variant="banner"
-          description="Browse packs below, then sign in when you're ready to rip."
-        />
-      )} */}
-
+    <div className="space-y-8">
       <div
         role="group"
         aria-label="Filter by series"
@@ -54,18 +61,19 @@ export function PackPicker({
         ))}
       </div>
 
-      {filtered.length === 0 ? (
+      {groups.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted-foreground">
           No packs match this filter.
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((pack) => (
-            <PackTile
-              key={pack.id}
-              pack={pack}
+        <div className="space-y-8">
+          {groups.map((g) => (
+            <PackSeriesRow
+              key={g.series}
+              series={g.series}
+              packs={g.items}
+              collection={collection}
               onSelect={onSelect}
-              summary={summarizeSet(collection, pack.id, pack.total)}
               requiresSignIn={requiresSignIn}
             />
           ))}
