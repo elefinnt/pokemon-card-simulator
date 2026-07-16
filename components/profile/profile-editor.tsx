@@ -2,14 +2,15 @@
 
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { IdCard, Sparkles } from 'lucide-react'
+import { IdCard, Sparkles, ShieldAlert } from 'lucide-react'
 import { useProfile } from '@/lib/profile'
 import { useCollection } from '@/lib/collection'
 import { cn } from '@/lib/utils'
 import { ProfileDetailsForm } from './profile-details-form'
 import { ShowcaseEditor } from './showcase-editor'
+import { AccountSettings } from './account-settings'
 
-type Tab = 'details' | 'showcase'
+type Tab = 'details' | 'showcase' | 'account'
 
 /**
  * The tabbed profile editor (details + showcase). Rendered inline on the
@@ -35,7 +36,7 @@ export function ProfileEditor({ onSaved }: { onSaved?: () => void }) {
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
-      <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl border border-border bg-background/50 p-1">
+      <div className="mb-5 grid grid-cols-3 gap-1 rounded-xl border border-border bg-background/50 p-1">
         <TabButton
           label="Details"
           icon={IdCard}
@@ -48,6 +49,12 @@ export function ProfileEditor({ onSaved }: { onSaved?: () => void }) {
           active={tab === 'showcase'}
           onClick={() => setTab('showcase')}
         />
+        <TabButton
+          label="Account"
+          icon={ShieldAlert}
+          active={tab === 'account'}
+          onClick={() => setTab('account')}
+        />
       </div>
 
       {tab === 'details' ? (
@@ -56,12 +63,14 @@ export function ProfileEditor({ onSaved }: { onSaved?: () => void }) {
           fallbackName={session?.user?.name}
           onSave={details}
         />
-      ) : (
+      ) : tab === 'showcase' ? (
         <ShowcaseEditor
           profile={profile}
           collection={collection}
           onSave={showcase}
         />
+      ) : (
+        <AccountSettings />
       )}
     </div>
   )
