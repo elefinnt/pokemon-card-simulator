@@ -30,6 +30,7 @@ export const CURATED_SET_IDS = [
   'sv10',
   'zsv10pt5',
   'rsv10pt5',
+  'me5',
 ] as const
 
 export type CuratedSetId = (typeof CURATED_SET_IDS)[number]
@@ -117,6 +118,11 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
     accentTo: '#fef3c7',
     blurb: 'White Flare — Reshiram and friends light up every pack with fiery chase cards.',
   },
+  me5: {
+    accentFrom: '#1e1b4b',
+    accentTo: '#0f172a',
+    blurb: 'Pitch Black — Mega Evolution returns, with shadowy chase cards lurking in every pack.',
+  },
 }
 
 /** Minimal fallback when the API is unreachable during pack catalogue build. */
@@ -169,5 +175,11 @@ export const FALLBACK_SET_META: Record<
     series: 'Scarlet & Violet',
     year: '2025',
     total: 173,
+  },
+  me5: {
+    name: 'Pitch Black',
+    series: 'Mega Evolution',
+    year: '2026',
+    total: 120,
   },
 }

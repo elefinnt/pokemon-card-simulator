@@ -22,6 +22,10 @@ export interface PackDef {
   accentFrom: string
   accentTo: string
   blurb: string
+  /** Set logo image URL (from the API, CDN varies by era) */
+  logo: string
+  /** Set symbol image URL (from the API, CDN varies by era) */
+  symbol: string
 }
 
 let packsCache: PackDef[] | null = null
@@ -43,6 +47,8 @@ function buildPackDef(set: RawSet, override: PackOverride): PackDef {
     accentFrom: override.accentFrom,
     accentTo: override.accentTo,
     blurb: override.blurb,
+    logo: set.images?.logo ?? legacyLogo(set.id),
+    symbol: set.images?.symbol ?? legacySymbol(set.id),
   }
 }
 
@@ -59,6 +65,8 @@ function buildFallbackPack(id: CuratedSetId): PackDef {
     accentFrom: override.accentFrom,
     accentTo: override.accentTo,
     blurb: override.blurb,
+    logo: legacyLogo(id),
+    symbol: legacySymbol(id),
   }
 }
 
@@ -104,12 +112,22 @@ export function getPacks(): PackDef[] {
   return packsCache ?? []
 }
 
-export function packLogo(id: string): string {
+/** Legacy CDN URLs — used as a fallback before the catalogue has loaded or
+ *  when the API omits set images. Newer sets aren't hosted here. */
+function legacyLogo(id: string): string {
   return `https://images.pokemontcg.io/${id}/logo.png`
 }
 
-export function packSymbol(id: string): string {
+function legacySymbol(id: string): string {
   return `https://images.pokemontcg.io/${id}/symbol.png`
+}
+
+export function packLogo(id: string): string {
+  return packsCache?.find((p) => p.id === id)?.logo ?? legacyLogo(id)
+}
+
+export function packSymbol(id: string): string {
+  return packsCache?.find((p) => p.id === id)?.symbol ?? legacySymbol(id)
 }
 
 /** Unique series labels from the loaded catalogue, sorted alphabetically. */
