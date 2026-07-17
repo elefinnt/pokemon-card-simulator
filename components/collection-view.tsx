@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { LibraryBig, Layers, Copy, Sparkles, Trash2, Search } from 'lucide-react'
-import { type PackDef, packSymbol } from '@/lib/packs'
+import { type PackDef } from '@/lib/packs'
 import {
   type CollectionData,
   type CollectedCard,
@@ -300,7 +300,7 @@ function PackSection({
       <div className="flex flex-wrap items-center gap-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={packSymbol(pack.id) || '/placeholder.svg'}
+          src={pack.symbol || '/placeholder.svg'}
           alt=""
           aria-hidden="true"
           className="h-6 w-6 shrink-0 object-contain"

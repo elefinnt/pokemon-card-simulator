@@ -1,6 +1,6 @@
 'use client'
 
-import { type PackDef, packLogo, packSymbol } from '@/lib/packs'
+import { type PackDef } from '@/lib/packs'
 import type { SetSummary } from '@/lib/collection'
 
 export function PackTile({
@@ -39,7 +39,7 @@ export function PackTile({
         <div className="holo-shine opacity-70" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={packLogo(pack.id) || '/placeholder.svg'}
+          src={pack.logo || '/placeholder.svg'}
           alt={`${pack.name} logo`}
           className="relative z-10 max-h-[60%] w-auto max-w-[85%] object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-105"
         />
@@ -52,7 +52,7 @@ export function PackTile({
       <div className="mt-3 flex items-start gap-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={packSymbol(pack.id) || '/placeholder.svg'}
+          src={pack.symbol || '/placeholder.svg'}
           alt=""
           aria-hidden="true"
           className="mt-0.5 h-5 w-5 shrink-0 object-contain"

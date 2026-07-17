@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { type PackDef, packLogo } from '@/lib/packs'
+import { type PackDef } from '@/lib/packs'
 import { Pokeball } from './poke-card'
 
 export function BoosterPack({
@@ -66,7 +66,7 @@ export function BoosterPack({
             <Pokeball className="h-10 w-10 opacity-90 drop-shadow" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={packLogo(pack.id) || '/placeholder.svg'}
+              src={pack.logo || '/placeholder.svg'}
               alt={`${pack.name} logo`}
               className="w-[80%] object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.55)]"
             />
