@@ -1,13 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { X, RotateCw, LayoutGrid } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { useState } from 'react'
+import { RotateCw, LayoutGrid } from 'lucide-react'
 import type { PokemonCard } from '@/lib/pokemon'
 import type { PackDef } from '@/lib/packs'
 import { TIER_META } from '@/lib/rarity'
 import { PokeCardFace } from './poke-card'
-import { TiltCard } from './tilt-card'
+import { CardZoomModal } from './card-zoom-modal'
 import { Button } from '@/components/ui/button'
 
 const TIER_ORDER = ['ultra', 'rare', 'uncommon', 'common'] as const
@@ -85,83 +84,7 @@ export function PulledCardsGrid({
         </Button>
       </div>
 
-      {active && (
-        <CardModal card={active} onClose={() => setActive(null)} />
-      )}
-    </div>
-  )
-}
-
-function CardModal({
-  card,
-  onClose,
-}: {
-  card: PokemonCard
-  onClose: () => void
-}) {
-  const meta = TIER_META[card.tier]
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
-    }
-  }, [onClose])
-
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${card.name} details`}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="relative flex w-full max-w-[320px] flex-col items-center gap-4 animate-pop-in"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute -right-2 -top-2 z-10 rounded-full bg-card p-2 text-foreground shadow-lg ring-1 ring-border transition-colors hover:bg-accent"
-        >
-          <X className="size-4" />
-        </button>
-
-        <TiltCard card={card} />
-
-        <div className="w-full rounded-xl border border-border bg-card p-4 text-center">
-          <h3 className="font-display text-xl font-extrabold text-card-foreground">
-            {card.name}
-          </h3>
-          <div className="mt-2 flex flex-wrap items-center justify-center gap-2 text-xs">
-            <span
-              className={cn(
-                'rounded-full border px-2.5 py-0.5 font-semibold',
-                meta.badgeClass,
-              )}
-            >
-              {card.rarity || meta.label}
-            </span>
-            {card.number && (
-              <span className="rounded-full border border-border px-2.5 py-0.5 text-muted-foreground">
-                No. {card.number}
-              </span>
-            )}
-          </div>
-          {card.artist && (
-            <p className="mt-3 text-xs text-muted-foreground">
-              Illustrated by {card.artist}
-            </p>
-          )}
-        </div>
-      </div>
+      <CardZoomModal card={active} onClose={() => setActive(null)} />
     </div>
   )
 }

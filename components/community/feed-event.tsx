@@ -1,8 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import { PokeCardFace } from '@/components/poke-card'
+import { CardZoomModal } from '@/components/card-zoom-modal'
 import { packLogo } from '@/lib/packs'
 import { TIER_META } from '@/lib/rarity'
+import type { PokemonCard } from '@/lib/pokemon'
 import type { FeedEvent, ReactionKey } from '@/lib/community/types'
 import { FeedAvatar } from './feed-avatar'
 import { ReactionBar } from './reaction-bar'
@@ -26,6 +29,7 @@ export function FeedEventCard({
   canReact: boolean
   onReact: (key: ReactionKey) => void
 }) {
+  const [active, setActive] = useState<PokemonCard | null>(null)
   const bestMeta = TIER_META[event.bestTier]
   const sorted = [...event.cards].sort(
     (a, b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier),
@@ -69,11 +73,15 @@ export function FeedEventCard({
 
       <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-5">
         {sorted.map((card, i) => (
-          <PokeCardFace
+          <button
             key={card.id + i}
-            card={card}
-            showShine={card.tier === 'ultra'}
-          />
+            type="button"
+            onClick={() => setActive(card)}
+            aria-label={`View ${card.name}`}
+            className="rounded-xl transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <PokeCardFace card={card} showShine={card.tier === 'ultra'} />
+          </button>
         ))}
       </div>
 
@@ -85,6 +93,8 @@ export function FeedEventCard({
           onReact={onReact}
         />
       </footer>
+
+      <CardZoomModal card={active} onClose={() => setActive(null)} />
     </article>
   )
 }
