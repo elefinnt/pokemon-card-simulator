@@ -81,6 +81,15 @@ export function TradeBuilder({
   const toCount = totalCards(toSelection)
   const canSend = fromCount + toCount > 0 && !busy
 
+  const myOwnedIds = useMemo(
+    () => new Set(Object.keys(myCollection.cards)),
+    [myCollection],
+  )
+  const friendOwnedIds = useMemo(
+    () => new Set(Object.keys(friendCollection?.cards ?? {})),
+    [friendCollection],
+  )
+
   const setQuantity = (
     setter: typeof setFromSelection,
     cardId: string,
@@ -177,6 +186,10 @@ export function TradeBuilder({
             selection={fromSelection}
             onChange={(id, q) => setQuantity(setFromSelection, id, q)}
             emptyLabel="You don't own any cards yet."
+            compareOwnedIds={loadingFriend ? undefined : friendOwnedIds}
+            filterLabel="Hide cards they own"
+            compareBadge="They have"
+            filterEmptyLabel={`${friend.name ?? 'They'} already own every card you have.`}
           />
         ) : loadingFriend ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
@@ -188,6 +201,10 @@ export function TradeBuilder({
             selection={toSelection}
             onChange={(id, q) => setQuantity(setToSelection, id, q)}
             emptyLabel="This player has no cards to request yet."
+            compareOwnedIds={myOwnedIds}
+            filterLabel="Hide cards you own"
+            compareBadge="You have"
+            filterEmptyLabel="You already own every card they have."
           />
         ) : (
           <p className="py-8 text-center text-sm text-destructive">
