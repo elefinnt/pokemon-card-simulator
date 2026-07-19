@@ -3,6 +3,7 @@ import { auth } from '@/auth'
 import { FriendError } from '@/lib/friends-db'
 import { TradeError, respondToTrade } from '@/lib/trades-db'
 import { isTradeResponseAction } from '@/lib/trades-types'
+import { getPostHogClient } from '@/lib/posthog-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,6 +36,16 @@ export async function POST(
 
   try {
     await respondToTrade(session.user.id, offerId, action)
+    const posthog = getPostHogClient()
+    posthog.capture({
+      distinctId: session.user.id,
+      event: 'trade_responded',
+      properties: {
+        trade_id: offerId,
+        action,
+      },
+    })
+    await posthog.flush()
     return NextResponse.json({ ok: true })
   } catch (err) {
     if (err instanceof TradeError || err instanceof FriendError) {

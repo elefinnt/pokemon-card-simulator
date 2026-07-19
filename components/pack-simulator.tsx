@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { ArrowLeft, AlertCircle } from 'lucide-react'
+import posthog from 'posthog-js'
 import type { PackDef } from '@/lib/packs'
 import type { OpenedPack } from '@/lib/pokemon'
 import { useCollection } from '@/lib/collection'
@@ -38,6 +39,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
   }, [isAuthenticated, view])
 
   const selectPack = useCallback((p: PackDef) => {
+    posthog.capture('pack_selected', { set_id: p.id, pack_name: p.name, series: p.series })
     setPack(p)
     setOpened(null)
     setError(null)
@@ -74,6 +76,14 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
       }
       const data = (await res.json()) as OpenedPack
       await delay(Math.max(0, 1200 - (Date.now() - started)))
+      posthog.capture('pack_ripped', {
+        set_id: pack.id,
+        pack_name: pack.name,
+        series: pack.series,
+        pack_type: data.packType,
+        best_tier: data.bestTier,
+        card_count: data.cards.length,
+      })
       record(data)
       setOpened(data)
       setStage('revealing')
@@ -108,7 +118,10 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
           <div className="mt-8 flex justify-center">
             <ViewTabs
               view={view}
-              onChange={setView}
+              onChange={(v) => {
+                posthog.capture('tab_changed', { tab: v })
+                setView(v)
+              }}
               isAuthenticated={isAuthenticated}
               badges={{ friends: trades.incomingCount }}
             />

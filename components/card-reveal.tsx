@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import confetti from 'canvas-confetti'
+import posthog from 'posthog-js'
 import { cn } from '@/lib/utils'
 import type { PokemonCard } from '@/lib/pokemon'
 import type { PackDef } from '@/lib/packs'
@@ -78,12 +79,18 @@ export function CardReveal({
       return
     }
     if (last) {
+      posthog.capture('card_reveal_completed', {
+        set_id: pack.id,
+        pack_name: pack.name,
+        pack_type: packType,
+        card_count: total,
+      })
       onDone()
     } else {
       setIndex((i) => i + 1)
       setFlipped(false)
     }
-  }, [flipped, last, card.tier, special, onDone])
+  }, [flipped, last, card.tier, special, pack.id, pack.name, packType, total, onDone])
 
   return (
     <div className="flex w-full flex-col items-center gap-6">
@@ -94,7 +101,16 @@ export function CardReveal({
         </span>
         <button
           type="button"
-          onClick={onDone}
+          onClick={() => {
+            posthog.capture('card_reveal_completed', {
+              set_id: pack.id,
+              pack_name: pack.name,
+              pack_type: packType,
+              card_count: total,
+              skipped: true,
+            })
+            onDone()
+          }}
           className="text-sm font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
         >
           Reveal all
