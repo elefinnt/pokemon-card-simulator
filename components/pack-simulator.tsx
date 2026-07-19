@@ -212,6 +212,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
           <CardReveal
             cards={opened.cards}
             pack={pack}
+            packType={opened.packType}
             onDone={() => setStage('summary')}
           />
         </section>
@@ -223,6 +224,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
             cards={opened.cards}
             pack={pack}
             bestTier={opened.bestTier}
+            packType={opened.packType}
             onOpenAnother={() => {
               setOpened(null)
               setStage('sealed')
