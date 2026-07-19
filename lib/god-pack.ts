@@ -23,8 +23,8 @@ export type PackType = 'normal' | 'demigod' | 'god'
  *   GOD_PACK_ODDS     = 1 / 2000   // ~0.05%, the widely cited figure
  *   DEMIGOD_PACK_ODDS = 1 / 350    // rough community estimate
  */
-export const GOD_PACK_ODDS = 1 / 20
-export const DEMIGOD_PACK_ODDS = 1 / 8
+export const GOD_PACK_ODDS = 1 / 2000// TESTING: guaranteed god pack every open
+export const DEMIGOD_PACK_ODDS = 1 / 350
 
 /** Prismatic Evolutions is currently the only set with god packs. */
 export const GOD_PACK_SET_ID = 'sv8pt5'
