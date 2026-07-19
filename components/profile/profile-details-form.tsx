@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Check, Loader2 } from 'lucide-react'
+import posthog from 'posthog-js'
 import type { MyProfile, ProfileActionResult } from '@/lib/profile'
 import {
   BIO_MAX_LENGTH,
@@ -43,6 +44,11 @@ export function ProfileDetailsForm({
     })
     setBusy(false)
     if (result.ok) {
+      posthog.capture('profile_saved', {
+        has_display_name: displayName.trim().length > 0,
+        has_bio: bio.trim().length > 0,
+        accent,
+      })
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } else {

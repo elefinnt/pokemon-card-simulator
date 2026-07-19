@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { FriendError, sendFriendRequestByCode } from '@/lib/friends-db'
 import { isValidFriendCode } from '@/lib/friends-types'
+import { getPostHogClient } from '@/lib/posthog-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,6 +26,13 @@ export async function POST(request: Request) {
 
   try {
     await sendFriendRequestByCode(session.user.id, code)
+    const posthog = getPostHogClient()
+    posthog.capture({
+      distinctId: session.user.id,
+      event: 'friend_request_sent',
+      properties: {},
+    })
+    await posthog.flush()
     return NextResponse.json({ ok: true })
   } catch (err) {
     if (err instanceof FriendError) {

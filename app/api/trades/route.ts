@@ -3,6 +3,7 @@ import { auth } from '@/auth'
 import { FriendError } from '@/lib/friends-db'
 import { TradeError, createTradeOffer, getTradeOverview } from '@/lib/trades-db'
 import { sanitiseItemInputs, sanitiseMessage } from '@/lib/trades-types'
+import { getPostHogClient } from '@/lib/posthog-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -73,6 +74,19 @@ export async function POST(request: Request) {
       message: sanitiseMessage(payload?.message),
       replacesId,
     })
+    const posthog = getPostHogClient()
+    posthog.capture({
+      distinctId: session.user.id,
+      event: 'trade_offer_created',
+      properties: {
+        trade_id: id,
+        from_card_count: fromItems.length,
+        to_card_count: toItems.length,
+        is_counter_offer: replacesId != null,
+        has_message: typeof payload?.message === 'string' && (payload.message as string).trim().length > 0,
+      },
+    })
+    await posthog.flush()
     return NextResponse.json({ ok: true, id })
   } catch (err) {
     if (err instanceof TradeError || err instanceof FriendError) {

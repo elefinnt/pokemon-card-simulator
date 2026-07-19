@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { AlertCircle, ArrowRightLeft, Loader2 } from 'lucide-react'
+import posthog from 'posthog-js'
 import type { CollectionData } from '@/lib/collection'
 import { fetchFriendCollection, type TradeActionResult } from '@/lib/trades'
 import { TRADE_MESSAGE_MAX_LENGTH } from '@/lib/trades-types'
@@ -122,6 +123,12 @@ export function TradeBuilder({
     })
     setBusy(false)
     if (result.ok) {
+      posthog.capture('trade_offer_sent', {
+        from_card_count: fromItems.length,
+        to_card_count: toItems.length,
+        is_counter_offer: initial?.replacesId != null,
+        has_message: message.trim().length > 0,
+      })
       onClose()
     } else {
       setError(result.error ?? 'Could not send the offer.')
