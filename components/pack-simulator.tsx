@@ -76,14 +76,8 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
       }
       const data = (await res.json()) as OpenedPack
       await delay(Math.max(0, 1200 - (Date.now() - started)))
-      posthog.capture('pack_ripped', {
-        set_id: pack.id,
-        pack_name: pack.name,
-        series: pack.series,
-        pack_type: data.packType,
-        best_tier: data.bestTier,
-        card_count: data.cards.length,
-      })
+      // Pack-open analytics are captured authoritatively server-side as
+      // `pack_opened` in /api/open/[setId]; no client event needed here.
       record(data)
       setOpened(data)
       setStage('revealing')
