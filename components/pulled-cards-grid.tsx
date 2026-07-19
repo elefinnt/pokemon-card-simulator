@@ -4,8 +4,10 @@ import { useState } from 'react'
 import { RotateCw, LayoutGrid } from 'lucide-react'
 import type { PokemonCard } from '@/lib/pokemon'
 import type { PackDef } from '@/lib/packs'
+import type { PackType } from '@/lib/god-pack'
 import { TIER_META } from '@/lib/rarity'
 import { PokeCardFace } from './poke-card'
+import { GodPackBanner } from './god-pack-banner'
 import { CardZoomModal } from './card-zoom-modal'
 import { Button } from '@/components/ui/button'
 
@@ -15,12 +17,14 @@ export function PulledCardsGrid({
   cards,
   pack,
   bestTier,
+  packType = 'normal',
   onOpenAnother,
   onChangePack,
 }: {
   cards: PokemonCard[]
   pack: PackDef
   bestTier: PokemonCard['tier']
+  packType?: PackType
   onOpenAnother: () => void
   onChangePack: () => void
 }) {
@@ -34,6 +38,7 @@ export function PulledCardsGrid({
 
   return (
     <div className="flex w-full flex-col items-center gap-6">
+      <GodPackBanner packType={packType} />
       <div className="text-center">
         <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
           {pack.name} · {cards.length} cards

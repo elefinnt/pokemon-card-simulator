@@ -5,6 +5,7 @@ import { PokeCardFace } from '@/components/poke-card'
 import { CardZoomModal } from '@/components/card-zoom-modal'
 import { packLogo } from '@/lib/packs'
 import { TIER_META } from '@/lib/rarity'
+import { PACK_TYPE_META, detectPackType } from '@/lib/god-pack'
 import type { PokemonCard } from '@/lib/pokemon'
 import type { FeedEvent, ReactionKey } from '@/lib/community/types'
 import { FeedAvatar } from './feed-avatar'
@@ -31,6 +32,8 @@ export function FeedEventCard({
 }) {
   const [active, setActive] = useState<PokemonCard | null>(null)
   const bestMeta = TIER_META[event.bestTier]
+  const packType = detectPackType(event.cards, event.packId)
+  const packTypeMeta = packType === 'normal' ? null : PACK_TYPE_META[packType]
   const sorted = [...event.cards].sort(
     (a, b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier),
   )
@@ -58,7 +61,15 @@ export function FeedEventCard({
         />
       </header>
 
-      <div className="mt-4 flex items-center gap-2">
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {packTypeMeta && (
+          <span
+            className="inline-block rounded-full px-2.5 py-0.5 text-xs font-black tracking-wider text-white"
+            style={{ background: packTypeMeta.gradient }}
+          >
+            {packTypeMeta.label}
+          </span>
+        )}
         <span
           className="inline-block rounded-full border px-2.5 py-0.5 text-xs font-semibold"
           style={{

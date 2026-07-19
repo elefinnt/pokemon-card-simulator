@@ -1,12 +1,14 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import confetti from 'canvas-confetti'
 import { cn } from '@/lib/utils'
 import type { PokemonCard } from '@/lib/pokemon'
 import type { PackDef } from '@/lib/packs'
+import type { PackType } from '@/lib/god-pack'
 import { TIER_META, isHit } from '@/lib/rarity'
 import { PokeCardFace, PokeCardBack } from './poke-card'
+import { GodPackBanner } from './god-pack-banner'
 import { Button } from '@/components/ui/button'
 
 function celebrate(tier: PokemonCard['tier']) {
@@ -25,13 +27,33 @@ function celebrate(tier: PokemonCard['tier']) {
   })
 }
 
+/** A sustained multi-burst celebration reserved for god / demigod packs. */
+function celebrateJackpot() {
+  const colors = ['#fbbf24', '#f472b6', '#a855f7', '#38bdf8', '#ffffff']
+  const bursts = 4
+  for (let i = 0; i < bursts; i++) {
+    setTimeout(() => {
+      confetti({
+        particleCount: 120,
+        spread: 120,
+        startVelocity: 55,
+        origin: { x: i % 2 === 0 ? 0.2 : 0.8, y: 0.5 },
+        colors,
+        scalar: 1.2,
+      })
+    }, i * 250)
+  }
+}
+
 export function CardReveal({
   cards,
   pack,
+  packType = 'normal',
   onDone,
 }: {
   cards: PokemonCard[]
   pack: PackDef
+  packType?: PackType
   onDone: () => void
 }) {
   const [index, setIndex] = useState(0)
@@ -41,11 +63,18 @@ export function CardReveal({
   const card = cards[index]
   const meta = TIER_META[card.tier]
   const last = index === total - 1
+  const special = packType !== 'normal'
+
+  // Kick off a big celebration the moment a special pack starts revealing.
+  useEffect(() => {
+    if (special) celebrateJackpot()
+  }, [special])
 
   const handleTap = useCallback(() => {
     if (!flipped) {
       setFlipped(true)
-      if (isHit(card.tier)) celebrate(card.tier)
+      if (special) celebrateJackpot()
+      else if (isHit(card.tier)) celebrate(card.tier)
       return
     }
     if (last) {
@@ -54,10 +83,11 @@ export function CardReveal({
       setIndex((i) => i + 1)
       setFlipped(false)
     }
-  }, [flipped, last, card.tier, onDone])
+  }, [flipped, last, card.tier, special, onDone])
 
   return (
     <div className="flex w-full flex-col items-center gap-6">
+      <GodPackBanner packType={packType} />
       <div className="flex w-full max-w-md items-center justify-between">
         <span className="text-sm font-semibold text-muted-foreground">
           Card {index + 1} <span className="opacity-50">/ {total}</span>
