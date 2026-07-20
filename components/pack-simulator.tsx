@@ -46,9 +46,11 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
     setStage('sealed')
   }, [])
 
-  // Pre-fetch the card pool once a pack is selected and the user is signed in.
+  // Warm the card pool as soon as a pack is selected (hover on the tile may
+  // already have started this). Runs for guests too so it's ready the moment
+  // they sign in and rip.
   useEffect(() => {
-    if (!pack || stage !== 'sealed' || !isAuthenticated) return
+    if (!pack || stage !== 'sealed') return
     let cancelled = false
     setPrefetching(true)
     fetch(`/api/pool/${pack.id}`)
@@ -59,7 +61,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
     return () => {
       cancelled = true
     }
-  }, [pack, stage, isAuthenticated])
+  }, [pack, stage])
 
   const rip = useCallback(async () => {
     if (!pack || ripping || !isAuthenticated) return
