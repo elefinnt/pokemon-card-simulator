@@ -32,20 +32,11 @@ export const metadata: Metadata = {
     siteName: 'PackRip',
     locale: 'en_GB',
     type: 'website',
-    images: [
-      {
-        url: '/og.png',
-        width: 1200,
-        height: 630,
-        alt: 'PackRip — Pokémon booster pack opening simulator',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title,
     description,
-    images: ['/og.png'],
   },
 }
 
