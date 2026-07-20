@@ -2,6 +2,7 @@
 
 import { type PackDef } from '@/lib/packs'
 import type { SetSummary } from '@/lib/collection'
+import { prefetchPool } from '@/lib/prefetch-pool'
 
 export function PackTile({
   pack,
@@ -27,6 +28,8 @@ export function PackTile({
     <button
       type="button"
       onClick={() => onSelect(pack)}
+      onPointerEnter={() => prefetchPool(pack.id)}
+      onFocus={() => prefetchPool(pack.id)}
       className="group relative flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-4 text-left transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       {/* Pack art */}
