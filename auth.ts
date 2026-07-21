@@ -35,6 +35,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   adapter: db ? DrizzleAdapter(db) : undefined,
   providers: buildProviders(),
+  // Link Discord + Google to the same user when both providers return the same
+  // verified email. Safe here because Discord and Google both verify ownership.
+  allowDangerousEmailAccountLinking: true,
   pages: {
     signIn: '/',
   },
