@@ -6,6 +6,9 @@
  */
 
 export interface PackOverride {
+  /** Stable URL slug for the pack page, e.g. `/pack/pitch-black`. Never change
+   *  a published slug — search engines and shared links depend on it. */
+  slug: string
   accentFrom: string
   accentTo: string
   blurb: string
@@ -39,102 +42,126 @@ export type CuratedSetId = (typeof CURATED_SET_IDS)[number]
 
 export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
   base1: {
+    slug: 'base-set',
     accentFrom: '#3b82f6',
     accentTo: '#1e3a8a',
     blurb: 'Where it all began. Chase the iconic holo Charizard.',
   },
   base2: {
+    slug: 'jungle',
     accentFrom: '#22c55e',
     accentTo: '#14532d',
     blurb: 'Wild Pokémon from deep in the jungle.',
   },
   base3: {
+    slug: 'fossil',
     accentFrom: '#a16207',
     accentTo: '#451a03',
     blurb: 'Ancient Pokémon revived from fossils.',
   },
   ex8: {
+    slug: 'deoxys',
     accentFrom: '#7c3aed',
     accentTo: '#0f172a',
     blurb: 'Deoxys descends — chase the Rocket-era ex cards and holo rares.',
   },
   xy12: {
+    slug: 'evolutions',
     accentFrom: '#f59e0b',
     accentTo: '#b91c1c',
     blurb: 'The Base Set reborn — classic artwork with modern foils.',
   },
   swsh4: {
+    slug: 'vivid-voltage',
     accentFrom: '#fbbf24',
     accentTo: '#1e3a8a',
     blurb: 'Vivid Voltage — Pikachu VMAX crackles amid the coveted Amazing Rares.',
   },
   cel25: {
+    slug: 'celebrations',
     accentFrom: '#eab308',
     accentTo: '#713f12',
     blurb:
       'Twenty-five years of Pokémon — packed with iconic reprints and gold chase cards.',
   },
   swsh45: {
+    slug: 'shining-fates',
     accentFrom: '#ec4899',
     accentTo: '#831843',
     blurb: 'A sea of Shiny Pokémon and dazzling foils.',
   },
   swsh7: {
+    slug: 'evolving-skies',
     accentFrom: '#0ea5e9',
     accentTo: '#4c1d95',
     blurb: 'Dragons soar again — chase the coveted alt-art VMAX cards.',
   },
   swsh12pt5: {
+    slug: 'crown-zenith',
     accentFrom: '#8b5cf6',
     accentTo: '#4c1d95',
     blurb:
       'The Galarian Gallery and stunning artwork make every pack a treasure.',
   },
   sv3: {
+    slug: 'obsidian-flames',
     accentFrom: '#ea580c',
     accentTo: '#450a0a',
     blurb: 'Obsidian Flames — the Charizard ex blazes across every pack.',
   },
   sv3pt5: {
+    slug: 'pokemon-151',
     accentFrom: '#f43f5e',
     accentTo: '#7f1d1d',
     blurb: 'The original 151, reimagined with modern chase cards.',
   },
   sv8: {
+    slug: 'surging-sparks',
     accentFrom: '#facc15',
     accentTo: '#1d4ed8',
     blurb: 'Surging Sparks — Pikachu ex leads a set crackling with energy.',
   },
   sv8pt5: {
+    slug: 'prismatic-evolutions',
     accentFrom: '#a855f7',
     accentTo: '#ec4899',
     blurb: 'Prismatic Evolutions — chase the Eeveelution ex cards and radiant artwork.',
   },
   sv9: {
+    slug: 'journey-together',
     accentFrom: '#06b6d4',
     accentTo: '#1e40af',
     blurb: 'Team up with partners old and new across Paldea and beyond.',
   },
   sv10: {
+    slug: 'destined-rivals',
     accentFrom: '#ef4444',
     accentTo: '#581c87',
     blurb: 'Legendary rivals clash — hunt the Trainer Gallery and chase ex cards.',
   },
   zsv10pt5: {
+    slug: 'black-bolt',
     accentFrom: '#171717',
     accentTo: '#2563eb',
     blurb: 'Black Bolt — Unova legends return with striking artwork and powerful ex.',
   },
   rsv10pt5: {
+    slug: 'white-flare',
     accentFrom: '#f97316',
     accentTo: '#fef3c7',
     blurb: 'White Flare — Reshiram and friends light up every pack with fiery chase cards.',
   },
   me5: {
+    slug: 'pitch-black',
     accentFrom: '#1e1b4b',
     accentTo: '#0f172a',
     blurb: 'Pitch Black — Mega Evolution returns, with shadowy chase cards lurking in every pack.',
   },
+}
+
+/** Set id for a published slug, or undefined if unknown. */
+export function setIdForSlug(slug: string): CuratedSetId | undefined {
+  return CURATED_SET_IDS.find((id) => PACK_OVERRIDES[id].slug === slug)
 }
 
 /** Minimal fallback when the API is unreachable during pack catalogue build. */

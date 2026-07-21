@@ -1,6 +1,7 @@
 'use client'
 
 import { type PackDef } from '@/lib/packs'
+import { packPath } from '@/lib/nav'
 import type { SetSummary } from '@/lib/collection'
 import { prefetchPool } from '@/lib/prefetch-pool'
 
@@ -25,9 +26,15 @@ export function PackTile({
   const duplicates = summary?.duplicates ?? 0
 
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(pack)}
+    // A real link (crawlable, open-in-new-tab friendly) that behaves like the
+    // old button: selection stays client-side via history.pushState upstream.
+    <a
+      href={packPath(pack.slug)}
+      onClick={(e) => {
+        if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey) return
+        e.preventDefault()
+        onSelect(pack)
+      }}
       onPointerEnter={() => prefetchPool(pack.id)}
       onFocus={() => prefetchPool(pack.id)}
       className="group relative flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-4 text-left transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -105,6 +112,6 @@ export function PackTile({
           </div>
         </div>
       </div>
-    </button>
+    </a>
   )
 }

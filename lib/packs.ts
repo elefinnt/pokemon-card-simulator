@@ -11,6 +11,8 @@ import type { RawSet } from './pokemontcg/types'
 export interface PackDef {
   /** Pokémon TCG API set id */
   id: string
+  /** Stable URL slug — pack pages live at `/pack/{slug}` */
+  slug: string
   name: string
   series: string
   year: string
@@ -39,6 +41,7 @@ function yearFromReleaseDate(date?: string): string {
 function buildPackDef(set: RawSet, override: PackOverride): PackDef {
   return {
     id: set.id,
+    slug: override.slug,
     name: set.name,
     series: set.series,
     year: yearFromReleaseDate(set.releaseDate),
@@ -57,6 +60,7 @@ function buildFallbackPack(id: CuratedSetId): PackDef {
   const override = PACK_OVERRIDES[id]
   return {
     id,
+    slug: override.slug,
     name: meta.name,
     series: meta.series,
     year: meta.year,
@@ -105,6 +109,14 @@ export function ensurePacksLoaded(): Promise<PackDef[]> {
 /** Synchronous lookup — only valid after `ensurePacksLoaded` has resolved. */
 export function getPack(id: string): PackDef | undefined {
   return packsCache?.find((p) => p.id === id)
+}
+
+/** Find a pack by its URL slug within an already-loaded catalogue. */
+export function findPackBySlug(
+  packs: PackDef[],
+  slug: string,
+): PackDef | undefined {
+  return packs.find((p) => p.slug === slug)
 }
 
 /** All loaded packs (empty until catalogue is loaded). */

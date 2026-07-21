@@ -1,9 +1,12 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { ArrowLeft, AlertCircle } from 'lucide-react'
 import posthog from 'posthog-js'
-import type { PackDef } from '@/lib/packs'
+import { findPackBySlug, type PackDef } from '@/lib/packs'
+import { packPath, packSlugFromPath, pathForView, viewForPath } from '@/lib/nav'
 import type { OpenedPack } from '@/lib/pokemon'
 import { useCollection } from '@/lib/collection'
 import { useFreePacks, recordFreePackOpened } from '@/lib/free-packs'
@@ -34,30 +37,104 @@ async function readOpenedPack(res: Response): Promise<OpenedPack> {
   return (await res.json()) as OpenedPack
 }
 
-export function PackSimulator({ packs }: { packs: PackDef[] }) {
-  const [view, setView] = useState<View>('packs')
-  const [stage, setStage] = useState<Stage>('select')
-  const [pack, setPack] = useState<PackDef | null>(null)
+export function PackSimulator({
+  packs,
+  initialPack = null,
+  initialView = 'packs',
+}: {
+  packs: PackDef[]
+  /** Pre-selected pack when the visitor lands on a /pack/[slug] page. */
+  initialPack?: PackDef | null
+  /** Active tab when the visitor lands on a tab route like /community. */
+  initialView?: View
+}) {
+  const [view, setView] = useState<View>(initialView)
+  const [stage, setStage] = useState<Stage>(initialPack ? 'sealed' : 'select')
+  const [pack, setPack] = useState<PackDef | null>(initialPack)
   const [opened, setOpened] = useState<OpenedPack | null>(null)
   const [ripping, setRipping] = useState(false)
   const [prefetching, setPrefetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lastBoosted, setLastBoosted] = useState(false)
   const { data: collection, record, reset, isAuthenticated } = useCollection()
+  const { status: authStatus } = useSession()
   const free = useFreePacks()
   const { data: trades } = useTrades()
+  const pathname = usePathname()
+
+  // Latest state snapshot for the URL-sync effect, so it can depend on the
+  // pathname alone and only fire on actual navigations.
+  const stateRef = useRef({ pack, stage })
+  stateRef.current = { pack, stage }
+
+  /** Push a new URL without a server round-trip. Next.js picks this up and
+   *  PostHog records it as a $pageview, giving us journey tracking for free. */
+  const navigate = useCallback((path: string) => {
+    if (window.location.pathname !== path) {
+      window.history.pushState(null, '', path)
+    }
+  }, [])
+
+  // Keep component state in sync with the URL (browser back/forward).
+  useEffect(() => {
+    const current = stateRef.current
+    const slug = packSlugFromPath(pathname)
+    if (slug) {
+      const target = findPackBySlug(packs, slug)
+      if (!target) return
+      if (current.pack?.slug !== target.slug || current.stage === 'select') {
+        setPack(target)
+        setOpened(null)
+        setError(null)
+        setStage('sealed')
+      }
+    } else {
+      if (current.stage !== 'select') {
+        setStage('select')
+        setOpened(null)
+      }
+      setView(viewForPath(pathname))
+    }
+  }, [pathname, packs])
 
   useEffect(() => {
-    if (!isAuthenticated && view === 'friends') setView('packs')
-  }, [isAuthenticated, view])
+    if (authStatus === 'unauthenticated' && view === 'friends') {
+      setView('packs')
+      window.history.replaceState(null, '', pathForView('packs'))
+    }
+  }, [authStatus, view])
 
-  const selectPack = useCallback((p: PackDef) => {
-    posthog.capture('pack_selected', { set_id: p.id, pack_name: p.name, series: p.series })
-    setPack(p)
+  const changeView = useCallback(
+    (v: View) => {
+      posthog.capture('tab_changed', { tab: v })
+      setView(v)
+      navigate(pathForView(v))
+    },
+    [navigate],
+  )
+
+  const backToSelect = useCallback(() => {
+    setStage('select')
     setOpened(null)
-    setError(null)
-    setStage('sealed')
-  }, [])
+    navigate(pathForView(view))
+  }, [navigate, view])
+
+  const selectPack = useCallback(
+    (p: PackDef) => {
+      posthog.capture('pack_selected', {
+        set_id: p.id,
+        pack_slug: p.slug,
+        pack_name: p.name,
+        series: p.series,
+      })
+      setPack(p)
+      setOpened(null)
+      setError(null)
+      setStage('sealed')
+      navigate(packPath(p.slug))
+    },
+    [navigate],
+  )
 
   // Warm the card pool as soon as a pack is selected (hover on the tile may
   // already have started this). Runs for guests too so it's ready the moment
@@ -146,10 +223,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
           <div className="mt-8 flex justify-center">
             <ViewTabs
               view={view}
-              onChange={(v) => {
-                posthog.capture('tab_changed', { tab: v })
-                setView(v)
-              }}
+              onChange={changeView}
               isAuthenticated={isAuthenticated}
               badges={{ friends: trades.incomingCount }}
             />
@@ -202,7 +276,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
           <div className="mb-8 w-full">
             <Button
               variant="ghost"
-              onClick={() => setStage('select')}
+              onClick={backToSelect}
               className="text-muted-foreground"
             >
               <ArrowLeft className="size-4" />
@@ -211,9 +285,9 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
           </div>
 
           <div className="mb-8 text-center">
-            <h2 className="font-display text-2xl font-extrabold text-foreground">
+            <h1 className="font-display text-2xl font-extrabold text-foreground">
               {pack.name}
-            </h2>
+            </h1>
             <p className="text-sm text-muted-foreground">
               {pack.series} Series · {pack.year}
             </p>
@@ -282,7 +356,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
               setOpened(null)
               setStage('sealed')
             }}
-            onChangePack={() => setStage('select')}
+            onChangePack={backToSelect}
           />
         </section>
       )}
