@@ -24,7 +24,7 @@ export function CollectionStatus() {
       <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
         <Gift className="size-3.5 text-primary" />
         {free.remaining} free {free.remaining === 1 ? 'pack' : 'packs'} to open ·
-        sign in to save your collection
+        sign in free for unlimited packs and to save your collection
       </p>
     )
   }
@@ -32,7 +32,7 @@ export function CollectionStatus() {
   return (
     <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
       <HardDrive className="size-3.5" />
-      Sign in with Discord to keep opening packs and save your collection
+      Sign in free with Discord for unlimited packs and to save your collection
     </p>
   )
 }

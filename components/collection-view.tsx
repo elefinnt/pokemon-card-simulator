@@ -70,7 +70,7 @@ export function CollectionView({
       return (
         <SignInPrompt
           title="Your binder is waiting"
-          description="Sign in with Discord to start opening packs. Every card you pull will be tracked here, duplicates and all."
+          description="Sign in free with Discord for unlimited packs. Every card you pull will be tracked here, duplicates and all."
         />
       )
     }

@@ -122,8 +122,8 @@ function guestGateTitle(gate: GuestGate): string {
 
 function guestGateDescription(gate: GuestGate): string {
   if (gate.exhausted) {
-    return 'Guest pulls vanish when you leave. Sign in with Discord to save these cards to your collection and keep opening packs.'
+    return 'Guest pulls vanish when you leave. Sign in free with Discord for unlimited packs and to save these cards to your collection.'
   }
   const left = `${gate.remaining} free ${gate.remaining === 1 ? 'pack' : 'packs'} left`
-  return `Guest pulls aren't saved. Sign in with Discord to keep these cards — ${left}.`
+  return `Guest pulls aren't saved. Sign in free with Discord for unlimited packs and to keep these cards — ${left}.`
 }

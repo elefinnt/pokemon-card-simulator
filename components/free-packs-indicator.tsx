@@ -16,16 +16,21 @@ export function FreePacksIndicator({ state }: { state: FreePackState }) {
           Last free pack · boosted pull rate
         </span>
         <p className="text-xs text-muted-foreground">
-          Sign in afterwards to save whatever you hit.
+          Sign in free afterwards for unlimited packs and to save whatever you hit.
         </p>
       </div>
     )
   }
 
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-muted-foreground">
-      <Gift className="size-3.5 text-primary" />
-      {state.remaining} free {state.remaining === 1 ? 'pack' : 'packs'} left
-    </span>
+    <div className="flex flex-col items-center gap-1.5 text-center">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-muted-foreground">
+        <Gift className="size-3.5 text-primary" />
+        {state.remaining} free {state.remaining === 1 ? 'pack' : 'packs'} left
+      </span>
+      <p className="text-xs text-muted-foreground">
+        Sign in free for unlimited packs
+      </p>
+    </div>
   )
 }
