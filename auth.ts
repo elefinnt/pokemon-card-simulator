@@ -16,6 +16,9 @@ function buildProviders(): Provider[] {
     Discord({
       clientId: process.env.AUTH_DISCORD_ID,
       clientSecret: process.env.AUTH_DISCORD_SECRET,
+      // Link to an existing account with the same verified email (see note on
+      // the Google provider below).
+      allowDangerousEmailAccountLinking: true,
     }),
   ]
 
@@ -24,6 +27,10 @@ function buildProviders(): Provider[] {
       Google({
         clientId: process.env.AUTH_GOOGLE_ID,
         clientSecret: process.env.AUTH_GOOGLE_SECRET,
+        // Attach to an existing user when the email matches, instead of failing
+        // with OAuthAccountNotLinked. Safe because Discord and Google both
+        // verify email ownership.
+        allowDangerousEmailAccountLinking: true,
       }),
     )
   }
@@ -35,9 +42,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   adapter: db ? DrizzleAdapter(db) : undefined,
   providers: buildProviders(),
-  // Link Discord + Google to the same user when both providers return the same
-  // verified email. Safe here because Discord and Google both verify ownership.
-  allowDangerousEmailAccountLinking: true,
   pages: {
     signIn: '/',
   },
