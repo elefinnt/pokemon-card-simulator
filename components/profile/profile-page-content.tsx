@@ -42,7 +42,7 @@ export function ProfilePageContent() {
     return (
       <SignInPrompt
         title="Sign in to set up your profile"
-        description="Connect your Discord account to choose a display name, write a bio and pick your showcase cards."
+        description="Sign in to choose a display name, write a bio and pick your showcase cards."
         className="mt-10"
       />
     )

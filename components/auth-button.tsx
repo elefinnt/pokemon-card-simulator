@@ -1,13 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { signIn, signOut, useSession } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 import { LogIn, LogOut, Loader2 } from 'lucide-react'
 import posthog from 'posthog-js'
 import { Button } from '@/components/ui/button'
 import { UserAvatar } from '@/components/user-avatar'
 import { useProfile } from '@/lib/profile'
 import { accentColor, resolveDisplayName } from '@/lib/profile-types'
+import { openSignIn } from '@/lib/sign-in-dialog'
 
 export function AuthButton() {
   const { data: session, status } = useSession()
@@ -62,14 +63,11 @@ export function AuthButton() {
     <Button
       variant="outline"
       size="sm"
-      onClick={() => {
-        posthog.capture('signed_in', { provider: 'discord' })
-        signIn('discord')
-      }}
+      onClick={openSignIn}
       className="text-muted-foreground"
     >
       <LogIn className="size-4" />
-      Sign in with Discord
+      Sign in
     </Button>
   )
 }
