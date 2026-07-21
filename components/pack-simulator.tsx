@@ -6,6 +6,7 @@ import posthog from 'posthog-js'
 import type { PackDef } from '@/lib/packs'
 import type { OpenedPack } from '@/lib/pokemon'
 import { useCollection } from '@/lib/collection'
+import { useFreePacks, recordFreePackOpened } from '@/lib/free-packs'
 import { useTrades } from '@/lib/trades'
 import { PackPicker } from './pack-picker'
 import { BoosterPack } from './booster-pack'
@@ -16,12 +17,22 @@ import { CollectionStatus } from './collection-status'
 import { CommunityFeed } from './community/community-feed'
 import { FriendsView } from './friends/friends-view'
 import { SignInPrompt } from './sign-in-prompt'
+import { FreePacksIndicator } from './free-packs-indicator'
 import { ViewTabs, type View } from './view-tabs'
 import { Button } from '@/components/ui/button'
 
 type Stage = 'select' | 'sealed' | 'revealing' | 'summary'
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+/** Parse an /api/open response, surfacing the server's error message. */
+async function readOpenedPack(res: Response): Promise<OpenedPack> {
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null
+    throw new Error(body?.error ?? `status ${res.status}`)
+  }
+  return (await res.json()) as OpenedPack
+}
 
 export function PackSimulator({ packs }: { packs: PackDef[] }) {
   const [view, setView] = useState<View>('packs')
@@ -31,7 +42,9 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
   const [ripping, setRipping] = useState(false)
   const [prefetching, setPrefetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [lastBoosted, setLastBoosted] = useState(false)
   const { data: collection, record, reset, isAuthenticated } = useCollection()
+  const free = useFreePacks()
   const { data: trades } = useTrades()
 
   useEffect(() => {
@@ -64,23 +77,34 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
   }, [pack, stage])
 
   const rip = useCallback(async () => {
-    if (!pack || ripping || !isAuthenticated) return
+    if (!pack || ripping) return
+    // Guests rip from a free allowance; once it's spent they must sign in.
+    if (!isAuthenticated && free.exhausted) return
     setRipping(true)
     setError(null)
     const started = Date.now()
+    // The final free pack rolls with boosted odds to reward signing in.
+    const boosted = !isAuthenticated && free.isLastFree
     try {
-      const res = await fetch(`/api/open/${pack.id}`, { method: 'POST' })
-      if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as {
-          error?: string
-        } | null
-        throw new Error(body?.error ?? `status ${res.status}`)
-      }
-      const data = (await res.json()) as OpenedPack
+      const res = isAuthenticated
+        ? await fetch(`/api/open/${pack.id}`, { method: 'POST' })
+        : await fetch(`/api/open/${pack.id}${boosted ? '?boost=1' : ''}`)
+      const data = await readOpenedPack(res)
       await delay(Math.max(0, 1200 - (Date.now() - started)))
-      // Pack-open analytics are captured authoritatively server-side as
-      // `pack_opened` in /api/open/[setId]; no client event needed here.
+      // Signed-in analytics are captured server-side as `pack_opened`; guests
+      // are tracked here since their opens never hit the authenticated route.
       record(data)
+      if (!isAuthenticated) {
+        recordFreePackOpened()
+        posthog.capture('guest_pack_opened', {
+          set_id: pack.id,
+          pack_name: pack.name,
+          boosted,
+          best_tier: data.bestTier,
+          free_packs_used: free.used + 1,
+        })
+      }
+      setLastBoosted(boosted)
       setOpened(data)
       setStage('revealing')
     } catch (err) {
@@ -91,7 +115,15 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
     } finally {
       setRipping(false)
     }
-  }, [pack, ripping, record, isAuthenticated])
+  }, [
+    pack,
+    ripping,
+    record,
+    isAuthenticated,
+    free.exhausted,
+    free.isLastFree,
+    free.used,
+  ])
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-20">
@@ -129,7 +161,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
                 packs={packs}
                 collection={collection}
                 onSelect={selectPack}
-                requiresSignIn={!isAuthenticated}
+                requiresSignIn={!isAuthenticated && free.exhausted}
               />
             </div>
           )}
@@ -141,7 +173,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
                 collection={collection}
                 onOpenPack={selectPack}
                 onReset={reset}
-                requiresSignIn={!isAuthenticated}
+                requiresSignIn={!isAuthenticated && free.exhausted}
               />
             </div>
           )}
@@ -196,13 +228,16 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
             <BoosterPack
               pack={pack}
               ripping={ripping}
-              locked={!isAuthenticated}
+              locked={!isAuthenticated && free.exhausted}
               onOpen={rip}
             />
-            {!isAuthenticated && (
+            {!isAuthenticated && !free.exhausted && (
+              <FreePacksIndicator state={free} />
+            )}
+            {!isAuthenticated && free.exhausted && (
               <SignInPrompt
                 variant="compact"
-                description="Your pack is ready — sign in with Discord to tear it open."
+                description="That was your last free pack. Sign in with Discord to keep opening — and save the cards you pull."
               />
             )}
           </div>
@@ -234,6 +269,15 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
             pack={pack}
             bestTier={opened.bestTier}
             packType={opened.packType}
+            guestGate={
+              isAuthenticated
+                ? undefined
+                : {
+                    remaining: free.remaining,
+                    exhausted: free.exhausted,
+                    boosted: lastBoosted,
+                  }
+            }
             onOpenAnother={() => {
               setOpened(null)
               setStage('sealed')

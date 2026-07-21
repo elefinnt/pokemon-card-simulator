@@ -1,10 +1,12 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { Cloud, HardDrive } from 'lucide-react'
+import { Cloud, Gift, HardDrive } from 'lucide-react'
+import { useFreePacks } from '@/lib/free-packs'
 
 export function CollectionStatus() {
   const { data: session, status } = useSession()
+  const free = useFreePacks()
 
   if (status === 'loading') return null
 
@@ -17,10 +19,20 @@ export function CollectionStatus() {
     )
   }
 
+  if (!free.exhausted) {
+    return (
+      <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+        <Gift className="size-3.5 text-primary" />
+        {free.remaining} free {free.remaining === 1 ? 'pack' : 'packs'} to open ·
+        sign in to save your collection
+      </p>
+    )
+  }
+
   return (
     <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
       <HardDrive className="size-3.5" />
-      Sign in with Discord to open packs and save your collection
+      Sign in with Discord to keep opening packs and save your collection
     </p>
   )
 }
