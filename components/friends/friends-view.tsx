@@ -60,7 +60,7 @@ export function FriendsView({
     return (
       <SignInPrompt
         title="Sign in to add friends"
-        description="Connect your Discord account to share your friend code and build your crew."
+        description="Sign in to share your friend code and build your crew."
       />
     )
   }

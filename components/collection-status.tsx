@@ -32,7 +32,7 @@ export function CollectionStatus() {
   return (
     <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
       <HardDrive className="size-3.5" />
-      Sign in free with Discord for unlimited packs and to save your collection
+      Sign in free for unlimited packs and to save your collection
     </p>
   )
 }

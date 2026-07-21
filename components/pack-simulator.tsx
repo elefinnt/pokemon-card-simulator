@@ -237,7 +237,7 @@ export function PackSimulator({ packs }: { packs: PackDef[] }) {
             {!isAuthenticated && free.exhausted && (
               <SignInPrompt
                 variant="compact"
-                description="That was your last free pack. Sign in free with Discord for unlimited packs — and keep the cards you've pulled."
+                description="That was your last free pack. Sign in free for unlimited packs — and keep the cards you've pulled."
               />
             )}
           </div>

@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { SessionProvider, useSession } from 'next-auth/react'
 import posthog from 'posthog-js'
+import { SignInDialog } from '@/components/auth/sign-in-dialog'
 
 function PostHogUserIdentifier() {
   const { data: session } = useSession()
@@ -23,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <SessionProvider>
       <PostHogUserIdentifier />
       {children}
+      <SignInDialog />
     </SessionProvider>
   )
 }

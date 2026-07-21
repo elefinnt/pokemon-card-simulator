@@ -1,9 +1,9 @@
 'use client'
 
-import { signIn } from 'next-auth/react'
 import { Radio, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SignInPrompt } from '@/components/sign-in-prompt'
+import { openSignIn } from '@/lib/sign-in-dialog'
 import { useCommunityFeed } from '@/lib/community/feed'
 import type { ReactionKey } from '@/lib/community/types'
 import { FeedEventCard } from './feed-event'
@@ -20,7 +20,7 @@ export function CommunityFeed({
   // When signed out we show a mocked preview; trying to react nudges sign-in.
   const handleReact = (openingId: number, key: ReactionKey) => {
     if (!isAuthenticated) {
-      void signIn('discord')
+      openSignIn()
       return
     }
     react(openingId, key)
@@ -49,7 +49,7 @@ export function CommunityFeed({
         <SignInPrompt
           variant="banner"
           title="See your friends' pulls"
-          description="Sign in with Discord to build a friends list and watch their pack openings roll in live."
+          description="Sign in to build a friends list and watch their pack openings roll in live."
         />
       )}
 

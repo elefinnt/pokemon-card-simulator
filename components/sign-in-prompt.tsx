@@ -1,14 +1,14 @@
 'use client'
 
-import { signIn } from 'next-auth/react'
 import { LogIn, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { openSignIn } from '@/lib/sign-in-dialog'
 
 export function SignInPrompt({
   variant = 'card',
   title = 'Sign in to start ripping',
-  description = 'Connect your Discord account to open packs and build a collection that saves across devices.',
+  description = 'Sign in free with Google, Discord or email to open unlimited packs and build a collection that saves across devices.',
   className,
 }: {
   variant?: 'banner' | 'card' | 'compact'
@@ -33,9 +33,9 @@ export function SignInPrompt({
           </p>
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         </div>
-        <Button onClick={() => signIn('discord')} className="shrink-0 font-semibold">
+        <Button onClick={openSignIn} className="shrink-0 font-semibold">
           <LogIn className="size-4" />
-          Sign in with Discord
+          Sign in
         </Button>
       </div>
     )
@@ -44,9 +44,9 @@ export function SignInPrompt({
     return (
       <div className={cn('flex flex-col items-center gap-3 text-center', className)}>
         <p className="text-sm font-medium text-muted-foreground">{description}</p>
-        <Button onClick={() => signIn('discord')} size="lg" className="font-semibold">
+        <Button onClick={openSignIn} size="lg" className="font-semibold">
           <LogIn className="size-4" />
-          Sign in with Discord
+          Sign in
         </Button>
       </div>
     )
@@ -66,13 +66,9 @@ export function SignInPrompt({
         {title}
       </h3>
       <p className="mt-2 text-sm text-muted-foreground">{description}</p>
-      <Button
-        onClick={() => signIn('discord')}
-        size="lg"
-        className="mt-6 font-semibold"
-      >
+      <Button onClick={openSignIn} size="lg" className="mt-6 font-semibold">
         <LogIn className="size-4" />
-        Sign in with Discord
+        Sign in
       </Button>
     </div>
   )
