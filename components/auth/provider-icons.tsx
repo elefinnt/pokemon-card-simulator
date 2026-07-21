@@ -33,19 +33,6 @@ export function DiscordIcon({ className }: IconProps) {
   )
 }
 
-export function AppleIcon({ className }: IconProps) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M17.05 12.53c-.03-2.53 2.07-3.75 2.16-3.81-1.18-1.72-3.01-1.96-3.66-1.98-1.56-.16-3.04.92-3.83.92-.79 0-2.01-.9-3.31-.87-1.7.02-3.27.99-4.15 2.51-1.77 3.07-.45 7.61 1.27 10.1.84 1.22 1.84 2.59 3.15 2.54 1.26-.05 1.74-.82 3.27-.82 1.52 0 1.96.82 3.3.79 1.36-.02 2.22-1.24 3.05-2.47.96-1.42 1.36-2.79 1.38-2.86-.03-.01-2.65-1.02-2.68-4.02ZM14.6 5.11c.7-.85 1.17-2.03 1.04-3.21-1.01.04-2.23.67-2.95 1.52-.65.75-1.21 1.95-1.06 3.1 1.12.09 2.27-.57 2.97-1.41Z" />
-    </svg>
-  )
-}
-
 /** Pick a brand icon for a provider id, falling back to a generic sign-in glyph. */
 export function providerIcon(id: string, className: string) {
   switch (id) {
@@ -53,8 +40,6 @@ export function providerIcon(id: string, className: string) {
       return <GoogleIcon className={className} />
     case 'discord':
       return <DiscordIcon className={className} />
-    case 'apple':
-      return <AppleIcon className={className} />
     default:
       return <LogIn className={className} />
   }
