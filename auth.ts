@@ -2,15 +2,15 @@ import NextAuth from 'next-auth'
 import type { Provider } from 'next-auth/providers'
 import Discord from 'next-auth/providers/discord'
 import Google from 'next-auth/providers/google'
-import Resend from 'next-auth/providers/resend'
+import Apple from 'next-auth/providers/apple'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
 import { db } from '@/db'
 
 /**
- * Build the enabled provider list. Discord is always on; Google and email
- * magic links switch on only when their env vars are present, so the app runs
- * fine before those credentials are wired up. The sign-in UI reads the live
- * provider list (via `getProviders()`) and hides anything not configured.
+ * Build the enabled provider list. Discord is always on; Google and Apple
+ * switch on only when their env vars are present, so the app runs fine before
+ * those credentials are wired up. The sign-in UI reads the live provider list
+ * (via `getProviders()`) and hides anything not configured.
  */
 function buildProviders(): Provider[] {
   const providers: Provider[] = [
@@ -29,13 +29,12 @@ function buildProviders(): Provider[] {
     )
   }
 
-  // Email magic links need the database adapter to persist verification tokens,
-  // so only enable them when both a database and a Resend key are configured.
-  if (db && process.env.AUTH_RESEND_KEY) {
+  // Apple's client secret is a short-lived JWT generated from the private key.
+  if (process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET) {
     providers.push(
-      Resend({
-        apiKey: process.env.AUTH_RESEND_KEY,
-        from: process.env.AUTH_EMAIL_FROM ?? 'onboarding@resend.dev',
+      Apple({
+        clientId: process.env.AUTH_APPLE_ID,
+        clientSecret: process.env.AUTH_APPLE_SECRET,
       }),
     )
   }

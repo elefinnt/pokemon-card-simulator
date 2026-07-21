@@ -54,7 +54,7 @@ export function SignInDialog() {
           </p>
         </div>
 
-        <SignInOptions onClose={closeSignIn} />
+        <SignInOptions />
 
         <p className="mt-5 text-center text-[0.7rem] leading-relaxed text-muted-foreground">
           It&apos;s free — no credit card, no spam.
