@@ -9,14 +9,14 @@ import { getPostHogClient } from '@/lib/posthog-server'
 
 export const dynamic = 'force-dynamic'
 
-async function openPackForSet(setId: string) {
+async function openPackForSet(setId: string, boostHit = false) {
   await ensurePacksLoaded()
   if (!getPack(setId)) {
     return NextResponse.json({ error: 'Unknown pack' }, { status: 404 })
   }
 
   try {
-    const pack = await openPack(setId)
+    const pack = await openPack(setId, { boostHit })
     return NextResponse.json(pack)
   } catch (err) {
     console.log('[open] failed:', err instanceof Error ? err.message : err)
@@ -38,13 +38,18 @@ async function openPackForSet(setId: string) {
   }
 }
 
-/** Guest pack open — cards are saved client-side only. */
+/**
+ * Guest pack open — cards are saved client-side only. Guests get a small run of
+ * free packs; the last one may request boosted odds (`?boost=1`) so there's a
+ * juicy pull waiting to be saved once they sign in.
+ */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ setId: string }> },
 ) {
   const { setId } = await params
-  return openPackForSet(setId)
+  const boostHit = new URL(request.url).searchParams.get('boost') === '1'
+  return openPackForSet(setId, boostHit)
 }
 
 /** Signed-in pack open — cards are persisted to the account. */

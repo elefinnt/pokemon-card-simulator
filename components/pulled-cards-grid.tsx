@@ -9,15 +9,25 @@ import { TIER_META } from '@/lib/rarity'
 import { PokeCardFace } from './poke-card'
 import { GodPackBanner } from './god-pack-banner'
 import { CardZoomModal } from './card-zoom-modal'
+import { SignInPrompt } from './sign-in-prompt'
 import { Button } from '@/components/ui/button'
 
 const TIER_ORDER = ['ultra', 'rare', 'uncommon', 'common'] as const
+
+/** Sign-in nudge shown to guests on the post-open summary. */
+export interface GuestGate {
+  remaining: number
+  exhausted: boolean
+  /** Whether the pack just opened used boosted odds (the last free pack). */
+  boosted: boolean
+}
 
 export function PulledCardsGrid({
   cards,
   pack,
   bestTier,
   packType = 'normal',
+  guestGate,
   onOpenAnother,
   onChangePack,
 }: {
@@ -25,6 +35,7 @@ export function PulledCardsGrid({
   pack: PackDef
   bestTier: PokemonCard['tier']
   packType?: PackType
+  guestGate?: GuestGate
   onOpenAnother: () => void
   onChangePack: () => void
 }) {
@@ -57,6 +68,15 @@ export function PulledCardsGrid({
           Best pull: {bestMeta.label}
         </span>
       </div>
+
+      {guestGate && (
+        <SignInPrompt
+          variant="banner"
+          className="w-full max-w-2xl"
+          title={guestGateTitle(guestGate)}
+          description={guestGateDescription(guestGate)}
+        />
+      )}
 
       <div className="grid w-full grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
         {sorted.map((card, i) => (
@@ -92,4 +112,18 @@ export function PulledCardsGrid({
       <CardZoomModal card={active} onClose={() => setActive(null)} />
     </div>
   )
+}
+
+function guestGateTitle(gate: GuestGate): string {
+  if (gate.boosted) return 'Nice pull! Save it before it disappears'
+  if (gate.exhausted) return 'That was your last free pack'
+  return 'Keep your pulls forever'
+}
+
+function guestGateDescription(gate: GuestGate): string {
+  if (gate.exhausted) {
+    return 'Guest pulls vanish when you leave. Sign in free with Discord for unlimited packs and to save these cards to your collection.'
+  }
+  const left = `${gate.remaining} free ${gate.remaining === 1 ? 'pack' : 'packs'} left`
+  return `Guest pulls aren't saved. Sign in free with Discord for unlimited packs and to keep these cards — ${left}.`
 }

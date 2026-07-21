@@ -85,7 +85,7 @@ export function BoosterPack({
         {ripping
           ? 'Ripping open…'
           : locked
-            ? 'Sign in to rip this pack open'
+            ? 'Sign in free for unlimited packs'
             : 'Tap the pack to rip it open'}
       </p>
     </div>

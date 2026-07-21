@@ -121,8 +121,21 @@ export async function getSetCatalogue(setId: string): Promise<PokemonCard[]> {
   return sortByCardNumber(cards)
 }
 
+/** Base odds of the hit slot rolling an Ultra Rare in a normal pack. */
+const ULTRA_HIT_CHANCE = 0.16
+
+/**
+ * Boosted odds for a guest's final free pack — deliberately juicy so they hit
+ * something worth signing in to keep before the free allowance runs out.
+ */
+const BOOSTED_ULTRA_HIT_CHANCE = 0.75
+
 /** Build a standard booster: fillers plus a single guaranteed hit slot last. */
-function buildStandardCards(pool: Pool, size: number): PokemonCard[] {
+function buildStandardCards(
+  pool: Pool,
+  size: number,
+  boostHit = false,
+): PokemonCard[] {
   const commonCount = Math.max(1, size - 4)
   const uncommonCount = 3
 
@@ -130,7 +143,8 @@ function buildStandardCards(pool: Pool, size: number): PokemonCard[] {
   cards.push(...draw(commonCount, pool.common, pool.uncommon, pool.rare))
   cards.push(...draw(uncommonCount, pool.uncommon, pool.common, pool.rare))
 
-  const wantUltra = pool.ultra.length > 0 && Math.random() < 0.16
+  const ultraChance = boostHit ? BOOSTED_ULTRA_HIT_CHANCE : ULTRA_HIT_CHANCE
+  const wantUltra = pool.ultra.length > 0 && Math.random() < ultraChance
   const hit = wantUltra
     ? draw(1, pool.ultra, pool.rare, pool.uncommon)[0]
     : draw(1, pool.rare, pool.ultra, pool.uncommon, pool.common)[0]
@@ -159,7 +173,15 @@ function finalisePack(
   return { setId, cards, hitIndex, bestTier, poolTotal, packType }
 }
 
-export async function openPack(setId: string): Promise<OpenedPack> {
+export interface OpenPackOptions {
+  /** Boost the hit slot's odds — used for a guest's final free pack. */
+  boostHit?: boolean
+}
+
+export async function openPack(
+  setId: string,
+  options: OpenPackOptions = {},
+): Promise<OpenedPack> {
   await ensurePacksLoaded()
   const def = getPack(setId)
   if (!def) throw new Error(`Unknown pack: ${setId}`)
@@ -177,7 +199,7 @@ export async function openPack(setId: string): Promise<OpenedPack> {
     if (god) return finalisePack(setId, god, poolTotal, 'god')
   }
 
-  const cards = buildStandardCards(pool, def.packSize)
+  const cards = buildStandardCards(pool, def.packSize, options.boostHit)
 
   // Demigod pack — a standard pack salted with three Special Illustration Rares.
   if (packType === 'demigod') {
