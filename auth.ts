@@ -2,15 +2,14 @@ import NextAuth from 'next-auth'
 import type { Provider } from 'next-auth/providers'
 import Discord from 'next-auth/providers/discord'
 import Google from 'next-auth/providers/google'
-import Apple from 'next-auth/providers/apple'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
 import { db } from '@/db'
 
 /**
- * Build the enabled provider list. Discord is always on; Google and Apple
- * switch on only when their env vars are present, so the app runs fine before
- * those credentials are wired up. The sign-in UI reads the live provider list
- * (via `getProviders()`) and hides anything not configured.
+ * Build the enabled provider list. Discord is always on; Google switches on
+ * only when its env vars are present, so the app runs fine before those
+ * credentials are wired up. The sign-in UI reads the live provider list (via
+ * `getProviders()`) and hides anything not configured.
  */
 function buildProviders(): Provider[] {
   const providers: Provider[] = [
@@ -25,16 +24,6 @@ function buildProviders(): Provider[] {
       Google({
         clientId: process.env.AUTH_GOOGLE_ID,
         clientSecret: process.env.AUTH_GOOGLE_SECRET,
-      }),
-    )
-  }
-
-  // Apple's client secret is a short-lived JWT generated from the private key.
-  if (process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET) {
-    providers.push(
-      Apple({
-        clientId: process.env.AUTH_APPLE_ID,
-        clientSecret: process.env.AUTH_APPLE_SECRET,
       }),
     )
   }
