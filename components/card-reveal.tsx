@@ -8,6 +8,7 @@ import type { PokemonCard } from '@/lib/pokemon'
 import type { PackDef } from '@/lib/packs'
 import type { PackType } from '@/lib/god-pack'
 import { TIER_META, isHit } from '@/lib/rarity'
+import { playSound } from '@/lib/sounds'
 import { PokeCardFace, PokeCardBack } from './poke-card'
 import { GodPackBanner } from './god-pack-banner'
 import { Button } from '@/components/ui/button'
@@ -74,8 +75,11 @@ export function CardReveal({
   const handleTap = useCallback(() => {
     if (!flipped) {
       setFlipped(true)
+      playSound('flip')
+      const goodPull = isHit(card.tier)
+      if (goodPull || last) playSound('fanfare')
       if (special) celebrateJackpot()
-      else if (isHit(card.tier)) celebrate(card.tier)
+      else if (goodPull) celebrate(card.tier)
       return
     }
     if (last) {

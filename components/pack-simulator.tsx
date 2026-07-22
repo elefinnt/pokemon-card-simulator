@@ -23,6 +23,7 @@ import { SignInPrompt } from './sign-in-prompt'
 import { FreePacksIndicator } from './free-packs-indicator'
 import { ViewTabs, type View } from './view-tabs'
 import { Button } from '@/components/ui/button'
+import { playSound, primeAudio } from '@/lib/sounds'
 
 type Stage = 'select' | 'sealed' | 'revealing' | 'summary'
 
@@ -157,6 +158,7 @@ export function PackSimulator({
     if (!pack || ripping) return
     // Guests rip from a free allowance; once it's spent they must sign in.
     if (!isAuthenticated && free.exhausted) return
+    primeAudio()
     setRipping(true)
     setError(null)
     const started = Date.now()

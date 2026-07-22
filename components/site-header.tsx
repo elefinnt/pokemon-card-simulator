@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Pokeball } from '@/components/poke-card'
 import { AuthButton } from '@/components/auth-button'
+import { SoundToggle } from '@/components/sound-toggle'
 
 export function SiteHeader() {
   return (
@@ -14,7 +15,10 @@ export function SiteHeader() {
           PackRip
         </span>
       </Link>
-      <AuthButton />
+      <div className="flex items-center gap-1">
+        <SoundToggle />
+        <AuthButton />
+      </div>
     </header>
   )
 }
