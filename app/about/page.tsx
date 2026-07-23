@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { PageShell } from '@/components/page-shell'
 import { ContentPage } from '@/components/content/content-page'
-import { FREE_PACK_LIMIT } from '@/lib/free-packs'
+import { FREE_PACK_LIMIT } from '@/lib/free-packs-config'
 
 const title = 'About — PackRip'
 const description =

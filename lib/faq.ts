@@ -4,7 +4,7 @@
  * answers and the JSON-LD never drift apart.
  */
 
-import { FREE_PACK_LIMIT } from '@/lib/free-packs'
+import { FREE_PACK_LIMIT } from '@/lib/free-packs-config'
 
 export interface FaqItem {
   question: string

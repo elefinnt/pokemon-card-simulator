@@ -1,13 +1,9 @@
 'use client'
 
 import { useSyncExternalStore } from 'react'
+import { FREE_PACK_LIMIT } from '@/lib/free-packs-config'
 
-/**
- * How many packs a signed-out visitor can rip before we ask them to sign in.
- * Tuned for conversion: enough opens to hook the dopamine loop, few enough that
- * the sign-in nudge still lands while interest is high.
- */
-export const FREE_PACK_LIMIT = 3
+export { FREE_PACK_LIMIT }
 
 const STORAGE_KEY = 'packrip.freePacks.v1'
 
