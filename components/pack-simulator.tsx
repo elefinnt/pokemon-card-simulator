@@ -23,6 +23,7 @@ import { SignInPrompt } from './sign-in-prompt'
 import { FreePacksIndicator } from './free-packs-indicator'
 import { ViewTabs, type View } from './view-tabs'
 import { Button } from '@/components/ui/button'
+import { playSound, primeAudio } from '@/lib/sounds'
 
 type Stage = 'select' | 'sealed' | 'revealing' | 'summary'
 
@@ -157,6 +158,7 @@ export function PackSimulator({
     if (!pack || ripping) return
     // Guests rip from a free allowance; once it's spent they must sign in.
     if (!isAuthenticated && free.exhausted) return
+    primeAudio()
     setRipping(true)
     setError(null)
     const started = Date.now()
@@ -208,14 +210,16 @@ export function PackSimulator({
         <section>
           <div className="mx-auto max-w-2xl pt-10 text-center sm:pt-16">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Pack Opening Simulator
+              Free &amp; Unlimited
             </span>
             <h1 className="mt-4 text-balance font-display text-4xl font-black leading-tight text-foreground sm:text-5xl">
-              Rip open a <span className="text-primary">Pokémon</span> booster
+              Sick of waiting to open{' '}
+              <span className="text-primary">more packs?</span>
             </h1>
             <p className="mt-3 text-pretty text-muted-foreground">
-              Pick a pack, tear it open, and reveal every card one by one. Chase
-              the holos and hit that Ultra Rare.
+              PackRip is a free, unlimited Pokémon pack opening simulator. Rip
+              open as many booster packs as you like, chase the holos and hit
+              that Ultra Rare — no waiting, no cost.
             </p>
             <CollectionStatus />
           </div>
