@@ -1,9 +1,10 @@
 import { SiteHeader } from '@/components/site-header'
+import { SiteFooter } from '@/components/site-footer'
 
-/** Shared page chrome: glow backdrop plus the site header. */
+/** Shared page chrome: glow backdrop, site header and footer. */
 export function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="relative min-h-screen overflow-hidden">
+    <div className="relative flex min-h-screen flex-col overflow-hidden">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[520px]"
@@ -15,7 +16,9 @@ export function PageShell({ children }: { children: React.ReactNode }) {
 
       <SiteHeader />
 
-      {children}
-    </main>
+      <main className="flex-1">{children}</main>
+
+      <SiteFooter />
+    </div>
   )
 }

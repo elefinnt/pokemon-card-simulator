@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Inter, Rubik } from 'next/font/google'
 import { AuthProvider } from '@/components/auth-provider'
+import { StructuredData } from '@/components/structured-data'
 import './globals.css'
 
 const inter = Inter({
@@ -45,6 +46,24 @@ export const viewport: Viewport = {
   themeColor: '#1a1d2b',
 }
 
+const siteJsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      name: 'PackRip',
+      url: siteUrl,
+      description,
+    },
+    {
+      '@type': 'WebSite',
+      name: 'PackRip',
+      url: siteUrl,
+      description,
+    },
+  ],
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -57,6 +76,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="font-sans antialiased" suppressHydrationWarning>
+        <StructuredData data={siteJsonLd} />
         <AuthProvider>{children}</AuthProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
