@@ -3,6 +3,7 @@ import { ensurePacksLoaded } from '@/lib/packs'
 import { warmCuratedPools } from '@/lib/pokemontcg/warm'
 import { PackSimulator } from '@/components/pack-simulator'
 import { PageShell } from '@/components/page-shell'
+import { HomeCta } from '@/components/home/home-cta'
 import { HomeFaq } from '@/components/home/home-faq'
 
 export const metadata: Metadata = {
@@ -18,6 +19,7 @@ export default async function Page() {
   return (
     <PageShell>
       <PackSimulator packs={packs} />
+      <HomeCta />
       <HomeFaq />
     </PageShell>
   )
