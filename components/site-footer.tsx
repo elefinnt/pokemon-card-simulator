@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Pokeball } from '@/components/poke-card'
+import { FeedbackButton } from '@/components/feedback/feedback-button'
 import {
   CURATED_SET_IDS,
   FALLBACK_SET_META,
@@ -84,6 +85,7 @@ export function SiteFooter() {
               A free Pokémon booster pack opening simulator. Rip packs, chase
               the holos and track your collection.
             </p>
+            <FeedbackButton />
           </div>
 
           <FooterColumn title="Explore" links={explore} />
