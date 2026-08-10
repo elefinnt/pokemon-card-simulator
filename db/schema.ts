@@ -246,6 +246,33 @@ export const packOpeningReactions = mysqlTable(
   }),
 )
 
+// ---- Feedback tables -------------------------------------------------------
+
+export const feedback = mysqlTable(
+  'feedback',
+  {
+    id: int('id').autoincrement().primaryKey(),
+    // Null when submitted while signed out; kept (set null) if the account is
+    // later deleted so the feedback itself survives.
+    userId: varchar('user_id', { length: 255 }).references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    // 'bug' | 'idea' | 'other' — see lib/feedback-types.
+    category: varchar('category', { length: 16 }).notNull().default('other'),
+    message: varchar('message', { length: 1000 }).notNull(),
+    // Path the visitor was on when they opened the form, for context.
+    page: varchar('page', { length: 255 }),
+    // 'new' | 'reviewed' | 'done' — owner triage state.
+    status: varchar('status', { length: 16 }).notNull().default('new'),
+    createdAt: timestamp('created_at', { mode: 'date', fsp: 3 }).notNull(),
+  },
+  (t) => ({
+    status: index('feedback_status_idx').on(t.status),
+    recent: index('feedback_created_at_idx').on(t.createdAt),
+    user: index('feedback_user_id_idx').on(t.userId),
+  }),
+)
+
 // ---- Trade tables ----------------------------------------------------------
 
 export const tradeOffers = mysqlTable(

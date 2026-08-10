@@ -4,6 +4,7 @@ import { CURATED_SET_IDS, PACK_OVERRIDES } from '@/lib/pack-overrides'
 import { FALLBACK_SET_META } from '@/lib/pack-fallback-meta'
 import { GUIDES } from '@/lib/guides'
 import { packPath } from '@/lib/nav'
+import { FeedbackButton } from './feedback/feedback-button'
 
 const POPULAR_SET_IDS = [
   'base1',
@@ -88,6 +89,7 @@ export function SiteFooter() {
               A free Pokémon booster pack opening simulator. Rip packs, chase
               the holos and track your collection.
             </p>
+            <FeedbackButton />
           </div>
 
           <FooterColumn title="Explore" links={explore} />
