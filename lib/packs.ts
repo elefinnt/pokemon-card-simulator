@@ -1,10 +1,10 @@
 import {
   CURATED_SET_IDS,
-  FALLBACK_SET_META,
   PACK_OVERRIDES,
   type CuratedSetId,
   type PackOverride,
 } from './pack-overrides'
+import { FALLBACK_SET_META } from './pack-fallback-meta'
 import { getSetsByIds } from './pokemontcg/sets'
 import type { RawSet } from './pokemontcg/types'
 

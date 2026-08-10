@@ -100,6 +100,47 @@ export const GUIDES: Guide[] = [
     ],
   },
   {
+    slug: 'rip-pokemon-packs-online-free',
+    title: 'How to Rip Pokémon Packs Online for Free',
+    description:
+      'Everything you need to know about ripping Pokémon packs online for free — how pack opening simulators work and what separates the best card opening apps from the rest.',
+    updated: '2026-08-11',
+    readingMinutes: 5,
+    intro: [
+      'You do not need to spend a penny to feel the rush of tearing open a booster. Pack opening simulators recreate the whole experience — the sealed pack, the rip, the card-by-card reveal — entirely in your browser.',
+      'This guide covers how ripping packs online works, and what to look for when choosing a card opening app.',
+    ],
+    sections: [
+      {
+        heading: 'What a pack rip simulator actually does',
+        paragraphs: [
+          'A pack rip simulator models a real booster pack: it takes the genuine card list for a set, applies rarity odds that approximate the real pull rates, and deals you a virtual pack. Every card you flip is a real card from the set, with the real artwork — the only difference is that the pack is digital.',
+          'Because the odds mirror the real thing, the experience is faithful. Commons fill most of the pack, the rare slot carries the tension, and the big hits stay genuinely rare.',
+        ],
+      },
+      {
+        heading: 'Ripping free packs on PackRip',
+        paragraphs: [
+          'On PackRip every visitor can rip free packs straight away — no account, no download and no payment. Pick any set from Base Set through to the latest releases, tap the sealed booster and flip your pulls one at a time.',
+          'Signing in is also free and unlocks unlimited packs, plus a binder that saves every card you pull and tracks your completion for each set.',
+        ],
+      },
+      {
+        heading: 'What separates the best card opening apps',
+        paragraphs: [
+          'The best card opening apps share a few traits: realistic pull rates rather than a hit every pack, real card data and artwork rather than approximations, a collection tracker that gives your pulls somewhere to live, and no real-money mechanics dressed up as gameplay.',
+          'Be wary of apps that charge for virtual packs or lean on gambling-style pressure. A simulator should be about the fun of the rip, not a way to spend money on cards that do not exist.',
+        ],
+      },
+      {
+        heading: 'Simulators and the real hobby',
+        paragraphs: [
+          'Ripping packs online is not a replacement for collecting — it is a companion to it. A simulator lets you learn a set before buying real boosters, scratch the itch between purchases, and experience sets that are long out of print, like ripping a 1999 Base Set pack without the four-figure price tag.',
+        ],
+      },
+    ],
+  },
+  {
     slug: 'pokemon-base-set-history',
     title: 'A Brief History of the Pokémon Base Set',
     description:

@@ -68,9 +68,11 @@ Share your friend code to build your crew, then send and receive trade offers to
 
 | Era | Highlights |
 | --- | --- |
-| **Base** | Base Set, Jungle, Fossil — where it all began |
-| **Sword & Shield** | Celebrations, Shining Fates, Crown Zenith & more |
-| **Scarlet & Violet** | 151, Prismatic Evolutions, Journey Together, Destined Rivals & more |
+| **Classic (1999–2005)** | Base Set, Jungle, Fossil, Team Rocket, Neo Genesis, Skyridge & more |
+| **XY & Sun & Moon** | Evolutions, Generations, Hidden Fates, Cosmic Eclipse & more |
+| **Sword & Shield** | Champion's Path, Evolving Skies, Brilliant Stars, Lost Origin, Crown Zenith & more |
+| **Scarlet & Violet** | 151, Paldean Fates, Prismatic Evolutions, Destined Rivals & more |
+| **Mega Evolution** | Mega Evolution, Phantasmal Flames, Perfect Order & more |
 
 ---
 

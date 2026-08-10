@@ -1,6 +1,6 @@
 import type { CardTier } from './pokemon'
 import type { CollectedCard } from './collection-types'
-import { FALLBACK_SET_META } from './pack-overrides'
+import { FALLBACK_SET_META } from './pack-fallback-meta'
 import { TIER_META } from './rarity'
 import { TIER_RANK } from './pokemontcg/rarity'
 

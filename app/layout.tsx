@@ -18,9 +18,9 @@ const rubik = Rubik({
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://packrip.org'
 
-const title = 'PackRip — Pokémon Card Pack Opening Simulator'
+const title = 'PackRip — Free Pokémon Pack Opening Simulator | Rip Packs Online'
 const description =
-  'Rip open classic and modern Pokémon booster packs and reveal your pulls with holo shine, sparkles, and rare-hit celebrations.'
+  'Rip Pokémon booster packs online for free with PackRip, the pack rip simulator. Open classic and modern sets, reveal holo pulls with sparkle and shine, and track your collection.'
 
 export const metadata: Metadata = {
   title,

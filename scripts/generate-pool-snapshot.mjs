@@ -48,6 +48,13 @@ async function readCuratedIds() {
   return [...block[1].matchAll(/['"]([^'"]+)['"]/g)].map((m) => m[1])
 }
 
+const MAX_ATTEMPTS = 5
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+// The API regularly throws transient 5xx errors, so retry with backoff.
 async function fetchPage(setId, page, headers) {
   const url = new URL(`${API_BASE}/cards`)
   url.searchParams.set('q', `set.id:${setId}`)
@@ -56,11 +63,21 @@ async function fetchPage(setId, page, headers) {
   url.searchParams.set('orderBy', 'number')
   url.searchParams.set('select', POOL_FIELDS)
 
-  const res = await fetch(url, { headers })
-  if (!res.ok) {
-    throw new Error(`API responded with ${res.status} for ${setId} page ${page}`)
+  let lastError
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(url, { headers })
+      if (res.ok) return res.json()
+      lastError = new Error(
+        `API responded with ${res.status} for ${setId} page ${page}`,
+      )
+      if (res.status < 500 && res.status !== 429) break
+    } catch (err) {
+      lastError = err
+    }
+    if (attempt < MAX_ATTEMPTS) await sleep(1500 * attempt)
   }
-  return res.json()
+  throw lastError
 }
 
 async function fetchSet(setId, headers) {
@@ -82,7 +99,19 @@ async function main() {
   const ids = await readCuratedIds()
   console.log(`Snapshotting ${ids.length} sets…`)
 
+  // Keep previously snapshotted cards for any set the API fails on, so a
+  // flaky run never shrinks the committed snapshot.
+  let previous = {}
+  if (existsSync(OUT_PATH)) {
+    try {
+      previous = JSON.parse(readFileSync(OUT_PATH, 'utf8')).sets ?? {}
+    } catch {
+      previous = {}
+    }
+  }
+
   const sets = {}
+  let failures = 0
   for (const id of ids) {
     process.stdout.write(`  ${id}… `)
     try {
@@ -90,13 +119,24 @@ async function main() {
       sets[id] = cards
       console.log(`${cards.length} cards`)
     } catch (err) {
-      console.log(`FAILED (${err instanceof Error ? err.message : err})`)
+      failures++
+      if (previous[id]?.length) {
+        sets[id] = previous[id]
+        console.log(
+          `FAILED, kept ${previous[id].length} cards from previous snapshot (${err instanceof Error ? err.message : err})`,
+        )
+      } else {
+        console.log(`FAILED (${err instanceof Error ? err.message : err})`)
+      }
     }
   }
 
   const payload = { generatedAt: new Date().toISOString(), sets }
   await writeFile(OUT_PATH, `${JSON.stringify(payload)}\n`)
   console.log(`\nWrote ${OUT_PATH}`)
+  if (failures > 0) {
+    console.log(`${failures} set(s) failed — rerun \`pnpm snapshot\` to fill gaps.`)
+  }
 }
 
 main().catch((err) => {
