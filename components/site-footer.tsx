@@ -1,14 +1,18 @@
 import Link from 'next/link'
 import { Pokeball } from '@/components/poke-card'
-import {
-  CURATED_SET_IDS,
-  FALLBACK_SET_META,
-  PACK_OVERRIDES,
-} from '@/lib/pack-overrides'
+import { CURATED_SET_IDS, PACK_OVERRIDES } from '@/lib/pack-overrides'
+import { FALLBACK_SET_META } from '@/lib/pack-fallback-meta'
 import { GUIDES } from '@/lib/guides'
 import { packPath } from '@/lib/nav'
 
-const POPULAR_SET_IDS = ['base1', 'sv3pt5', 'swsh7', 'sv8pt5'] as const
+const POPULAR_SET_IDS = [
+  'base1',
+  'sm115',
+  'swsh7',
+  'sv3pt5',
+  'sv8pt5',
+  'swsh35',
+] as const
 
 interface FooterLink {
   href: string
