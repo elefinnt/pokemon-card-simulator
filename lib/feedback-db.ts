@@ -7,6 +7,7 @@ import {
   type FeedbackStatus,
   FEEDBACK_MESSAGE_MAX_LENGTH,
   FEEDBACK_MESSAGE_MIN_LENGTH,
+  isValidFeedbackEmail,
 } from './feedback-types'
 
 /** Error carrying an HTTP status so route handlers can map it directly. */
@@ -19,9 +20,13 @@ export class FeedbackError extends Error {
   }
 }
 
-/** Store a new piece of feedback. `userId` is null for anonymous visitors. */
+/**
+ * Store a new piece of feedback. `userId` is null for anonymous visitors.
+ * A contact email is always required so the owner can follow up personally.
+ */
 export async function createFeedback(input: {
   userId: string | null
+  email: string | null
   category: FeedbackCategory
   message: string
   page: string | null
@@ -36,8 +41,13 @@ export async function createFeedback(input: {
     throw new FeedbackError('Feedback is too long')
   }
 
+  if (!isValidFeedbackEmail(input.email)) {
+    throw new FeedbackError('Please provide a valid email so we can follow up')
+  }
+
   await db.insert(feedback).values({
     userId: input.userId,
+    email: input.email.trim().toLowerCase(),
     category: input.category,
     message,
     page: input.page ? input.page.slice(0, 255) : null,
@@ -54,6 +64,7 @@ export async function listFeedback(): Promise<FeedbackEntry[]> {
       id: feedback.id,
       category: feedback.category,
       message: feedback.message,
+      email: feedback.email,
       page: feedback.page,
       status: feedback.status,
       createdAt: feedback.createdAt,
@@ -70,6 +81,9 @@ export async function listFeedback(): Promise<FeedbackEntry[]> {
     id: row.id,
     category: row.category as FeedbackCategory,
     message: row.message,
+    // Prefer the snapshotted contact email; fall back to the account email
+    // for any rows created before the email column existed.
+    email: row.email ?? row.userEmail,
     page: row.page,
     status: row.status as FeedbackStatus,
     createdAt: row.createdAt.toISOString(),

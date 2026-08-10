@@ -12,6 +12,7 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as {
     category?: unknown
     message?: unknown
+    email?: unknown
     page?: unknown
   } | null
 
@@ -19,9 +20,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
+  // The account email always wins so signed-in feedback can't spoof a contact
+  // address; anonymous visitors must supply one themselves.
+  const email =
+    session?.user?.email ??
+    (typeof body.email === 'string' ? body.email : null)
+
   try {
     await createFeedback({
       userId: session?.user?.id ?? null,
+      email,
       category: isFeedbackCategory(body.category) ? body.category : 'other',
       message: body.message,
       page: typeof body.page === 'string' ? body.page : null,

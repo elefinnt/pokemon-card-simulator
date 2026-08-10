@@ -176,11 +176,16 @@ function FeedbackRow({
 
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
         <span>
-          From:{' '}
-          {entry.user
-            ? `${entry.user.name ?? 'Unknown'}${entry.user.email ? ` (${entry.user.email})` : ''}`
-            : 'Anonymous visitor'}
+          From: {entry.user ? (entry.user.name ?? 'Unknown') : 'Anonymous visitor'}
         </span>
+        {entry.email && (
+          <a
+            href={`mailto:${entry.email}`}
+            className="underline-offset-2 hover:text-foreground hover:underline"
+          >
+            {entry.email}
+          </a>
+        )}
         {entry.page && <span>Page: {entry.page}</span>}
       </div>
 

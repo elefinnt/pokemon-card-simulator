@@ -257,6 +257,9 @@ export const feedback = mysqlTable(
     userId: varchar('user_id', { length: 255 }).references(() => users.id, {
       onDelete: 'set null',
     }),
+    // Contact email for follow-up: snapshotted from the account when signed
+    // in, otherwise typed by the visitor (required either way at submit time).
+    email: varchar('email', { length: 255 }),
     // 'bug' | 'idea' | 'other' — see lib/feedback-types.
     category: varchar('category', { length: 16 }).notNull().default('other'),
     message: varchar('message', { length: 1000 }).notNull(),
