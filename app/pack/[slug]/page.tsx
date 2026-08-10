@@ -27,8 +27,8 @@ export async function generateMetadata({
   const pack = await packForSlug(slug)
   if (!pack) return { title: 'Pack not found · PackRip' }
 
-  const title = `${pack.name} Pack Simulator — Open Pokémon Booster Packs | PackRip`
-  const description = `Rip open ${pack.name} (${pack.series} Series, ${pack.year}) Pokémon booster packs online for free. ${pack.blurb}`
+  const title = `${pack.name} Pack Opening Simulator — Rip Pokémon Packs Online Free | PackRip`
+  const description = `Rip open ${pack.name} (${pack.series} Series, ${pack.year}) Pokémon booster packs online for free with this pack opening simulator. ${pack.blurb}`
 
   return {
     title,
