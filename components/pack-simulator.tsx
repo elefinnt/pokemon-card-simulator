@@ -259,6 +259,7 @@ export function PackSimulator({
           {view === 'community' && (
             <div className="mt-8">
               <CommunityFeed
+                packs={packs}
                 isAuthenticated={isAuthenticated}
                 onAddFriends={
                   isAuthenticated ? () => setView('friends') : undefined
