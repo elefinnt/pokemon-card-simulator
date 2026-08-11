@@ -11,7 +11,7 @@ const TABS: {
   icon: typeof Layers
   authOnly?: boolean
 }[] = [
-  { id: 'packs', label: 'Open packs', icon: Layers },
+  { id: 'packs', label: 'Packs', icon: Layers },
   { id: 'collection', label: 'Collection', icon: LibraryBig },
   { id: 'community', label: 'Community', icon: Globe },
   { id: 'friends', label: 'Friends', icon: Users, authOnly: true },

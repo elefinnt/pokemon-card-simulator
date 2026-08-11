@@ -11,7 +11,7 @@ import type { OpenedPack } from '@/lib/pokemon'
 import { useCollection } from '@/lib/collection'
 import { useFreePacks, recordFreePackOpened } from '@/lib/free-packs'
 import { useTrades } from '@/lib/trades'
-import { PackPicker } from './pack-picker'
+import { PackBrowser } from './home/pack-browser'
 import { BoosterPack } from './booster-pack'
 import { CardReveal } from './card-reveal'
 import { PulledCardsGrid } from './pulled-cards-grid'
@@ -73,6 +73,9 @@ export function PackSimulator({
   const navigate = useCallback((path: string) => {
     if (window.location.pathname !== path) {
       window.history.pushState(null, '', path)
+      // pushState keeps the previous scroll position, which strands visitors
+      // mid-page on the new view — treat it like a real page load instead.
+      window.scrollTo(0, 0)
     }
   }, [])
 
@@ -235,7 +238,7 @@ export function PackSimulator({
 
           {view === 'packs' && (
             <div className="mt-8">
-              <PackPicker
+              <PackBrowser
                 packs={packs}
                 collection={collection}
                 onSelect={selectPack}
@@ -360,6 +363,8 @@ export function PackSimulator({
             onOpenAnother={() => {
               setOpened(null)
               setStage('sealed')
+              // Same URL, new view — start at the top of the sealed pack.
+              window.scrollTo(0, 0)
             }}
             onChangePack={backToSelect}
           />

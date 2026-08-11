@@ -14,6 +14,7 @@ import { MOCK_FEED_EVENTS } from './mock-feed'
  */
 
 const NAME_POOL = [
+  // Existing regulars
   'Sofia',
   'Arjun',
   'Chloe',
@@ -34,6 +35,77 @@ const NAME_POOL = [
   'Amara',
   'Jonas',
   'Tilly',
+  // Māori & Pasifika
+  'Aroha',
+  'Nikau',
+  'Sione',
+  'Anahera',
+  'Malia',
+  // East Asian
+  'Haruto',
+  'Sakura',
+  'Ren',
+  'Ji-woo',
+  'Min-seo',
+  'Wei',
+  'Meilin',
+  // South Asian
+  'Ananya',
+  'Rohan',
+  'Ishaan',
+  'Ravi',
+  // African
+  'Kwame',
+  'Zuri',
+  'Amina',
+  'Thabo',
+  'Chidi',
+  'Nia',
+  // Middle Eastern
+  'Layla',
+  'Omar',
+  'Zainab',
+  'Yusuf',
+  // Latin American
+  'Santiago',
+  'Valentina',
+  'Camila',
+  'Thiago',
+  // European
+  'Freya',
+  'Nikolai',
+  'Mathilde',
+  'Luca',
+  'Ingrid',
+  // Native scripts — Cyrillic
+  'Дмитрий',
+  'Аня',
+  'Никита',
+  'Соня',
+  // Japanese kana & kanji
+  'さくら',
+  'ハルト',
+  '蓮',
+  'ゆき',
+  // Korean hangul
+  '지우',
+  '민준',
+  '서연',
+  // Chinese characters
+  '小龙',
+  '美琳',
+  '伟强',
+  // Arabic
+  'ليلى',
+  'عمر',
+  // Greek
+  'Νίκος',
+  'Ελένη',
+  // Devanagari
+  'आरव',
+  'प्रिया',
+  // Thai
+  'มะลิ',
 ]
 
 const TIER_RANK: Record<CardTier, number> = {
@@ -161,7 +233,9 @@ async function generateGlobalEvents(
     return {
       // Negative ids keep mock events distinct from real DB-backed openings.
       id: -(101 + i),
-      user: { id: `mock-global-${i}`, name, image: null },
+      // The avatar colour is hashed from the user id, so mix in randomness —
+      // sequential ids like `mock-global-0/1/2` all land on the same hue.
+      user: { id: `mock-${name}-${randInt(100_000)}`, name, image: null },
       packId: pack.id,
       packName: pack.name,
       series: pack.series,
