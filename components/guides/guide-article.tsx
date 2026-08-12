@@ -1,4 +1,5 @@
 import type { Guide } from '@/lib/guides'
+import { GuideCardExamples } from './guide-card-examples'
 
 export function GuideArticle({ guide }: { guide: Guide }) {
   return (
@@ -11,6 +12,9 @@ export function GuideArticle({ guide }: { guide: Guide }) {
           {section.paragraphs.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}
+          {section.exampleCards && (
+            <GuideCardExamples cards={section.exampleCards} />
+          )}
         </section>
       ))}
     </article>
