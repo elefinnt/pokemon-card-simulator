@@ -4,9 +4,20 @@
  * genuinely useful reading. Add new guides by appending to `GUIDES`.
  */
 
+export interface GuideExampleCard {
+  /** Pokémon TCG API card id, e.g. `base1-4`. Images resolve to
+   *  `https://images.pokemontcg.io/{setId}/{number}.png`. */
+  id: string
+  name: string
+  /** Display label for the set/context, e.g. `Base Set, 1999`. */
+  set: string
+}
+
 export interface GuideSection {
   heading: string
   paragraphs: string[]
+  /** Optional real cards shown as a gallery beneath the paragraphs. */
+  exampleCards?: GuideExampleCard[]
 }
 
 export interface Guide {
@@ -214,6 +225,9 @@ export const GUIDES: Guide[] = [
           'Commons (circle) and Uncommons (diamond) fill most of every pack. They form the playable backbone of a set — the early-stage Pokémon, Trainers and Energy every deck needs.',
           'Rares (single black star) occupy the guaranteed rare slot in each pack. In older sets a non-holo rare was often your only prize; in modern packs this slot regularly upgrades into something shinier.',
         ],
+        exampleCards: [
+          { id: 'base1-58', name: 'Pikachu', set: 'Base Set, 1999 — Common' },
+        ],
       },
       {
         heading: 'Holo and Reverse Holo',
@@ -221,17 +235,38 @@ export const GUIDES: Guide[] = [
           'A Rare Holo has foil artwork inside the picture frame — the classic shimmer that made cards like Base Set Charizard legendary. Every modern pack also includes a Reverse Holo: a card of any rarity where everything except the artwork is foiled, giving even a humble Common a premium finish.',
           'Reverse Holo versions exist for most cards in a set, which makes “reverse sets” a popular completion challenge in their own right.',
         ],
+        exampleCards: [
+          {
+            id: 'base1-4',
+            name: 'Charizard',
+            set: 'Base Set, 1999 — Rare Holo',
+          },
+        ],
       },
       {
         heading: 'Double Rare — the ex cards',
         paragraphs: [
           'Double Rares (two black stars) are the Pokémon ex cards in the Scarlet & Violet era — powerful, playable cards that appear roughly once every few packs. They are the entry point to a set’s chase hierarchy, and previous eras filled the same tier with V, GX and EX cards.',
         ],
+        exampleCards: [
+          {
+            id: 'sv3-125',
+            name: 'Charizard ex',
+            set: 'Obsidian Flames — Double Rare',
+          },
+        ],
       },
       {
         heading: 'Ultra Rare — full arts',
         paragraphs: [
           'Ultra Rares (two silver stars) are full-art cards: Pokémon ex and Supporter cards where the artwork stretches across the entire card with a textured foil finish. Full-art Trainers of fan-favourite characters are often among the most collected cards in a set.',
+        ],
+        exampleCards: [
+          {
+            id: 'sv2-254',
+            name: 'Iono',
+            set: 'Paldea Evolved — Ultra Rare',
+          },
         ],
       },
       {
@@ -240,11 +275,31 @@ export const GUIDES: Guide[] = [
           'Illustration Rares (one gold star) are the spiritual successors to the beloved alternate arts of the Sword & Shield era — regular Pokémon presented in gorgeous, scene-setting artwork that tells a little story.',
           'Special Illustration Rares (two gold stars) apply the same treatment to ex Pokémon and Supporters, and they are usually the true chase cards of a modern set. Cards like the Umbreon VMAX alternate art from Evolving Skies — “Moonbreon” to collectors — show how valuable this tier can become.',
         ],
+        exampleCards: [
+          {
+            id: 'sv3pt5-173',
+            name: 'Pikachu',
+            set: '151 — Illustration Rare',
+          },
+          {
+            id: 'sv3-223',
+            name: 'Charizard ex',
+            set: 'Obsidian Flames — Special Illustration Rare',
+          },
+          {
+            id: 'swsh7-215',
+            name: 'Umbreon VMAX',
+            set: 'Evolving Skies — alternate art (“Moonbreon”)',
+          },
+        ],
       },
       {
         heading: 'Hyper Rare — the gold cards',
         paragraphs: [
           'Hyper Rares (three gold stars) are the gold-foiled secret rares numbered beyond the set total. Modern sets use this tier for golden Pokémon, Trainers and Energy cards. Flashy and scarce, though often worth less than the top Special Illustration Rares despite being harder to pull.',
+        ],
+        exampleCards: [
+          { id: 'sv3pt5-205', name: 'Mew ex', set: '151 — Hyper Rare' },
         ],
       },
       {
@@ -259,6 +314,23 @@ export const GUIDES: Guide[] = [
         paragraphs: [
           'Plenty of rarities live on only in older sets, and they include some of the hobby’s most treasured cards. Shining Pokémon (Neo era) and Gold Stars (EX era) are grails from the early 2000s, while Crystal types from sets like Skyridge command serious prices.',
           'More recently, the Sword & Shield era gave us Amazing Rares with their rainbow paint-splash foil, Radiant Pokémon with reversed shiny colours, and the Trainer Gallery and Galarian Gallery subsets. Ripping older packs on PackRip is a free way to experience chasing them.',
+        ],
+        exampleCards: [
+          {
+            id: 'neo3-65',
+            name: 'Shining Gyarados',
+            set: 'Neo Revelation — Shining',
+          },
+          {
+            id: 'swsh4-138',
+            name: 'Rayquaza',
+            set: 'Vivid Voltage — Amazing Rare',
+          },
+          {
+            id: 'pgo-11',
+            name: 'Radiant Charizard',
+            set: 'Pokémon GO — Radiant Rare',
+          },
         ],
       },
       {
