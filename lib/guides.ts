@@ -4,13 +4,19 @@
  * genuinely useful reading. Add new guides by appending to `GUIDES`.
  */
 
+import type { CardTier } from './pokemon'
+
 export interface GuideExampleCard {
-  /** Pokémon TCG API card id, e.g. `base1-4`. Images resolve to
-   *  `https://images.pokemontcg.io/{setId}/{number}.png`. */
+  /** Pokémon TCG API card id, e.g. `base1-4`. Images are vendored locally at
+   *  `/cards/{id}.webp` and `/cards/{id}_hires.webp` (see `scripts/convert-guide-cards.mjs`). */
   id: string
   name: string
   /** Display label for the set/context, e.g. `Base Set, 1999`. */
   set: string
+  /** Sim rarity tier — drives the glow colour and hover treatment. */
+  tier: CardTier
+  /** Renders the holographic shine overlay in the zoomed view. */
+  foil?: boolean
 }
 
 export interface GuideSection {
@@ -226,7 +232,12 @@ export const GUIDES: Guide[] = [
           'Rares (single black star) occupy the guaranteed rare slot in each pack. In older sets a non-holo rare was often your only prize; in modern packs this slot regularly upgrades into something shinier.',
         ],
         exampleCards: [
-          { id: 'base1-58', name: 'Pikachu', set: 'Base Set, 1999 — Common' },
+          {
+            id: 'base1-58',
+            name: 'Pikachu',
+            set: 'Base Set, 1999 — Common',
+            tier: 'common',
+          },
         ],
       },
       {
@@ -240,6 +251,8 @@ export const GUIDES: Guide[] = [
             id: 'base1-4',
             name: 'Charizard',
             set: 'Base Set, 1999 — Rare Holo',
+            tier: 'rare',
+            foil: true,
           },
         ],
       },
@@ -253,6 +266,8 @@ export const GUIDES: Guide[] = [
             id: 'sv3-125',
             name: 'Charizard ex',
             set: 'Obsidian Flames — Double Rare',
+            tier: 'rare',
+            foil: true,
           },
         ],
       },
@@ -266,6 +281,8 @@ export const GUIDES: Guide[] = [
             id: 'sv2-254',
             name: 'Iono',
             set: 'Paldea Evolved — Ultra Rare',
+            tier: 'ultra',
+            foil: true,
           },
         ],
       },
@@ -280,16 +297,22 @@ export const GUIDES: Guide[] = [
             id: 'sv3pt5-173',
             name: 'Pikachu',
             set: '151 — Illustration Rare',
+            tier: 'ultra',
+            foil: true,
           },
           {
             id: 'sv3-223',
             name: 'Charizard ex',
             set: 'Obsidian Flames — Special Illustration Rare',
+            tier: 'ultra',
+            foil: true,
           },
           {
             id: 'swsh7-215',
             name: 'Umbreon VMAX',
             set: 'Evolving Skies — alternate art (“Moonbreon”)',
+            tier: 'ultra',
+            foil: true,
           },
         ],
       },
@@ -299,7 +322,13 @@ export const GUIDES: Guide[] = [
           'Hyper Rares (three gold stars) are the gold-foiled secret rares numbered beyond the set total. Modern sets use this tier for golden Pokémon, Trainers and Energy cards. Flashy and scarce, though often worth less than the top Special Illustration Rares despite being harder to pull.',
         ],
         exampleCards: [
-          { id: 'sv3pt5-205', name: 'Mew ex', set: '151 — Hyper Rare' },
+          {
+            id: 'sv3pt5-205',
+            name: 'Mew ex',
+            set: '151 — Hyper Rare',
+            tier: 'ultra',
+            foil: true,
+          },
         ],
       },
       {
@@ -320,16 +349,22 @@ export const GUIDES: Guide[] = [
             id: 'neo3-65',
             name: 'Shining Gyarados',
             set: 'Neo Revelation — Shining',
+            tier: 'ultra',
+            foil: true,
           },
           {
             id: 'swsh4-138',
             name: 'Rayquaza',
             set: 'Vivid Voltage — Amazing Rare',
+            tier: 'ultra',
+            foil: true,
           },
           {
             id: 'pgo-11',
             name: 'Radiant Charizard',
             set: 'Pokémon GO — Radiant Rare',
+            tier: 'ultra',
+            foil: true,
           },
         ],
       },
