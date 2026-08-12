@@ -141,6 +141,136 @@ export const GUIDES: Guide[] = [
     ],
   },
   {
+    slug: 'pokemon-tcg-30th-celebration',
+    title: 'Pokémon TCG: 30th Celebration — Everything We Know',
+    description:
+      'The 30th Celebration expansion releases worldwide on 16 September 2026 — all-foil packs, a Pikachu in every pack, the new Futuristic rare and 30 classic reprints. Here is everything revealed so far.',
+    updated: '2026-08-12',
+    readingMinutes: 6,
+    intro: [
+      'The Pokémon Trading Card Game turns 30 in 2026, and it is marking the occasion with a commemorative expansion: Pokémon TCG: 30th Celebration, releasing worldwide on 16 September 2026.',
+      'It is the first set in the history of the game to launch simultaneously across the world, and it follows the beloved formula of 2021’s Celebrations — with some spectacular new twists. Here is everything we know ahead of release.',
+    ],
+    sections: [
+      {
+        heading: 'Release date and format',
+        paragraphs: [
+          '30th Celebration arrives at retailers worldwide on 16 September 2026, with the digital version landing a day earlier on Pokémon TCG Live. The main set runs to 128 numbered cards, with secret rares numbered beyond that — around 150 cards in total.',
+          'Packs contain six cards, and every single one is foil — even the Basic Energy. Like Celebrations before it, booster packs will not be sold individually; they come inside special products such as the Elite Trainer Box, the Poster Collection and the Pokémon ex Box.',
+        ],
+      },
+      {
+        heading: 'A Pikachu in every pack',
+        paragraphs: [
+          'Every 30th Celebration booster pack is guaranteed to contain one of 30 different Pikachu cards, each with a unique illustration by a different artist. Revealed artists so far include Atsuko Nishida — the original designer of Pikachu — alongside OKACHEKE and Yuu Nishida.',
+          'Thirty packs, thirty Pikachu: expect completing the full Pikachu gallery to become one of the defining chases of the year.',
+        ],
+      },
+      {
+        heading: 'The new Futuristic rare',
+        paragraphs: [
+          'The set debuts a brand-new rarity: the Futuristic rare, illustrated by renowned Japanese artist YOSHIROTTEN with a vibrant, opalescent finish. The first two revealed are Mewtwo and Mew, depicted in striking artwork described as “evocative of hope toward an unknown future”.',
+          'New Pokémon ex are confirmed too, including Greninja ex, Sylveon ex, and an Espeon ex and Umbreon ex pair headlining a premium deck set.',
+        ],
+      },
+      {
+        heading: '30 classic cards return',
+        paragraphs: [
+          'Following the model of Celebrations’ Classic Collection, 30 classic cards from across the game’s three decades return with a commemorative “30” Pikachu stamp and a fresh foil treatment. They are collector pieces rather than tournament-legal cards — a museum of the hobby’s history in booster form.',
+          'If the 25th anniversary set is any guide, these reprints will be among the most chased cards of the entire release.',
+        ],
+      },
+      {
+        heading: 'Rip it on PackRip',
+        paragraphs: [
+          'We will be adding 30th Celebration to PackRip as soon as the full card list goes live, so you can rip the all-foil packs and hunt every Pikachu without spending a penny.',
+          'In the meantime, you can relive the last big anniversary by ripping Celebrations packs — the 25th anniversary set with its gold chase cards and Classic Collection reprints — free on PackRip right now.',
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'pokemon-card-rarities-explained',
+    title: 'Pokémon Card Rarities Explained',
+    description:
+      'Every Pokémon card rarity explained — from Common and Reverse Holo through Illustration Rares and gold Hyper Rares, to the brand-new Futuristic rare debuting in 30th Celebration.',
+    updated: '2026-08-12',
+    readingMinutes: 7,
+    intro: [
+      'Rarity is the language of Pokémon card collecting. It decides how often a card appears in packs, how much it tends to be worth, and which pulls make your heart race.',
+      'This glossary walks through every rarity you will meet in modern packs, the retired rarities from the game’s history, and the brand-new Futuristic rare arriving in the 30th Celebration expansion.',
+    ],
+    sections: [
+      {
+        heading: 'How to read a card’s rarity',
+        paragraphs: [
+          'Look at the bottom of any Pokémon card and you will find a small symbol: a circle for Common, a diamond for Uncommon and a star for Rare and above. Cards numbered beyond the printed set total — such as 200/191 — are secret rares, the scarcest cards in a set.',
+          'Modern Scarlet & Violet era cards refine this further, using multiple stars in different colours to distinguish the higher tiers.',
+        ],
+      },
+      {
+        heading: 'Common, Uncommon and Rare',
+        paragraphs: [
+          'Commons (circle) and Uncommons (diamond) fill most of every pack. They form the playable backbone of a set — the early-stage Pokémon, Trainers and Energy every deck needs.',
+          'Rares (single black star) occupy the guaranteed rare slot in each pack. In older sets a non-holo rare was often your only prize; in modern packs this slot regularly upgrades into something shinier.',
+        ],
+      },
+      {
+        heading: 'Holo and Reverse Holo',
+        paragraphs: [
+          'A Rare Holo has foil artwork inside the picture frame — the classic shimmer that made cards like Base Set Charizard legendary. Every modern pack also includes a Reverse Holo: a card of any rarity where everything except the artwork is foiled, giving even a humble Common a premium finish.',
+          'Reverse Holo versions exist for most cards in a set, which makes “reverse sets” a popular completion challenge in their own right.',
+        ],
+      },
+      {
+        heading: 'Double Rare — the ex cards',
+        paragraphs: [
+          'Double Rares (two black stars) are the Pokémon ex cards in the Scarlet & Violet era — powerful, playable cards that appear roughly once every few packs. They are the entry point to a set’s chase hierarchy, and previous eras filled the same tier with V, GX and EX cards.',
+        ],
+      },
+      {
+        heading: 'Ultra Rare — full arts',
+        paragraphs: [
+          'Ultra Rares (two silver stars) are full-art cards: Pokémon ex and Supporter cards where the artwork stretches across the entire card with a textured foil finish. Full-art Trainers of fan-favourite characters are often among the most collected cards in a set.',
+        ],
+      },
+      {
+        heading: 'Illustration Rare and Special Illustration Rare',
+        paragraphs: [
+          'Illustration Rares (one gold star) are the spiritual successors to the beloved alternate arts of the Sword & Shield era — regular Pokémon presented in gorgeous, scene-setting artwork that tells a little story.',
+          'Special Illustration Rares (two gold stars) apply the same treatment to ex Pokémon and Supporters, and they are usually the true chase cards of a modern set. Cards like the Umbreon VMAX alternate art from Evolving Skies — “Moonbreon” to collectors — show how valuable this tier can become.',
+        ],
+      },
+      {
+        heading: 'Hyper Rare — the gold cards',
+        paragraphs: [
+          'Hyper Rares (three gold stars) are the gold-foiled secret rares numbered beyond the set total. Modern sets use this tier for golden Pokémon, Trainers and Energy cards. Flashy and scarce, though often worth less than the top Special Illustration Rares despite being harder to pull.',
+        ],
+      },
+      {
+        heading: 'Futuristic rare — new for 2026',
+        paragraphs: [
+          'Debuting in the 30th Celebration expansion on 16 September 2026, the Futuristic rare is the newest rarity in the game. Illustrated by renowned Japanese artist YOSHIROTTEN with a vibrant, opalescent finish, the first revealed cards feature Mewtwo and Mew in artwork described as “evocative of hope toward an unknown future”.',
+          'As a brand-new tier in an all-foil anniversary set, Futuristic rares are expected to be among the most sought-after pulls of the year.',
+        ],
+      },
+      {
+        heading: 'Retired rarities worth knowing',
+        paragraphs: [
+          'Plenty of rarities live on only in older sets, and they include some of the hobby’s most treasured cards. Shining Pokémon (Neo era) and Gold Stars (EX era) are grails from the early 2000s, while Crystal types from sets like Skyridge command serious prices.',
+          'More recently, the Sword & Shield era gave us Amazing Rares with their rainbow paint-splash foil, Radiant Pokémon with reversed shiny colours, and the Trainer Gallery and Galarian Gallery subsets. Ripping older packs on PackRip is a free way to experience chasing them.',
+        ],
+      },
+      {
+        heading: 'Does rarity equal value?',
+        paragraphs: [
+          'Not always. Value follows demand, and demand follows the Pokémon and the artwork. A stunning Illustration Rare of a popular Pokémon routinely outprices a technically rarer gold card, and a nostalgic holo from 1999 can beat both.',
+          'Rarity tells you how hard a card is to pull — the market decides the rest.',
+        ],
+      },
+    ],
+  },
+  {
     slug: 'pokemon-base-set-history',
     title: 'A Brief History of the Pokémon Base Set',
     description:
