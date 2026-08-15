@@ -34,7 +34,7 @@ export function ViewTabs({
     <div
       role="tablist"
       aria-label="View"
-      className="inline-flex items-center gap-1 rounded-full border border-border bg-card p-1"
+      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-card p-1"
     >
       {tabs.map(({ id, label, icon: Icon }) => {
         const badge = badges?.[id] ?? 0
@@ -45,7 +45,7 @@ export function ViewTabs({
             aria-selected={view === id}
             onClick={() => onChange(id)}
             className={cn(
-              'relative inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold transition-colors',
+              'relative inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-semibold transition-colors sm:gap-2 sm:px-4',
               view === id
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground',

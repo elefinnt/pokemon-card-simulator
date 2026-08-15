@@ -227,7 +227,7 @@ export function PackSimulator({
             <CollectionStatus />
           </div>
 
-          <div className="mt-8 flex justify-center">
+          <div className="-mx-4 mt-8 flex overflow-x-auto px-4 [justify-content:safe_center] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <ViewTabs
               view={view}
               onChange={changeView}
