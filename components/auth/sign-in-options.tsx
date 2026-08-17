@@ -16,7 +16,15 @@ type ClientProvider = {
 const isOAuthProvider = (p: ClientProvider) =>
   p.type === 'oauth' || p.type === 'oidc'
 
-export function SignInOptions() {
+export function SignInOptions({
+  analyticsSource,
+  onStart,
+}: {
+  /** Optional PostHog `source` on the existing `signed_in` event. */
+  analyticsSource?: string
+  /** Fired when the visitor picks a provider, before redirect. */
+  onStart?: (providerId: string) => void
+} = {}) {
   const [providers, setProviders] = useState<ClientProvider[] | null>(null)
 
   useEffect(() => {
@@ -36,7 +44,7 @@ export function SignInOptions() {
 
   if (providers === null) {
     return (
-      <div className="flex items-center justify-center py-8">
+      <div className="flex items-center justify-center py-5">
         <Loader2 className="size-5 animate-spin text-muted-foreground" />
       </div>
     )
@@ -45,23 +53,26 @@ export function SignInOptions() {
   const oauthProviders = providers.filter(isOAuthProvider)
 
   const startOAuth = (provider: ClientProvider) => {
-    posthog.capture('signed_in', { provider: provider.id })
+    onStart?.(provider.id)
+    posthog.capture('signed_in', {
+      provider: provider.id,
+      ...(analyticsSource ? { source: analyticsSource } : {}),
+    })
     const callbackUrl =
       typeof window !== 'undefined' ? window.location.href : '/'
     void signIn(provider.id, { callbackUrl })
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2.5">
       {oauthProviders.map((provider) => (
         <Button
           key={provider.id}
           variant="outline"
-          size="lg"
           onClick={() => startOAuth(provider)}
-          className="w-full justify-center gap-2.5 font-semibold"
+          className="h-12 w-full touch-manipulation justify-center gap-2.5 rounded-xl text-base font-semibold"
         >
-          {providerIcon(provider.id, 'size-4')}
+          {providerIcon(provider.id, 'size-5')}
           Continue with {provider.name}
         </Button>
       ))}

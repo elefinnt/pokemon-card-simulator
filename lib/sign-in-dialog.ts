@@ -1,6 +1,7 @@
 'use client'
 
 import { useSyncExternalStore } from 'react'
+import { closeFreeTrial } from '@/lib/free-trial-dialog'
 
 /**
  * Tiny module-level store so any component can open the shared sign-in dialog
@@ -22,6 +23,7 @@ function subscribe(listener: () => void): () => void {
 }
 
 export function openSignIn(): void {
+  closeFreeTrial()
   open = true
   emit()
 }
