@@ -9,33 +9,39 @@ export function BoosterPack({
   ripping,
   locked = false,
   onOpen,
+  onLockedClick,
 }: {
   pack: PackDef
   ripping: boolean
   locked?: boolean
   onOpen: () => void
+  /** Shown to guests who tap a pack after their free allowance is spent. */
+  onLockedClick?: () => void
 }) {
   return (
     <div className="flex flex-col items-center gap-8">
       <button
         type="button"
-        onClick={locked ? undefined : onOpen}
-        disabled={ripping || locked}
+        onClick={() => {
+          if (ripping) return
+          if (locked) {
+            onLockedClick?.()
+            return
+          }
+          onOpen()
+        }}
+        disabled={ripping}
         aria-label={
           locked
             ? `Sign in to open the ${pack.name} booster pack`
             : `Open the ${pack.name} booster pack`
         }
         className={cn(
-          'group relative w-[240px] max-w-[70vw] select-none rounded-[1.75rem] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default',
-          locked
-            ? 'cursor-not-allowed opacity-80'
-            : 'cursor-pointer',
+          'group relative w-[240px] max-w-[70vw] cursor-pointer select-none rounded-[1.75rem] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default',
+          locked && 'opacity-80',
           ripping
             ? 'animate-rip-shake'
-            : locked
-              ? 'animate-float-slow'
-              : 'animate-float-slow hover:scale-[1.03]',
+            : 'animate-float-slow hover:scale-[1.03]',
         )}
       >
         {/* Glow */}

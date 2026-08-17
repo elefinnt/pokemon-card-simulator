@@ -10,6 +10,7 @@ import { packPath, packSlugFromPath, pathForView, viewForPath } from '@/lib/nav'
 import type { OpenedPack } from '@/lib/pokemon'
 import { useCollection } from '@/lib/collection'
 import { useFreePacks, recordFreePackOpened } from '@/lib/free-packs'
+import { openFreeTrial } from '@/lib/free-trial-dialog'
 import { useTrades } from '@/lib/trades'
 import { PackBrowser } from './home/pack-browser'
 import { BoosterPack } from './booster-pack'
@@ -107,6 +108,23 @@ export function PackSimulator({
       window.history.replaceState(null, '', pathForView('packs'))
     }
   }, [authStatus, view])
+
+  // After the last free pack is revealed, prompt the guest to sign up. A short
+  // delay lets the pulls land on screen before the modal covers them.
+  useEffect(() => {
+    if (authStatus !== 'unauthenticated' || !free.exhausted) return
+    if (stage !== 'summary') return
+    const id = window.setTimeout(() => openFreeTrial('last_pack'), 800)
+    return () => window.clearTimeout(id)
+  }, [authStatus, free.exhausted, stage])
+
+  // Returning guests who've already spent their allowance, or anyone who tries
+  // to rip another pack after dismissing the summary prompt.
+  useEffect(() => {
+    if (authStatus !== 'unauthenticated' || !free.exhausted) return
+    if (stage !== 'sealed') return
+    openFreeTrial('open_attempt')
+  }, [authStatus, free.exhausted, stage])
 
   const changeView = useCallback(
     (v: View) => {
@@ -312,6 +330,7 @@ export function PackSimulator({
               ripping={ripping}
               locked={!isAuthenticated && free.exhausted}
               onOpen={rip}
+              onLockedClick={() => openFreeTrial('open_attempt')}
             />
             {!isAuthenticated && !free.exhausted && (
               <FreePacksIndicator state={free} />
