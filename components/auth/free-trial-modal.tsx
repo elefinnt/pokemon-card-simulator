@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import { Pokeball } from '@/components/poke-card'
 import { SignInOptions } from './sign-in-options'
 
-const TRUST_CHIPS = ['Always free', 'Never emails you', 'No catch'] as const
+const TRUST_CHIPS = ['Always free', 'No emails', 'No catch'] as const
 
 type Intent = 'sign_up' | 'sign_in'
 
