@@ -22,11 +22,12 @@ export class FeedbackError extends Error {
 
 /**
  * Store a new piece of feedback. `userId` is null for anonymous visitors.
- * A contact email is always required so the owner can follow up personally.
+ * A contact email is only required when the visitor opted in to a follow-up.
  */
 export async function createFeedback(input: {
   userId: string | null
   email: string | null
+  contactOk: boolean
   category: FeedbackCategory
   message: string
   page: string | null
@@ -41,13 +42,17 @@ export async function createFeedback(input: {
     throw new FeedbackError('Feedback is too long')
   }
 
-  if (!isValidFeedbackEmail(input.email)) {
-    throw new FeedbackError('Please provide a valid email so we can follow up')
+  const email = input.email?.trim().toLowerCase() || null
+  if (input.contactOk && !isValidFeedbackEmail(email)) {
+    throw new FeedbackError(
+      'Please provide a valid email so I can get in touch',
+    )
   }
 
   await db.insert(feedback).values({
     userId: input.userId,
-    email: input.email.trim().toLowerCase(),
+    email: input.contactOk ? email : null,
+    contactOk: input.contactOk,
     category: input.category,
     message,
     page: input.page ? input.page.slice(0, 255) : null,
@@ -65,6 +70,7 @@ export async function listFeedback(): Promise<FeedbackEntry[]> {
       category: feedback.category,
       message: feedback.message,
       email: feedback.email,
+      contactOk: feedback.contactOk,
       page: feedback.page,
       status: feedback.status,
       createdAt: feedback.createdAt,
@@ -84,6 +90,7 @@ export async function listFeedback(): Promise<FeedbackEntry[]> {
     // Prefer the snapshotted contact email; fall back to the account email
     // for any rows created before the email column existed.
     email: row.email ?? row.userEmail,
+    contactOk: Boolean(row.contactOk),
     page: row.page,
     status: row.status as FeedbackStatus,
     createdAt: row.createdAt.toISOString(),

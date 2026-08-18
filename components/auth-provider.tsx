@@ -5,6 +5,7 @@ import { SessionProvider, useSession } from 'next-auth/react'
 import posthog from 'posthog-js'
 import { SignInDialog } from '@/components/auth/sign-in-dialog'
 import { FreeTrialModal } from '@/components/auth/free-trial-modal'
+import { FeedbackWidget } from '@/components/feedback/feedback-widget'
 
 function PostHogUserIdentifier() {
   const { data: session } = useSession()
@@ -27,6 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {children}
       <SignInDialog />
       <FreeTrialModal />
+      <FeedbackWidget />
     </SessionProvider>
   )
 }

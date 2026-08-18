@@ -102,15 +102,16 @@ export default function AboutPage() {
                 className="text-primary underline-offset-4 hover:underline"
               >
                 frequently asked questions
-              </Link>{' '}
-              for quick answers, or head back to the{' '}
+              </Link>
+              , send feedback with the button in the corner, or head back to the{' '}
               <Link
                 href="/"
                 className="text-primary underline-offset-4 hover:underline"
               >
                 packs
               </Link>{' '}
-              and start ripping.
+              and start ripping. Pack requests, bug reports and feature ideas
+              are all welcome.
             </p>
           </section>
         </div>

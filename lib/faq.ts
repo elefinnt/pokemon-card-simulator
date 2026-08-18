@@ -46,6 +46,11 @@ export const FAQ_ITEMS: FaqItem[] = [
       'Over fifty sets spanning the whole history of the TCG — classics such as Base Set, Team Rocket and Neo Genesis, fan favourites like Hidden Fates, Evolving Skies and 151, right through to the latest Scarlet & Violet and Mega Evolution releases. New sets are added as they launch.',
   },
   {
+    question: 'Can I request a pack or share feedback?',
+    answer:
+      'Yes. Use the Feedback button in the corner, or the request link under the pack list, to ask for a set we do not have yet, report a bug, or suggest a feature. If you tick the contact box, I will only email you about that feedback — for example if your pack makes it onto the site.',
+  },
+  {
     question: 'Does PackRip cost money or involve gambling?',
     answer:
       'No. There is no real money, no purchases and no gambling of any kind. PackRip is a simulator built for the fun of opening packs and tracking a collection — you never spend a penny.',

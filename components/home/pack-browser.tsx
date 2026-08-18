@@ -7,6 +7,7 @@ import { type PackDef } from '@/lib/packs'
 import type { CollectionData } from '@/lib/collection'
 import { prefetchPool } from '@/lib/prefetch-pool'
 import { Button } from '@/components/ui/button'
+import { RequestPackCta } from '@/components/feedback/request-pack-cta'
 import { SeriesShelf } from './series-shelf'
 
 /**
@@ -99,6 +100,8 @@ export function PackBrowser({
         onSelect={onSelect}
         requiresSignIn={requiresSignIn}
       />
+
+      <RequestPackCta />
     </div>
   )
 }

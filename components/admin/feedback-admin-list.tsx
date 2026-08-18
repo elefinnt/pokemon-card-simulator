@@ -1,7 +1,16 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Bug, Lightbulb, Loader2, MessageCircle, Trash2 } from 'lucide-react'
+import {
+  Bug,
+  Lightbulb,
+  Loader2,
+  Mail,
+  MailX,
+  MessageCircle,
+  PackagePlus,
+  Trash2,
+} from 'lucide-react'
 import {
   type FeedbackCategory,
   type FeedbackEntry,
@@ -13,6 +22,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
 const CATEGORY_ICONS: Record<FeedbackCategory, typeof Bug> = {
+  pack: PackagePlus,
   bug: Bug,
   idea: Lightbulb,
   other: MessageCircle,
@@ -144,7 +154,9 @@ function FeedbackRow({
   onStatusChange: (status: FeedbackStatus) => void
   onDelete: () => void
 }) {
-  const Icon = CATEGORY_ICONS[entry.category]
+  const Icon = CATEGORY_ICONS[entry.category] ?? MessageCircle
+  const categoryLabel =
+    FEEDBACK_CATEGORY_LABELS[entry.category] ?? entry.category
   const submitted = new Date(entry.createdAt).toLocaleString(undefined, {
     dateStyle: 'medium',
     timeStyle: 'short',
@@ -155,7 +167,7 @@ function FeedbackRow({
       <div className="flex flex-wrap items-center gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground">
           <Icon className="size-3.5" />
-          {FEEDBACK_CATEGORY_LABELS[entry.category]}
+          {categoryLabel}
         </span>
         <span
           className={cn(
@@ -178,13 +190,24 @@ function FeedbackRow({
         <span>
           From: {entry.user ? (entry.user.name ?? 'Unknown') : 'Anonymous visitor'}
         </span>
-        {entry.email && (
-          <a
-            href={`mailto:${entry.email}`}
-            className="underline-offset-2 hover:text-foreground hover:underline"
-          >
-            {entry.email}
-          </a>
+        {entry.contactOk ? (
+          <span className="inline-flex items-center gap-1 font-medium text-foreground">
+            <Mail className="size-3.5" />
+            Happy to be contacted
+            {entry.email && (
+              <a
+                href={`mailto:${entry.email}`}
+                className="font-normal text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+              >
+                {entry.email}
+              </a>
+            )}
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1">
+            <MailX className="size-3.5" />
+            No follow-up
+          </span>
         )}
         {entry.page && <span>Page: {entry.page}</span>}
       </div>
