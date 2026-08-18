@@ -13,6 +13,7 @@ export async function POST(request: Request) {
     category?: unknown
     message?: unknown
     email?: unknown
+    contactOk?: unknown
     page?: unknown
   } | null
 
@@ -20,16 +21,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
+  const contactOk = body.contactOk === true
+
   // The account email always wins so signed-in feedback can't spoof a contact
-  // address; anonymous visitors must supply one themselves.
-  const email =
-    session?.user?.email ??
-    (typeof body.email === 'string' ? body.email : null)
+  // address; anonymous visitors supply one themselves when they opt in.
+  const email = contactOk
+    ? (session?.user?.email ??
+      (typeof body.email === 'string' ? body.email : null))
+    : null
 
   try {
     await createFeedback({
       userId: session?.user?.id ?? null,
       email,
+      contactOk,
       category: isFeedbackCategory(body.category) ? body.category : 'other',
       message: body.message,
       page: typeof body.page === 'string' ? body.page : null,

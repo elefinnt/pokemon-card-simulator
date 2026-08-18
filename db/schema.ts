@@ -257,10 +257,12 @@ export const feedback = mysqlTable(
     userId: varchar('user_id', { length: 255 }).references(() => users.id, {
       onDelete: 'set null',
     }),
-    // Contact email for follow-up: snapshotted from the account when signed
-    // in, otherwise typed by the visitor (required either way at submit time).
+    // Contact email when the visitor opted in to a follow-up. Snapshotted
+    // from the account when signed in, otherwise typed on the form.
     email: varchar('email', { length: 255 }),
-    // 'bug' | 'idea' | 'other' — see lib/feedback-types.
+    // True when the visitor said it is fine to get in touch about this.
+    contactOk: boolean('contact_ok').notNull().default(false),
+    // 'pack' | 'idea' | 'bug' | 'other' — see lib/feedback-types.
     category: varchar('category', { length: 16 }).notNull().default('other'),
     message: varchar('message', { length: 1000 }).notNull(),
     // Path the visitor was on when they opened the form, for context.

@@ -11,6 +11,7 @@ import type { OpenedPack } from '@/lib/pokemon'
 import { useCollection } from '@/lib/collection'
 import { useFreePacks, recordFreePackOpened } from '@/lib/free-packs'
 import { openFreeTrial } from '@/lib/free-trial-dialog'
+import { maybeShowFeedbackNudge } from '@/lib/feedback-prompt'
 import { useTrades } from '@/lib/trades'
 import { PackBrowser } from './home/pack-browser'
 import { BoosterPack } from './booster-pack'
@@ -117,6 +118,16 @@ export function PackSimulator({
     const id = window.setTimeout(() => openFreeTrial('last_pack'), 800)
     return () => window.clearTimeout(id)
   }, [authStatus, free.exhausted, stage])
+
+  // After a couple of opens, offer a quiet feedback nudge. Skip the last free
+  // pack so it never stacks on the sign-up modal.
+  useEffect(() => {
+    if (stage !== 'summary') return
+    if (authStatus === 'unauthenticated' && free.exhausted) return
+    const opened = Math.max(collection.totalPacksOpened, free.used)
+    const id = window.setTimeout(() => maybeShowFeedbackNudge(opened), 1800)
+    return () => window.clearTimeout(id)
+  }, [stage, authStatus, free.exhausted, free.used, collection.totalPacksOpened])
 
   // Returning guests who've already spent their allowance, or anyone who tries
   // to rip another pack after dismissing the summary prompt.
