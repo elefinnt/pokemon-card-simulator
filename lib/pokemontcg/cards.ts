@@ -1,4 +1,4 @@
-import { apiGet } from './client'
+import { apiGet, PokemonTcgError } from './client'
 import { cached } from './cache'
 import { getSnapshotForSet } from './snapshot'
 import type { ApiListResponse, CardDetail, RawCard } from './types'
@@ -29,19 +29,33 @@ const DETAIL_FIELDS = [
 
 const PAGE_SIZE = 250
 
-function fetchCardsPage(setId: string, page: number) {
+function fetchCardsPage(
+  setId: string,
+  page: number,
+  orderBy = 'number',
+) {
   return apiGet<ApiListResponse<RawCard>>('/cards', {
     q: `set.id:${setId}`,
     page,
     pageSize: PAGE_SIZE,
-    orderBy: 'number',
+    orderBy,
     select: POOL_FIELDS,
   })
 }
 
+function mergeCardsById(pages: RawCard[][]): RawCard[] {
+  const byId = new Map<string, RawCard>()
+  for (const page of pages) {
+    for (const card of page) {
+      if (!byId.has(card.id)) byId.set(card.id, card)
+    }
+  }
+  return [...byId.values()]
+}
+
 async function fetchAllCardsForSet(setId: string): Promise<RawCard[]> {
   const first = await fetchCardsPage(setId, 1)
-  const cards = [...first.data]
+  const pages = [first.data]
 
   // Page 1 tells us the total, so fetch any remaining pages in parallel rather
   // than walking them one slow round-trip at a time.
@@ -52,7 +66,21 @@ async function fetchAllCardsForSet(setId: string): Promise<RawCard[]> {
         fetchCardsPage(setId, i + 2),
       ),
     )
-    for (const res of rest) cards.push(...res.data)
+    for (const res of rest) pages.push(res.data)
+  }
+
+  let cards = mergeCardsById(pages)
+  if (first.totalCount > 0 && cards.length < first.totalCount) {
+    // Later pages can duplicate page 1 on large sets. A reverse-ordered
+    // first page picks up the tail (secret rares) that pagination skipped.
+    const tail = await fetchCardsPage(setId, 1, '-number')
+    cards = mergeCardsById([cards, tail.data])
+  }
+
+  if (first.totalCount > 0 && cards.length < first.totalCount) {
+    throw new PokemonTcgError(
+      `Incomplete card pool for ${setId}: got ${cards.length} of ${first.totalCount}`,
+    )
   }
 
   return cards

@@ -31,6 +31,7 @@ const ULTRA_RARITY_KEYS = [
   'star',
   'ace',
   'legend',
+  'mega attack',
 ]
 
 /** Card subtypes that reliably indicate an ultra / chase card. */
@@ -58,8 +59,13 @@ export const TIER_RANK: Record<CardTier, number> = {
   ultra: 3,
 }
 
+/** Some feeds use SNAKE_CASE labels (e.g. MEGA_ATTACK_RARE). */
+function normalizeRarity(rarity: string): string {
+  return rarity.toLowerCase().trim().replace(/_/g, ' ')
+}
+
 export function classifyTier(rarity: string, subtypes: string[] = []): CardTier {
-  const r = rarity.toLowerCase().trim()
+  const r = normalizeRarity(rarity)
   if (r === '' || r === 'common') return 'common'
   if (r === 'uncommon') return 'uncommon'
   if (ULTRA_RARITY_KEYS.some((k) => r.includes(k))) return 'ultra'
@@ -71,7 +77,7 @@ export function classifyTier(rarity: string, subtypes: string[] = []): CardTier 
 
 export function isRainbowCard(rarity: string, tier: CardTier): boolean {
   if (tier !== 'ultra') return false
-  const r = rarity.toLowerCase()
+  const r = normalizeRarity(rarity)
   return RAINBOW_KEYS.some((k) => r.includes(k))
 }
 
@@ -80,5 +86,7 @@ export function isFoilCard(
   tier: CardTier,
   rainbow: boolean,
 ): boolean {
-  return tier === 'ultra' || rarity.toLowerCase().includes('holo') || rainbow
+  return (
+    tier === 'ultra' || normalizeRarity(rarity).includes('holo') || rainbow
+  )
 }
