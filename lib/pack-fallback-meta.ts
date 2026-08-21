@@ -63,6 +63,7 @@ export const FALLBACK_SET_META: Record<CuratedSetId, FallbackSetMeta> = {
   rsv10pt5: { name: 'White Flare', series: 'Scarlet & Violet', year: '2025', total: 173 },
   me1: { name: 'Mega Evolution', series: 'Mega Evolution', year: '2025', total: 188 },
   me2: { name: 'Phantasmal Flames', series: 'Mega Evolution', year: '2025', total: 130 },
+  me2pt5: { name: 'Ascended Heroes', series: 'Mega Evolution', year: '2026', total: 295 },
   me3: { name: 'Perfect Order', series: 'Mega Evolution', year: '2026', total: 124 },
   me4: { name: 'Chaos Rising', series: 'Mega Evolution', year: '2026', total: 122 },
   me5: { name: 'Pitch Black', series: 'Mega Evolution', year: '2026', total: 120 },

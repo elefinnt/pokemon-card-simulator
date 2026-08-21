@@ -72,7 +72,7 @@ Share your friend code to build your crew, then send and receive trade offers to
 | **XY & Sun & Moon** | Evolutions, Generations, Hidden Fates, Cosmic Eclipse & more |
 | **Sword & Shield** | Champion's Path, Evolving Skies, Brilliant Stars, Lost Origin, Crown Zenith & more |
 | **Scarlet & Violet** | 151, Paldean Fates, Prismatic Evolutions, Destined Rivals & more |
-| **Mega Evolution** | Mega Evolution, Phantasmal Flames, Perfect Order & more |
+| **Mega Evolution** | Mega Evolution, Phantasmal Flames, Ascended Heroes, Perfect Order & more |
 
 ---
 

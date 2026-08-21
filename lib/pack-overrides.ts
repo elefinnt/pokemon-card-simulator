@@ -67,6 +67,7 @@ export const CURATED_SET_IDS = [
   'rsv10pt5',
   'me1',
   'me2',
+  'me2pt5',
   'me3',
   'me4',
   'me5',
@@ -370,6 +371,13 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
     accentFrom: '#f97316',
     accentTo: '#312e81',
     blurb: 'Phantasmal Flames — ghostly fire and fearsome Mega ex chase cards.',
+  },
+  me2pt5: {
+    slug: 'ascended-heroes',
+    accentFrom: '#f59e0b',
+    accentTo: '#6d28d9',
+    blurb:
+      'Ascended Heroes — Mega Evolution Pokémon ex and Mega Attack Rares headline the biggest English set yet.',
   },
   me3: {
     slug: 'perfect-order',
