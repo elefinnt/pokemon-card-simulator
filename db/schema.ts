@@ -22,6 +22,10 @@ export const users = mysqlTable('user', {
   emailVerified: timestamp('emailVerified', { mode: 'date', fsp: 3 }),
   image: varchar('image', { length: 255 }),
   friendCode: varchar('friend_code', { length: 12 }).unique(),
+  // DB default covers Auth.js inserts, which do not set this field.
+  createdAt: timestamp('created_at', { mode: 'date', fsp: 3 })
+    .notNull()
+    .defaultNow(),
 })
 
 export const accounts = mysqlTable(
