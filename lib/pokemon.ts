@@ -49,11 +49,20 @@ export interface OpenedPack {
   packType: PackType
 }
 
-function toCard(raw: RawCard): PokemonCard {
+/** 30th Celebration boosters are all-foil, including Energy and commons. */
+const ALL_FOIL_SET_IDS = new Set(['me55', 'me55c'])
+
+/** Main 30th Celebration set — every pack has a dedicated Pikachu Rare slot. */
+const CELEBRATION_30TH_SET_ID = 'me55'
+
+/** Classic Collection is a 30-card reprint subset, not a normal common/uncommon set. */
+const CLASSIC_COLLECTION_SET_ID = 'me55c'
+
+function toCard(raw: RawCard, allFoil = false): PokemonCard {
   const rarity = raw.rarity ?? 'Common'
   const tier = classifyTier(rarity, raw.subtypes ?? [])
   const rainbow = isRainbowCard(rarity, tier)
-  const foil = isFoilCard(rarity, tier, rainbow)
+  const foil = allFoil || isFoilCard(rarity, tier, rainbow)
   return {
     id: raw.id,
     name: raw.name,
@@ -75,7 +84,8 @@ type Pool = Record<CardTier, PokemonCard[]>
 /** Map a set's raw cards into the sim's card shape, dropping any without art. */
 async function mapSetCards(setId: string): Promise<PokemonCard[]> {
   const raw = await getCardsForSet(setId)
-  return raw.filter((card) => card.images?.small).map(toCard)
+  const allFoil = ALL_FOIL_SET_IDS.has(setId)
+  return raw.filter((card) => card.images?.small).map((card) => toCard(card, allFoil))
 }
 
 function groupByTier(cards: PokemonCard[]): Pool {
@@ -116,9 +126,64 @@ function draw(
 
 /** All pullable cards in a set, sorted by number — used for the collection binder. */
 export async function getSetCatalogue(setId: string): Promise<PokemonCard[]> {
-  const raw = await getCardsForSet(setId)
-  const cards = raw.filter((c) => c.images?.small).map(toCard)
+  const cards = await mapSetCards(setId)
   return sortByCardNumber(cards)
+}
+
+function isPikachuRare(card: PokemonCard): boolean {
+  return card.rarity.toLowerCase().trim() === 'pikachu rare'
+}
+
+/**
+ * 30th Celebration recipe: 6 all-foil cards, a guaranteed artist Pikachu,
+ * then a rare/ultra hit to close the pack.
+ */
+function buildCelebration30thCards(
+  pool: Pool,
+  allCards: PokemonCard[],
+  size: number,
+  boostHit = false,
+): PokemonCard[] {
+  const pikachus = allCards.filter(isPikachuRare)
+  if (pikachus.length === 0) {
+    return buildStandardCards(pool, size, boostHit)
+  }
+
+  const rareWithoutPikachu = pool.rare.filter((card) => !isPikachuRare(card))
+  const fillerCount = Math.max(1, size - 2)
+  const cards: PokemonCard[] = []
+  cards.push(
+    ...draw(fillerCount, pool.common, pool.uncommon, rareWithoutPikachu),
+  )
+  cards.push(pikachus[randInt(pikachus.length)])
+
+  const ultraChance = boostHit ? BOOSTED_ULTRA_HIT_CHANCE : ULTRA_HIT_CHANCE
+  const wantUltra = pool.ultra.length > 0 && Math.random() < ultraChance
+  const hit = wantUltra
+    ? draw(1, pool.ultra, rareWithoutPikachu, pool.uncommon)[0]
+    : draw(1, rareWithoutPikachu, pool.ultra, pool.uncommon, pool.common)[0]
+  if (hit) cards.push(hit)
+  return cards
+}
+
+/** Draw fillers from the whole set, then a rare/ultra hit — for tiny reprint subsets. */
+function buildWholePoolCards(
+  allCards: PokemonCard[],
+  size: number,
+  boostHit = false,
+): PokemonCard[] {
+  if (allCards.length === 0) return []
+  const fillerCount = Math.max(1, size - 1)
+  const ultras = allCards.filter((card) => card.tier === 'ultra')
+  const rares = allCards.filter((card) => card.tier === 'rare')
+  const cards = [...draw(fillerCount, allCards)]
+  const ultraChance = boostHit ? BOOSTED_ULTRA_HIT_CHANCE : ULTRA_HIT_CHANCE
+  const wantUltra = ultras.length > 0 && Math.random() < ultraChance
+  const hit = wantUltra
+    ? draw(1, ultras, rares, allCards)[0]
+    : draw(1, rares, ultras, allCards)[0]
+  if (hit) cards.push(hit)
+  return cards
 }
 
 /** Base odds of the hit slot rolling an Ultra Rare in a normal pack. */
@@ -199,7 +264,12 @@ export async function openPack(
     if (god) return finalisePack(setId, god, poolTotal, 'god')
   }
 
-  const cards = buildStandardCards(pool, def.packSize, options.boostHit)
+  const cards =
+    setId === CELEBRATION_30TH_SET_ID
+      ? buildCelebration30thCards(pool, allCards, def.packSize, options.boostHit)
+      : setId === CLASSIC_COLLECTION_SET_ID
+        ? buildWholePoolCards(allCards, def.packSize, options.boostHit)
+        : buildStandardCards(pool, def.packSize, options.boostHit)
 
   // Demigod pack — a standard pack salted with three Special Illustration Rares.
   if (packType === 'demigod') {

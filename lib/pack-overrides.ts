@@ -71,6 +71,8 @@ export const CURATED_SET_IDS = [
   'me3',
   'me4',
   'me5',
+  'me55c',
+  'me55',
 ] as const
 
 export type CuratedSetId = (typeof CURATED_SET_IDS)[number]
@@ -396,6 +398,22 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
     accentFrom: '#1e1b4b',
     accentTo: '#0f172a',
     blurb: 'Pitch Black — Mega Evolution returns, with shadowy chase cards lurking in every pack.',
+  },
+  me55c: {
+    slug: '30th-celebration-classic-collection',
+    accentFrom: '#f59e0b',
+    accentTo: '#422006',
+    blurb:
+      'Thirty classic reprints return with a commemorative 30 stamp — a museum of the hobby’s history.',
+    packSize: 6,
+  },
+  me55: {
+    slug: '30th-celebration',
+    accentFrom: '#eab308',
+    accentTo: '#111827',
+    blurb:
+      'Thirty years of Pokémon — a Pikachu in every pack, all-foil cards, and the new Futuristic rares.',
+    packSize: 6,
   },
 }
 

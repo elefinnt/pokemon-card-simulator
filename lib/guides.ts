@@ -161,18 +161,18 @@ export const GUIDES: Guide[] = [
     slug: 'pokemon-tcg-30th-celebration',
     title: 'Pokémon TCG: 30th Celebration — Everything We Know',
     description:
-      'The 30th Celebration expansion releases worldwide on 16 September 2026 — all-foil packs, a Pikachu in every pack, the new Futuristic rare and 30 classic reprints. Here is everything revealed so far.',
-    updated: '2026-08-12',
+      'The 30th Celebration expansion is out worldwide — all-foil packs, a Pikachu in every pack, the new Futuristic rare and 30 classic reprints. Here is what is in the set.',
+    updated: '2026-09-18',
     readingMinutes: 6,
     intro: [
-      'The Pokémon Trading Card Game turns 30 in 2026, and it is marking the occasion with a commemorative expansion: Pokémon TCG: 30th Celebration, releasing worldwide on 16 September 2026.',
-      'It is the first set in the history of the game to launch simultaneously across the world, and it follows the beloved formula of 2021’s Celebrations — with some spectacular new twists. Here is everything we know ahead of release.',
+      'The Pokémon Trading Card Game turns 30 in 2026, and it is marking the occasion with a commemorative expansion: Pokémon TCG: 30th Celebration, released worldwide on 16 September 2026.',
+      'It is the first set in the history of the game to launch simultaneously across the world, and it follows the beloved formula of 2021’s Celebrations — with some spectacular new twists.',
     ],
     sections: [
       {
         heading: 'Release date and format',
         paragraphs: [
-          '30th Celebration arrives at retailers worldwide on 16 September 2026, with the digital version landing a day earlier on Pokémon TCG Live. The main set runs to 128 numbered cards, with secret rares numbered beyond that — around 150 cards in total.',
+          '30th Celebration arrived at retailers worldwide on 16 September 2026, with the digital version landing a day earlier on Pokémon TCG Live. The main set runs to 128 numbered cards, with secret rares numbered beyond that — 161 cards in total, plus a 30-card Classic Collection of reprints.',
           'Packs contain six cards, and every single one is foil — even the Basic Energy. Like Celebrations before it, booster packs will not be sold individually; they come inside special products such as the Elite Trainer Box, the Poster Collection and the Pokémon ex Box.',
         ],
       },
@@ -200,8 +200,8 @@ export const GUIDES: Guide[] = [
       {
         heading: 'Rip it on PackRip',
         paragraphs: [
-          'We will be adding 30th Celebration to PackRip as soon as the full card list goes live, so you can rip the all-foil packs and hunt every Pikachu without spending a penny.',
-          'In the meantime, you can relive the last big anniversary by ripping Celebrations packs — the 25th anniversary set with its gold chase cards and Classic Collection reprints — free on PackRip right now.',
+          '30th Celebration and the Classic Collection are both live on PackRip. Rip the all-foil six-card packs, hunt every artist Pikachu, and chase the Futuristic Mewtwo and Mew — without spending a penny.',
+          'You can also relive the last big anniversary by ripping Celebrations packs — the 25th anniversary set with its gold chase cards — free on PackRip right now.',
         ],
       },
     ],

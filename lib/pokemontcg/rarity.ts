@@ -32,6 +32,7 @@ const ULTRA_RARITY_KEYS = [
   'ace',
   'legend',
   'mega attack',
+  'futuristic',
 ]
 
 /** Card subtypes that reliably indicate an ultra / chase card. */
@@ -49,7 +50,14 @@ const ULTRA_SUBTYPES = new Set([
 ])
 
 /** Rarity keywords that specifically get the rainbow / secret-rare overlay. */
-const RAINBOW_KEYS = ['rainbow', 'secret', 'hyper', 'illustration', 'shiny']
+const RAINBOW_KEYS = [
+  'rainbow',
+  'secret',
+  'hyper',
+  'illustration',
+  'shiny',
+  'futuristic',
+]
 
 /** Sort weight for comparing tiers (higher = better pull). */
 export const TIER_RANK: Record<CardTier, number> = {
