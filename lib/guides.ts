@@ -187,7 +187,7 @@ export const GUIDES: Guide[] = [
         heading: 'The new Futuristic rare',
         paragraphs: [
           'The set debuts a brand-new rarity: the Futuristic rare, illustrated by renowned Japanese artist YOSHIROTTEN with a vibrant, opalescent finish. The first two revealed are Mewtwo and Mew, depicted in striking artwork described as “evocative of hope toward an unknown future”.',
-          'New Pokémon ex are confirmed too, including Greninja ex, Sylveon ex, and an Espeon ex and Umbreon ex pair headlining a premium deck set.',
+          'Above even that sit three RGB Mews — numbered R, G and B — that the API still lists as commons. They are the set’s lottery tickets: one of a kind chase cards, far rarer than a Futuristic rare.',
         ],
       },
       {
@@ -336,6 +336,13 @@ export const GUIDES: Guide[] = [
         paragraphs: [
           'Debuting in the 30th Celebration expansion on 16 September 2026, the Futuristic rare is the newest rarity in the game. Illustrated by renowned Japanese artist YOSHIROTTEN with a vibrant, opalescent finish, the first revealed cards feature Mewtwo and Mew in artwork described as “evocative of hope toward an unknown future”.',
           'As a brand-new tier in an all-foil anniversary set, Futuristic rares are expected to be among the most sought-after pulls of the year.',
+        ],
+      },
+      {
+        heading: 'RGB Rare — the 30th Celebration Mews',
+        paragraphs: [
+          '30th Celebration hides three extra Mew cards numbered R, G and B. Official lists still call them Common, but they are the set’s true grails — a rarity of their own above Illustration Rare, Special Illustration Rare and Futuristic Rare.',
+          'Online chatter has put them around one in 20,000 packs. That feels too heavy for a simulator, so PackRip treats any RGB Mew as about one in 2,000 — still a miracle pull, just one you might actually see.',
         ],
       },
       {

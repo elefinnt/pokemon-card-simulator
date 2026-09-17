@@ -16,7 +16,16 @@ export const CELEBRATION_30TH_RATES = {
   doubleRare: 0.25,
   specialIllustration: 0.056,
   futuristic: 0.01,
+  /** Any RGB Mew. Rumour is ~1 in 20,000; 1 in 2,000 keeps them a grail without vanishing. */
+  rgbRare: 1 / 2000,
 } as const
+
+export const RGB_MEW_IDS = new Set(['me55-R', 'me55-G', 'me55-B'])
+export const RGB_RARE_LABEL = 'RGB Rare'
+
+export function isRgbMew(card: { id: string }): boolean {
+  return RGB_MEW_IDS.has(card.id)
+}
 
 function rarityKey(card: PokemonCard): string {
   return card.rarity.toLowerCase().trim()
@@ -40,6 +49,10 @@ function isSpecialIllustration(card: PokemonCard): boolean {
 
 function isFuturistic(card: PokemonCard): boolean {
   return rarityKey(card).includes('futuristic')
+}
+
+function isRgbRare(card: PokemonCard): boolean {
+  return isRgbMew(card)
 }
 
 function isPlainRare(card: PokemonCard): boolean {
@@ -75,7 +88,9 @@ export function buildCelebration30thCards(
   boostHit = false,
 ): PokemonCard[] {
   const pikachus = mainCards.filter(isPikachuRare)
-  const commons = mainCards.filter((card) => card.tier === 'common')
+  const commons = mainCards.filter(
+    (card) => card.tier === 'common' && !isRgbMew(card),
+  )
   const uncommons = mainCards.filter((card) => card.tier === 'uncommon')
   const fillers = [...commons, ...uncommons]
   const rares = mainCards.filter(isPlainRare)
@@ -83,11 +98,16 @@ export function buildCelebration30thCards(
   const doubleRares = mainCards.filter(isDoubleRare)
   const sirs = mainCards.filter(isSpecialIllustration)
   const futuristics = mainCards.filter(isFuturistic)
+  const rgbMews = mainCards.filter(isRgbRare)
 
   const fillerCount = Math.max(1, size - 3)
   const cards: PokemonCard[] = []
   for (let i = 0; i < fillerCount; i++) {
-    const filler = pickOr(fillers, rares, mainCards)
+    const filler = pickOr(
+      fillers,
+      rares,
+      mainCards.filter((card) => !isRgbMew(card) && !isPikachuRare(card)),
+    )
     if (filler) cards.push(filler)
   }
 
@@ -95,7 +115,7 @@ export function buildCelebration30thCards(
   if (midHit) cards.push(midHit)
 
   const rareHit = rollRareSlot(
-    { rares, doubleRares, sirs, futuristics },
+    { rares, doubleRares, sirs, futuristics, rgbMews },
     boostHit,
   )
   if (rareHit) cards.push(rareHit)
@@ -131,23 +151,27 @@ function rollRareSlot(
     doubleRares: PokemonCard[]
     sirs: PokemonCard[]
     futuristics: PokemonCard[]
+    rgbMews: PokemonCard[]
   },
   boostHit: boolean,
 ): PokemonCard | undefined {
-  const { rares, doubleRares, sirs, futuristics } = pools
+  const { rares, doubleRares, sirs, futuristics, rgbMews } = pools
   const roll = Math.random()
 
   if (boostHit) {
+    if (roll < 0.02) return pickOr(rgbMews, futuristics, sirs, doubleRares, rares)
     if (roll < 0.2) return pickOr(futuristics, sirs, doubleRares, rares)
     if (roll < 0.6) return pickOr(sirs, doubleRares, rares)
     if (roll < 0.9) return pickOr(doubleRares, sirs, rares)
     return pickOr(rares, doubleRares)
   }
 
-  const furUntil = CELEBRATION_30TH_RATES.futuristic
+  const rgbUntil = CELEBRATION_30TH_RATES.rgbRare
+  const furUntil = rgbUntil + CELEBRATION_30TH_RATES.futuristic
   const sirUntil = furUntil + CELEBRATION_30TH_RATES.specialIllustration
   const drUntil = sirUntil + CELEBRATION_30TH_RATES.doubleRare
 
+  if (roll < rgbUntil) return pickOr(rgbMews, futuristics, sirs, doubleRares, rares)
   if (roll < furUntil) return pickOr(futuristics, sirs, doubleRares, rares)
   if (roll < sirUntil) return pickOr(sirs, doubleRares, rares)
   if (roll < drUntil) return pickOr(doubleRares, rares)

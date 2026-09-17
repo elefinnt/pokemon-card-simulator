@@ -33,6 +33,7 @@ const ULTRA_RARITY_KEYS = [
   'legend',
   'mega attack',
   'futuristic',
+  'rgb',
 ]
 
 /** Card subtypes that reliably indicate an ultra / chase card. */
@@ -57,6 +58,7 @@ const RAINBOW_KEYS = [
   'illustration',
   'shiny',
   'futuristic',
+  'rgb',
 ]
 
 /** Sort weight for comparing tiers (higher = better pull). */

@@ -2,6 +2,8 @@ import {
   buildCelebration30thCards,
   CELEBRATION_30TH_SET_ID,
   CLASSIC_COLLECTION_SET_ID,
+  RGB_MEW_IDS,
+  RGB_RARE_LABEL,
 } from './celebration-30th'
 import { sortByCardNumber } from './card-order'
 import {
@@ -61,10 +63,11 @@ const ALL_FOIL_SET_IDS = new Set([
 ])
 
 function toCard(raw: RawCard, allFoil = false): PokemonCard {
-  const rarity = raw.rarity ?? 'Common'
-  const tier = classifyTier(rarity, raw.subtypes ?? [])
-  const rainbow = isRainbowCard(rarity, tier)
-  const foil = allFoil || isFoilCard(rarity, tier, rainbow)
+  const rgb = RGB_MEW_IDS.has(raw.id)
+  const rarity = rgb ? RGB_RARE_LABEL : (raw.rarity ?? 'Common')
+  const tier = rgb ? 'ultra' : classifyTier(rarity, raw.subtypes ?? [])
+  const rainbow = rgb || isRainbowCard(rarity, tier)
+  const foil = allFoil || rgb || isFoilCard(rarity, tier, rainbow)
   return {
     id: raw.id,
     name: raw.name,
