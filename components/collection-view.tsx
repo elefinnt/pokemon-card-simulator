@@ -1,30 +1,20 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { LibraryBig, Layers, Copy, Sparkles, Trash2, Search } from 'lucide-react'
 import { type PackDef } from '@/lib/packs'
 import {
   type CollectionData,
   type CollectedCard,
-  type BinderCard,
-  binderCardsForSet,
-  cardsForSet,
   searchCards,
-  summarizeSet,
 } from '@/lib/collection'
-import { TIER_META } from '@/lib/rarity'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { CardDetailModal } from './card-detail-modal'
 import { SignInPrompt } from './sign-in-prompt'
-import { SetCardFilterBar } from './collection/set-card-filter-bar'
-import { useSetCatalogue } from './use-set-catalogue'
-import {
-  DEFAULT_SET_CARD_FILTERS,
-  filterSetCards,
-  type SetCardFilters,
-} from '@/lib/set-card-filters'
-import { isFoldedCompanionSet } from '@/lib/set-companions'
+import { PackSection } from './collection/pack-section'
+import { CollectionCardThumb } from './collection/collection-card-thumb'
+import { BINDER_COMPANION_SETS } from '@/lib/set-companions'
+import { setLabel } from '@/lib/showcase-filters'
 
 export function CollectionView({
   packs,
@@ -62,12 +52,12 @@ export function CollectionView({
     [collection],
   )
   const collectedPacks = packs.filter((p) => {
-    const opened = (collection.sets[p.id]?.packsOpened ?? 0) > 0
-    if (opened) return true
-    // Classic reprints pulled from 30th Celebration live in that binder,
-    // so don't spin up a separate Classic Collection section unless ripped solo.
-    if (isFoldedCompanionSet(p.id)) return false
-    return ownedSetIds.has(p.id)
+    if ((collection.sets[p.id]?.packsOpened ?? 0) > 0) return true
+    if (ownedSetIds.has(p.id)) return true
+    return (BINDER_COMPANION_SETS[p.id] ?? []).some(
+      (id) =>
+        ownedSetIds.has(id) || (collection.sets[id]?.packsOpened ?? 0) > 0,
+    )
   })
 
   if (uniqueOwned === 0) {
@@ -247,278 +237,11 @@ function SearchResults({
           <CollectionCardThumb
             key={card.id}
             card={card}
-            subtitle={packById.get(card.setId)?.name ?? card.setId}
+            subtitle={packById.get(card.setId)?.name ?? setLabel(card.setId)}
             onSelect={() => onSelectCard(card)}
           />
         ))}
       </div>
     </section>
-  )
-}
-
-type PackCardView = 'obtained' | 'all'
-
-function PackSection({
-  pack,
-  collection,
-  onOpenPack,
-  onSelectCard,
-  requiresSignIn = false,
-}: {
-  pack: PackDef
-  collection: CollectionData
-  onOpenPack: (pack: PackDef) => void
-  onSelectCard: (card: CollectedCard) => void
-  requiresSignIn?: boolean
-}) {
-  const [cardView, setCardView] = useState<PackCardView>('obtained')
-  const [filters, setFilters] = useState<SetCardFilters>(DEFAULT_SET_CARD_FILTERS)
-  const summary = summarizeSet(collection, pack.id, pack.total)
-  const ownedCards = cardsForSet(collection, pack.id)
-  const { cards: catalogue, loading, error } = useSetCatalogue(pack.id)
-  const binderCards = catalogue
-    ? binderCardsForSet(catalogue, collection, pack.id)
-    : ownedCards.map((card) => ({ ...card, owned: true as const }))
-  const sourceCards =
-    cardView === 'obtained'
-      ? ownedCards.map((card) => ({ ...card, owned: true as const }))
-      : binderCards
-  const displayedCards = useMemo(
-    () => filterSetCards(sourceCards, filters),
-    [sourceCards, filters],
-  )
-
-  useEffect(() => {
-    if (filters.tier === 'all') return
-    const tierStillPresent = sourceCards.some((card) => card.tier === filters.tier)
-    if (!tierStillPresent) {
-      setFilters((current) => ({ ...current, tier: 'all' }))
-    }
-  }, [sourceCards, filters.tier])
-  const showCatalogueLoading =
-    cardView === 'all' && loading && displayedCards.length === 0
-  const pct =
-    summary.poolTotal > 0 ? Math.round(summary.completion * 100) : 0
-
-  return (
-    <section className="rounded-2xl border border-border bg-card/40 p-4 sm:p-5">
-      <div className="flex flex-wrap items-center gap-3">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={pack.symbol || '/placeholder.svg'}
-          alt=""
-          aria-hidden="true"
-          className="h-6 w-6 shrink-0 object-contain"
-        />
-        <div className="min-w-0 flex-1">
-          <h3 className="font-display text-lg font-extrabold leading-tight text-foreground">
-            {pack.name}
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            {summary.uniqueOwned}
-            {' / '}
-            {summary.poolTotal || '?'} unique · {summary.packsOpened} pack
-            {summary.packsOpened === 1 ? '' : 's'} · {summary.duplicates} dupes
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="font-display text-xl font-black text-primary">
-            {pct}%
-          </span>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => onOpenPack(pack)}
-          >
-            {requiresSignIn ? 'Preview pack' : 'Open more'}
-          </Button>
-        </div>
-      </div>
-
-      {summary.poolTotal > 0 && (
-        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-primary transition-all"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-      )}
-
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <p className="text-xs text-muted-foreground">
-          {cardView === 'obtained'
-            ? `${ownedCards.length} obtained`
-            : `${summary.uniqueOwned} / ${summary.poolTotal || '?'} in set`}
-          {displayedCards.length !== sourceCards.length && (
-            <span>
-              {' '}
-              · showing {displayedCards.length}
-            </span>
-          )}
-        </p>
-        <PackCardViewToggle value={cardView} onChange={setCardView} />
-      </div>
-
-      {sourceCards.length > 0 && (
-        <div className="mt-3">
-          <SetCardFilterBar
-            cards={sourceCards}
-            filters={filters}
-            onChange={setFilters}
-          />
-        </div>
-      )}
-
-      <div className="mt-3 grid grid-cols-3 gap-2.5 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8">
-        {showCatalogueLoading ? (
-          <p className="col-span-full py-4 text-center text-sm text-muted-foreground">
-            Loading set catalogue…
-          </p>
-        ) : displayedCards.length === 0 ? (
-          <p className="col-span-full py-4 text-center text-sm text-muted-foreground">
-            {sourceCards.length === 0
-              ? 'No cards obtained from this set yet.'
-              : 'No cards match the current filters.'}
-          </p>
-        ) : (
-          displayedCards.map((card) => (
-            <CollectionCardThumb
-              key={card.id}
-              card={card}
-              onSelect={
-                card.owned && collection.cards[card.id]
-                  ? () => onSelectCard(collection.cards[card.id])
-                  : undefined
-              }
-            />
-          ))
-        )}
-      </div>
-      {error && cardView === 'all' && (
-        <p className="mt-2 text-center text-xs text-muted-foreground">
-          Could not load the full set — showing owned cards only.
-        </p>
-      )}
-    </section>
-  )
-}
-
-function PackCardViewToggle({
-  value,
-  onChange,
-}: {
-  value: PackCardView
-  onChange: (value: PackCardView) => void
-}) {
-  return (
-    <div
-      role="group"
-      aria-label="Card view"
-      className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5"
-    >
-      {(
-        [
-          ['obtained', 'Obtained'],
-          ['all', 'All cards'],
-        ] as const
-      ).map(([mode, label]) => (
-        <button
-          key={mode}
-          type="button"
-          aria-pressed={value === mode}
-          onClick={() => onChange(mode)}
-          className={cn(
-            'rounded-md px-2.5 py-1 text-xs font-semibold transition-colors',
-            value === mode
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground',
-          )}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
-  )
-}
-
-function CollectionCardThumb({
-  card,
-  subtitle,
-  onSelect,
-}: {
-  card: BinderCard | CollectedCard
-  subtitle?: string
-  onSelect?: () => void
-}) {
-  const meta = TIER_META[card.tier]
-  const owned = 'owned' in card ? card.owned : true
-  const count = card.count
-
-  const inner = (
-    <>
-      <div
-        className={cn(
-          'relative overflow-hidden rounded-lg border bg-muted transition-transform duration-200',
-          owned && 'group-hover:-translate-y-1 group-hover:shadow-lg',
-        )}
-        style={{
-          borderColor: count > 1 ? meta.color : undefined,
-        }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={card.imageSmall || '/placeholder.svg'}
-          alt={card.name}
-          loading="lazy"
-          className={cn(
-            'aspect-[2.5/3.5] w-full object-cover transition-[filter,opacity]',
-            !owned && 'grayscale opacity-45',
-          )}
-        />
-        {count > 1 && (
-          <span
-            className="absolute right-1 top-1 rounded-md px-1.5 py-0.5 text-[0.7rem] font-black text-black shadow"
-            style={{ backgroundColor: meta.color }}
-          >
-            &times;{count}
-          </span>
-        )}
-      </div>
-      <p
-        className={cn(
-          'mt-1 truncate text-center text-[0.7rem]',
-          owned ? 'text-muted-foreground' : 'text-muted-foreground/50',
-        )}
-      >
-        {card.name}
-      </p>
-      {subtitle && (
-        <p className="truncate text-center text-[0.65rem] text-muted-foreground/70">
-          {subtitle}
-        </p>
-      )}
-    </>
-  )
-
-  if (!onSelect) {
-    return (
-      <div
-        className="relative rounded-lg text-left"
-        aria-label={`${card.name} — not collected`}
-      >
-        {inner}
-      </div>
-    )
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-label={`View ${card.name}`}
-      className="group relative rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-primary"
-    >
-      {inner}
-    </button>
   )
 }
