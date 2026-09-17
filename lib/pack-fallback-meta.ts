@@ -67,4 +67,11 @@ export const FALLBACK_SET_META: Record<CuratedSetId, FallbackSetMeta> = {
   me3: { name: 'Perfect Order', series: 'Mega Evolution', year: '2026', total: 124 },
   me4: { name: 'Chaos Rising', series: 'Mega Evolution', year: '2026', total: 122 },
   me5: { name: 'Pitch Black', series: 'Mega Evolution', year: '2026', total: 120 },
+  me55c: {
+    name: '30th Celebration: Classic Collection',
+    series: 'Mega Evolution',
+    year: '2026',
+    total: 30,
+  },
+  me55: { name: '30th Celebration', series: 'Mega Evolution', year: '2026', total: 161 },
 }
