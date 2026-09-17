@@ -193,7 +193,7 @@ export const GUIDES: Guide[] = [
       {
         heading: '30 classic cards return',
         paragraphs: [
-          'Following the model of Celebrations’ Classic Collection, 30 classic cards from across the game’s three decades return with a commemorative “30” Pikachu stamp and a fresh foil treatment. They are mixed into regular 30th Celebration boosters at about one in ten packs — you do not need a separate product to hunt them.',
+          'Following the model of Celebrations’ Classic Collection, 30 classic cards from across the game’s three decades return with a commemorative “30” Pikachu stamp and a fresh foil treatment. They are mixed into regular 30th Celebration boosters at about one in eight packs — you do not need a separate product to hunt them.',
           'Day-one community logs put chase rates well above a normal set: Illustration Rares around one in five packs, Special Illustration Rares around one in eighteen, and Futuristic rares around one in a hundred.',
         ],
       },

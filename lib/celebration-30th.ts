@@ -6,14 +6,12 @@ export const CLASSIC_COLLECTION_SET_ID = 'me55c'
 /**
  * English 30th Celebration booster odds, exclusive within each hit slot.
  *
- * Sourced from day-one community samples, especially Tommy13's 4,063-pack
- * stream log (Wargamer, 17 Sep 2026), with DigitalTQ (420 packs) and TCGTalk
- * in the same ballpark. These chase rates are well above a normal SV/Mega set:
- * Illustration Rares land about twice as often, SIRs closer to 1 in 18 than
- * the usual 1 in 32–40.
+ * Chase rarities follow day-one community samples (Tommy13's 4,063-pack stream
+ * log, with DigitalTQ and TCGTalk in the same ballpark). Classic reprints use
+ * a round-up of our own table rips: 5 in 44 packs (~1 in 8.8) → 1 in 8.
  */
 export const CELEBRATION_30TH_RATES = {
-  classicCollection: 0.102,
+  classicCollection: 0.125,
   illustrationRare: 0.192,
   doubleRare: 0.25,
   specialIllustration: 0.056,
