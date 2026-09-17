@@ -4,17 +4,38 @@ import type { ApiListResponse, RawSet } from './types'
 
 const SET_FIELDS = 'id,name,series,total,printedTotal,releaseDate,images'
 
+/** Keep each `/sets` query short. A single OR of the full catalogue 502s. */
+const SET_QUERY_CHUNK = 20
+
+async function fetchSetChunk(ids: string[]): Promise<RawSet[]> {
+  const q = ids.map((id) => `id:${id}`).join(' OR ')
+  try {
+    const res = await apiGet<ApiListResponse<RawSet>>('/sets', {
+      q,
+      pageSize: Math.min(ids.length, 250),
+      select: SET_FIELDS,
+    })
+    return res.data
+  } catch (err) {
+    console.warn(
+      '[sets] chunk failed, skipping',
+      ids.join(','),
+      err instanceof Error ? err.message : err,
+    )
+    return []
+  }
+}
+
 async function fetchSetsByIds(ids: string[]): Promise<RawSet[]> {
   if (ids.length === 0) return []
 
-  const q = ids.map((id) => `id:${id}`).join(' OR ')
-  const res = await apiGet<ApiListResponse<RawSet>>('/sets', {
-    q,
-    pageSize: Math.min(ids.length, 250),
-    select: SET_FIELDS,
-  })
+  const chunks: string[][] = []
+  for (let i = 0; i < ids.length; i += SET_QUERY_CHUNK) {
+    chunks.push(ids.slice(i, i + SET_QUERY_CHUNK))
+  }
 
-  const byId = new Map(res.data.map((set) => [set.id, set]))
+  const pages = await Promise.all(chunks.map(fetchSetChunk))
+  const byId = new Map(pages.flat().map((set) => [set.id, set]))
   return ids
     .map((id) => byId.get(id))
     .filter((set): set is RawSet => set !== undefined)

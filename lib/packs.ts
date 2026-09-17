@@ -46,12 +46,12 @@ function buildPackDef(set: RawSet, override: PackOverride): PackDef {
     series: set.series,
     year: yearFromReleaseDate(set.releaseDate),
     packSize: override.packSize ?? 10,
-    total: set.total ?? set.printedTotal ?? 0,
+    total: override.total ?? set.total ?? set.printedTotal ?? 0,
     accentFrom: override.accentFrom,
     accentTo: override.accentTo,
     blurb: override.blurb,
-    logo: set.images?.logo ?? legacyLogo(set.id),
-    symbol: set.images?.symbol ?? legacySymbol(set.id),
+    logo: override.logo ?? set.images?.logo ?? legacyLogo(set.id),
+    symbol: override.symbol ?? set.images?.symbol ?? legacySymbol(set.id),
   }
 }
 
@@ -65,12 +65,12 @@ function buildFallbackPack(id: CuratedSetId): PackDef {
     series: meta.series,
     year: meta.year,
     packSize: override.packSize ?? 10,
-    total: meta.total,
+    total: override.total ?? meta.total,
     accentFrom: override.accentFrom,
     accentTo: override.accentTo,
     blurb: override.blurb,
-    logo: legacyLogo(id),
-    symbol: legacySymbol(id),
+    logo: override.logo ?? legacyLogo(id),
+    symbol: override.symbol ?? legacySymbol(id),
   }
 }
 

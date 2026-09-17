@@ -1,5 +1,6 @@
 import { compareCardNumber } from './card-order'
 import type { CardTier, PokemonCard } from './pokemon'
+import { binderSetIds, setIdFromCardId } from './set-companions'
 
 export const COLLECTION_SCHEMA_VERSION = 1
 
@@ -65,7 +66,8 @@ export function summarizeSet(
   fallbackTotal = 0,
 ): SetSummary {
   const set = data.sets[setId]
-  const cards = Object.values(data.cards).filter((c) => c.setId === setId)
+  const ids = new Set(binderSetIds(setId))
+  const cards = Object.values(data.cards).filter((c) => ids.has(c.setId))
   const uniqueOwned = cards.length
   const totalPulled = cards.reduce((n, c) => n + c.count, 0)
   const poolTotal = set?.poolTotal || fallbackTotal || 0
@@ -84,9 +86,14 @@ export function cardsForSet(
   data: CollectionData,
   setId: string,
 ): CollectedCard[] {
+  const ids = new Set(binderSetIds(setId))
   return Object.values(data.cards)
-    .filter((c) => c.setId === setId)
-    .sort((a, b) => compareCardNumber(a.number, b.number))
+    .filter((c) => ids.has(c.setId))
+    .sort((a, b) => {
+      const setCmp = a.setId.localeCompare(b.setId)
+      if (setCmp !== 0) return setCmp
+      return compareCardNumber(a.number, b.number)
+    })
 }
 
 export interface BinderCard {
@@ -111,9 +118,7 @@ export function binderCardsForSet(
   setId: string,
 ): BinderCard[] {
   const ownedById = new Map(
-    Object.values(data.cards)
-      .filter((c) => c.setId === setId)
-      .map((c) => [c.id, c]),
+    Object.values(data.cards).map((c) => [c.id, c]),
   )
 
   return catalogue.map((card) => {
@@ -136,7 +141,7 @@ export function binderCardsForSet(
     }
     return {
       id: card.id,
-      setId,
+      setId: setIdFromCardId(card.id) || setId,
       name: card.name,
       number: card.number,
       rarity: card.rarity,

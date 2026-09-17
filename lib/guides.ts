@@ -172,8 +172,8 @@ export const GUIDES: Guide[] = [
       {
         heading: 'Release date and format',
         paragraphs: [
-          '30th Celebration arrived at retailers worldwide on 16 September 2026, with the digital version landing a day earlier on Pokémon TCG Live. The main set runs to 128 numbered cards, with secret rares numbered beyond that — 161 cards in total, plus a 30-card Classic Collection of reprints.',
-          'Packs contain six cards, and every single one is foil — even the Basic Energy. Like Celebrations before it, booster packs will not be sold individually; they come inside special products such as the Elite Trainer Box, the Poster Collection and the Pokémon ex Box.',
+          '30th Celebration arrived at retailers worldwide on 16 September 2026, with the digital version landing a day earlier on Pokémon TCG Live. The main set runs to 128 numbered cards, with secret rares numbered beyond that — 161 cards in total, plus a 30-card Classic Collection of reprints that can drop from regular boosters.',
+          'Packs contain five all-foil cards, and every pack has a guaranteed artist Pikachu. Like Celebrations before it, booster packs will not be sold individually; they come inside special products such as the Elite Trainer Box, the Poster Collection and the Pokémon ex Box.',
         ],
       },
       {
@@ -193,14 +193,14 @@ export const GUIDES: Guide[] = [
       {
         heading: '30 classic cards return',
         paragraphs: [
-          'Following the model of Celebrations’ Classic Collection, 30 classic cards from across the game’s three decades return with a commemorative “30” Pikachu stamp and a fresh foil treatment. They are collector pieces rather than tournament-legal cards — a museum of the hobby’s history in booster form.',
-          'If the 25th anniversary set is any guide, these reprints will be among the most chased cards of the entire release.',
+          'Following the model of Celebrations’ Classic Collection, 30 classic cards from across the game’s three decades return with a commemorative “30” Pikachu stamp and a fresh foil treatment. They are mixed into regular 30th Celebration boosters at about one in ten packs — you do not need a separate product to hunt them.',
+          'Day-one community logs put chase rates well above a normal set: Illustration Rares around one in five packs, Special Illustration Rares around one in eighteen, and Futuristic rares around one in a hundred.',
         ],
       },
       {
         heading: 'Rip it on PackRip',
         paragraphs: [
-          '30th Celebration and the Classic Collection are both live on PackRip. Rip the all-foil six-card packs, hunt every artist Pikachu, and chase the Futuristic Mewtwo and Mew — without spending a penny.',
+          '30th Celebration is live on PackRip, with the Classic Collection mixed into the same booster. Rip the all-foil five-card packs, hunt every artist Pikachu, and chase the Futuristic Mewtwo and Mew — without spending a penny.',
           'You can also relive the last big anniversary by ripping Celebrations packs — the 25th anniversary set with its gold chase cards — free on PackRip right now.',
         ],
       },

@@ -4,6 +4,7 @@ import {
   type CollectedCard,
   emptyCollection,
 } from './collection-types'
+import { setIdFromCardId } from './set-companions'
 
 function cardFrom(
   card: PokemonCard,
@@ -59,7 +60,7 @@ export function mergePackIntoCollection(
         lastPulledAt: now,
       }
     } else {
-      next.cards[card.id] = cardFrom(card, opened.setId, now)
+      next.cards[card.id] = cardFrom(card, setIdFromCardId(card.id), now)
     }
   }
 

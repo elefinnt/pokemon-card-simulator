@@ -40,7 +40,7 @@ export function SeriesShelf({
   const [selected, setSelected] = useState<string | null>(null)
   const active = selected ?? orderedSeries[0]
   const shelf = useMemo(
-    () => packs.filter((p) => p.series === active),
+    () => [...packs.filter((p) => p.series === active)].reverse(),
     [packs, active],
   )
 

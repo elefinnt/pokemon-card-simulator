@@ -13,6 +13,7 @@ import {
   emptyCollection,
 } from './collection-types'
 import { mergeCollections, mergePackIntoCollection } from './collection-merge'
+import { setIdFromCardId } from './set-companions'
 
 function rowToCard(row: typeof collectedCards.$inferSelect): CollectedCard {
   return {
@@ -92,7 +93,7 @@ export async function recordPackForUser(
         .values({
           userId,
           cardId: card.id,
-          setId: opened.setId,
+          setId: setIdFromCardId(card.id),
           name: card.name,
           number: card.number,
           rarity: card.rarity,

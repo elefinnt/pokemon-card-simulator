@@ -14,6 +14,12 @@ export interface PackOverride {
   accentTo: string
   blurb: string
   packSize?: number
+  /** Completion denominator when the binder includes companion cards. */
+  total?: number
+  /** Local logo when the API / legacy CDN has no usable art yet. */
+  logo?: string
+  /** Local set symbol when the API / legacy CDN has no usable art yet. */
+  symbol?: string
 }
 
 /** Sets available in the pack picker, in display order. */
@@ -406,14 +412,19 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
     blurb:
       'Thirty classic reprints return with a commemorative 30 stamp — a museum of the hobby’s history.',
     packSize: 6,
+    logo: '/set-logos/30th-celebration-logo.png',
+    symbol: '/set-logos/30th-celebration-symbol.jpg',
   },
   me55: {
     slug: '30th-celebration',
     accentFrom: '#eab308',
     accentTo: '#111827',
     blurb:
-      'Thirty years of Pokémon — a Pikachu in every pack, all-foil cards, and the new Futuristic rares.',
-    packSize: 6,
+      'Thirty years of Pokémon — a Pikachu in every pack, classic reprints mixed in, and chase rates well above a normal set.',
+    packSize: 5,
+    total: 191,
+    logo: '/set-logos/30th-celebration-logo.png',
+    symbol: '/set-logos/30th-celebration-symbol.jpg',
   },
 }
 

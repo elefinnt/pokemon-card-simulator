@@ -1,3 +1,8 @@
+import {
+  buildCelebration30thCards,
+  CELEBRATION_30TH_SET_ID,
+  CLASSIC_COLLECTION_SET_ID,
+} from './celebration-30th'
 import { sortByCardNumber } from './card-order'
 import {
   buildDemigodCards,
@@ -50,13 +55,10 @@ export interface OpenedPack {
 }
 
 /** 30th Celebration boosters are all-foil, including Energy and commons. */
-const ALL_FOIL_SET_IDS = new Set(['me55', 'me55c'])
-
-/** Main 30th Celebration set — every pack has a dedicated Pikachu Rare slot. */
-const CELEBRATION_30TH_SET_ID = 'me55'
-
-/** Classic Collection is a 30-card reprint subset, not a normal common/uncommon set. */
-const CLASSIC_COLLECTION_SET_ID = 'me55c'
+const ALL_FOIL_SET_IDS = new Set([
+  CELEBRATION_30TH_SET_ID,
+  CLASSIC_COLLECTION_SET_ID,
+])
 
 function toCard(raw: RawCard, allFoil = false): PokemonCard {
   const rarity = raw.rarity ?? 'Common'
@@ -127,43 +129,12 @@ function draw(
 /** All pullable cards in a set, sorted by number — used for the collection binder. */
 export async function getSetCatalogue(setId: string): Promise<PokemonCard[]> {
   const cards = await mapSetCards(setId)
-  return sortByCardNumber(cards)
-}
-
-function isPikachuRare(card: PokemonCard): boolean {
-  return card.rarity.toLowerCase().trim() === 'pikachu rare'
-}
-
-/**
- * 30th Celebration recipe: 6 all-foil cards, a guaranteed artist Pikachu,
- * then a rare/ultra hit to close the pack.
- */
-function buildCelebration30thCards(
-  pool: Pool,
-  allCards: PokemonCard[],
-  size: number,
-  boostHit = false,
-): PokemonCard[] {
-  const pikachus = allCards.filter(isPikachuRare)
-  if (pikachus.length === 0) {
-    return buildStandardCards(pool, size, boostHit)
+  if (setId !== CELEBRATION_30TH_SET_ID) {
+    return sortByCardNumber(cards)
   }
 
-  const rareWithoutPikachu = pool.rare.filter((card) => !isPikachuRare(card))
-  const fillerCount = Math.max(1, size - 2)
-  const cards: PokemonCard[] = []
-  cards.push(
-    ...draw(fillerCount, pool.common, pool.uncommon, rareWithoutPikachu),
-  )
-  cards.push(pikachus[randInt(pikachus.length)])
-
-  const ultraChance = boostHit ? BOOSTED_ULTRA_HIT_CHANCE : ULTRA_HIT_CHANCE
-  const wantUltra = pool.ultra.length > 0 && Math.random() < ultraChance
-  const hit = wantUltra
-    ? draw(1, pool.ultra, rareWithoutPikachu, pool.uncommon)[0]
-    : draw(1, rareWithoutPikachu, pool.ultra, pool.uncommon, pool.common)[0]
-  if (hit) cards.push(hit)
-  return cards
+  const classic = await mapSetCards(CLASSIC_COLLECTION_SET_ID)
+  return [...sortByCardNumber(cards), ...sortByCardNumber(classic)]
 }
 
 /** Draw fillers from the whole set, then a rare/ultra hit — for tiny reprint subsets. */
@@ -266,7 +237,12 @@ export async function openPack(
 
   const cards =
     setId === CELEBRATION_30TH_SET_ID
-      ? buildCelebration30thCards(pool, allCards, def.packSize, options.boostHit)
+      ? buildCelebration30thCards(
+          allCards,
+          await mapSetCards(CLASSIC_COLLECTION_SET_ID),
+          def.packSize,
+          options.boostHit,
+        )
       : setId === CLASSIC_COLLECTION_SET_ID
         ? buildWholePoolCards(allCards, def.packSize, options.boostHit)
         : buildStandardCards(pool, def.packSize, options.boostHit)

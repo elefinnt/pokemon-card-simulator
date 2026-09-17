@@ -1,4 +1,14 @@
+import { BINDER_COMPANION_SETS } from '@/lib/set-companions'
+
 const prefetched = new Set<string>()
+
+function warm(setId: string): void {
+  if (prefetched.has(setId)) return
+  prefetched.add(setId)
+  fetch(`/api/pool/${setId}`).catch(() => {
+    prefetched.delete(setId)
+  })
+}
 
 /**
  * Warm the server-side card pool for a set ahead of the user opening it.
@@ -8,9 +18,8 @@ const prefetched = new Set<string>()
  * retry.
  */
 export function prefetchPool(setId: string): void {
-  if (prefetched.has(setId)) return
-  prefetched.add(setId)
-  fetch(`/api/pool/${setId}`).catch(() => {
-    prefetched.delete(setId)
-  })
+  warm(setId)
+  for (const extra of BINDER_COMPANION_SETS[setId] ?? []) {
+    warm(extra)
+  }
 }

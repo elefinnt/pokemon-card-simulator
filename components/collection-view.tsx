@@ -24,6 +24,7 @@ import {
   filterSetCards,
   type SetCardFilters,
 } from '@/lib/set-card-filters'
+import { isFoldedCompanionSet } from '@/lib/set-companions'
 
 export function CollectionView({
   packs,
@@ -60,10 +61,14 @@ export function CollectionView({
     () => new Set(Object.values(collection.cards).map((c) => c.setId)),
     [collection],
   )
-  const collectedPacks = packs.filter(
-    (p) =>
-      (collection.sets[p.id]?.packsOpened ?? 0) > 0 || ownedSetIds.has(p.id),
-  )
+  const collectedPacks = packs.filter((p) => {
+    const opened = (collection.sets[p.id]?.packsOpened ?? 0) > 0
+    if (opened) return true
+    // Classic reprints pulled from 30th Celebration live in that binder,
+    // so don't spin up a separate Classic Collection section unless ripped solo.
+    if (isFoldedCompanionSet(p.id)) return false
+    return ownedSetIds.has(p.id)
+  })
 
   if (uniqueOwned === 0) {
     if (requiresSignIn) {

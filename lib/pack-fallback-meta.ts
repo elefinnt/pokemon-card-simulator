@@ -73,5 +73,5 @@ export const FALLBACK_SET_META: Record<CuratedSetId, FallbackSetMeta> = {
     year: '2026',
     total: 30,
   },
-  me55: { name: '30th Celebration', series: 'Mega Evolution', year: '2026', total: 161 },
+  me55: { name: '30th Celebration', series: 'Mega Evolution', year: '2026', total: 191 },
 }
