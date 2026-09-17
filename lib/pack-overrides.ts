@@ -77,11 +77,18 @@ export const CURATED_SET_IDS = [
   'me3',
   'me4',
   'me5',
-  'me55c',
   'me55',
 ] as const
 
 export type CuratedSetId = (typeof CURATED_SET_IDS)[number]
+
+/** API subsets that feed a curated pack but are not ripped on their own. */
+export const COMPANION_SET_IDS = ['me55c'] as const
+export type CompanionSetId = (typeof COMPANION_SET_IDS)[number]
+
+export function isCompanionSetId(id: string): id is CompanionSetId {
+  return (COMPANION_SET_IDS as readonly string[]).includes(id)
+}
 
 export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
   base1: {
@@ -404,16 +411,6 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
     accentFrom: '#1e1b4b',
     accentTo: '#0f172a',
     blurb: 'Pitch Black — Mega Evolution returns, with shadowy chase cards lurking in every pack.',
-  },
-  me55c: {
-    slug: '30th-celebration-classic-collection',
-    accentFrom: '#f59e0b',
-    accentTo: '#422006',
-    blurb:
-      'Thirty classic reprints return with a commemorative 30 stamp — a museum of the hobby’s history.',
-    packSize: 6,
-    logo: '/set-logos/30th-celebration-logo.png',
-    symbol: '/set-logos/30th-celebration-symbol.jpg',
   },
   me55: {
     slug: '30th-celebration',

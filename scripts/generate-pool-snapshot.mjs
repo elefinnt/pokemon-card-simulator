@@ -40,14 +40,23 @@ function authHeaders(key) {
   return key && key !== 'your_key_here' ? { 'X-Api-Key': key } : {}
 }
 
-async function readCuratedIds() {
+function readNamedSetIds(text, name) {
+  const block = text.match(new RegExp(`${name}\\s*=\\s*\\[([\\s\\S]*?)\\]`))
+  if (!block) return []
+  return [...block[1].matchAll(/['"]([^'"]+)['"]/g)].map((m) => m[1])
+}
+
+async function readSnapshotIds() {
   const text = await readFile(
     join(ROOT, 'lib', 'pack-overrides.ts'),
     'utf8',
   )
-  const block = text.match(/CURATED_SET_IDS\s*=\s*\[([\s\S]*?)\]/)
-  if (!block) throw new Error('Could not find CURATED_SET_IDS in pack-overrides.ts')
-  return [...block[1].matchAll(/['"]([^'"]+)['"]/g)].map((m) => m[1])
+  const curated = readNamedSetIds(text, 'CURATED_SET_IDS')
+  if (curated.length === 0) {
+    throw new Error('Could not find CURATED_SET_IDS in pack-overrides.ts')
+  }
+  const companions = readNamedSetIds(text, 'COMPANION_SET_IDS')
+  return [...new Set([...curated, ...companions])]
 }
 
 const MAX_ATTEMPTS = 5
@@ -119,7 +128,7 @@ async function main() {
   console.log(key ? 'Using API key.' : 'No API key found — using anonymous rate limit.')
 
   const onlyId = process.env.SNAPSHOT_SET
-  const ids = onlyId ? [onlyId] : await readCuratedIds()
+  const ids = onlyId ? [onlyId] : await readSnapshotIds()
   console.log(
     onlyId
       ? `Snapshotting ${onlyId}…`

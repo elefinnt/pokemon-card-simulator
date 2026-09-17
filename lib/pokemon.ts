@@ -137,26 +137,6 @@ export async function getSetCatalogue(setId: string): Promise<PokemonCard[]> {
   return [...sortByCardNumber(cards), ...sortByCardNumber(classic)]
 }
 
-/** Draw fillers from the whole set, then a rare/ultra hit — for tiny reprint subsets. */
-function buildWholePoolCards(
-  allCards: PokemonCard[],
-  size: number,
-  boostHit = false,
-): PokemonCard[] {
-  if (allCards.length === 0) return []
-  const fillerCount = Math.max(1, size - 1)
-  const ultras = allCards.filter((card) => card.tier === 'ultra')
-  const rares = allCards.filter((card) => card.tier === 'rare')
-  const cards = [...draw(fillerCount, allCards)]
-  const ultraChance = boostHit ? BOOSTED_ULTRA_HIT_CHANCE : ULTRA_HIT_CHANCE
-  const wantUltra = ultras.length > 0 && Math.random() < ultraChance
-  const hit = wantUltra
-    ? draw(1, ultras, rares, allCards)[0]
-    : draw(1, rares, ultras, allCards)[0]
-  if (hit) cards.push(hit)
-  return cards
-}
-
 /** Base odds of the hit slot rolling an Ultra Rare in a normal pack. */
 const ULTRA_HIT_CHANCE = 0.16
 
@@ -243,9 +223,7 @@ export async function openPack(
           def.packSize,
           options.boostHit,
         )
-      : setId === CLASSIC_COLLECTION_SET_ID
-        ? buildWholePoolCards(allCards, def.packSize, options.boostHit)
-        : buildStandardCards(pool, def.packSize, options.boostHit)
+      : buildStandardCards(pool, def.packSize, options.boostHit)
 
   // Demigod pack — a standard pack salted with three Special Illustration Rares.
   if (packType === 'demigod') {

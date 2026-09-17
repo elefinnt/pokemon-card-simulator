@@ -22,6 +22,15 @@ const nextConfig = {
       },
     ]
   },
+  async redirects() {
+    return [
+      {
+        source: '/pack/30th-celebration-classic-collection',
+        destination: '/pack/30th-celebration',
+        permanent: true,
+      },
+    ]
+  },
   skipTrailingSlashRedirect: true,
 }
 

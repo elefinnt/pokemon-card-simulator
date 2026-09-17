@@ -1,4 +1,5 @@
 import { CURATED_SET_IDS } from '../pack-overrides'
+import { BINDER_COMPANION_SETS } from '../set-companions'
 import { ensurePacksLoaded } from '../packs'
 import { getCardsForSet } from './cards'
 
@@ -35,7 +36,10 @@ async function pool<T>(
 export async function warmCuratedPools(): Promise<void> {
   await ensurePacksLoaded()
 
-  const newestFirst = [...CURATED_SET_IDS].reverse()
+  const newestFirst = [
+    ...CURATED_SET_IDS,
+    ...Object.values(BINDER_COMPANION_SETS).flat(),
+  ].reverse()
   await pool(newestFirst, WARM_CONCURRENCY, async (id) => {
     try {
       await getCardsForSet(id)

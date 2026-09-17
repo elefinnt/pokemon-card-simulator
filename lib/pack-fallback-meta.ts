@@ -4,7 +4,7 @@
  * totals always come from the API when it responds.
  */
 
-import type { CuratedSetId } from './pack-overrides'
+import type { CompanionSetId, CuratedSetId } from './pack-overrides'
 
 export interface FallbackSetMeta {
   name: string
@@ -13,7 +13,10 @@ export interface FallbackSetMeta {
   total: number
 }
 
-export const FALLBACK_SET_META: Record<CuratedSetId, FallbackSetMeta> = {
+export const FALLBACK_SET_META: Record<
+  CuratedSetId | CompanionSetId,
+  FallbackSetMeta
+> = {
   base1: { name: 'Base', series: 'Base', year: '1999', total: 102 },
   base2: { name: 'Jungle', series: 'Base', year: '1999', total: 64 },
   base3: { name: 'Fossil', series: 'Base', year: '1999', total: 62 },
