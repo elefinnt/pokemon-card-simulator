@@ -5,7 +5,13 @@ import {
   RGB_MEW_IDS,
   RGB_RARE_LABEL,
 } from './celebration-30th'
+import {
+  buildCrownZenithCards,
+  CROWN_ZENITH_SET_ID,
+  GALARIAN_GALLERY_SET_ID,
+} from './crown-zenith'
 import { sortByCardNumber } from './card-order'
+import { BINDER_COMPANION_SETS } from './set-companions'
 import {
   buildDemigodCards,
   buildGodPack,
@@ -132,12 +138,14 @@ function draw(
 /** All pullable cards in a set, sorted by number — used for the collection binder. */
 export async function getSetCatalogue(setId: string): Promise<PokemonCard[]> {
   const cards = await mapSetCards(setId)
-  if (setId !== CELEBRATION_30TH_SET_ID) {
-    return sortByCardNumber(cards)
-  }
+  const companions = BINDER_COMPANION_SETS[setId] ?? []
+  if (companions.length === 0) return sortByCardNumber(cards)
 
-  const classic = await mapSetCards(CLASSIC_COLLECTION_SET_ID)
-  return [...sortByCardNumber(cards), ...sortByCardNumber(classic)]
+  const extra = await Promise.all(companions.map((id) => mapSetCards(id)))
+  return [
+    ...sortByCardNumber(cards),
+    ...extra.flatMap((group) => sortByCardNumber(group)),
+  ]
 }
 
 /** Base odds of the hit slot rolling an Ultra Rare in a normal pack. */
@@ -218,15 +226,24 @@ export async function openPack(
     if (god) return finalisePack(setId, god, poolTotal, 'god')
   }
 
-  const cards =
-    setId === CELEBRATION_30TH_SET_ID
-      ? buildCelebration30thCards(
-          allCards,
-          await mapSetCards(CLASSIC_COLLECTION_SET_ID),
-          def.packSize,
-          options.boostHit,
-        )
-      : buildStandardCards(pool, def.packSize, options.boostHit)
+  let cards: PokemonCard[]
+  if (setId === CELEBRATION_30TH_SET_ID) {
+    cards = buildCelebration30thCards(
+      allCards,
+      await mapSetCards(CLASSIC_COLLECTION_SET_ID),
+      def.packSize,
+      options.boostHit,
+    )
+  } else if (setId === CROWN_ZENITH_SET_ID) {
+    cards = buildCrownZenithCards(
+      allCards,
+      await mapSetCards(GALARIAN_GALLERY_SET_ID),
+      def.packSize,
+      options.boostHit,
+    )
+  } else {
+    cards = buildStandardCards(pool, def.packSize, options.boostHit)
+  }
 
   // Demigod pack — a standard pack salted with three Special Illustration Rares.
   if (packType === 'demigod') {
