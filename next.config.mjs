@@ -29,6 +29,11 @@ const nextConfig = {
         destination: '/pack/30th-celebration',
         permanent: true,
       },
+      {
+        source: '/pack/crown-zenith-galarian-gallery',
+        destination: '/pack/crown-zenith',
+        permanent: true,
+      },
     ]
   },
   skipTrailingSlashRedirect: true,

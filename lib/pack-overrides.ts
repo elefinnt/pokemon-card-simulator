@@ -83,7 +83,7 @@ export const CURATED_SET_IDS = [
 export type CuratedSetId = (typeof CURATED_SET_IDS)[number]
 
 /** API subsets that feed a curated pack but are not ripped on their own. */
-export const COMPANION_SET_IDS = ['me55c'] as const
+export const COMPANION_SET_IDS = ['me55c', 'swsh12pt5gg'] as const
 export type CompanionSetId = (typeof COMPANION_SET_IDS)[number]
 
 export function isCompanionSetId(id: string): id is CompanionSetId {
@@ -277,7 +277,8 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
     accentFrom: '#8b5cf6',
     accentTo: '#4c1d95',
     blurb:
-      'The Galarian Gallery and stunning artwork make every pack a treasure.',
+      'The Galarian Gallery lands in about one in three packs, with gold VSTARs much rarer than the rest.',
+    total: 230,
   },
   sv1: {
     slug: 'scarlet-and-violet',

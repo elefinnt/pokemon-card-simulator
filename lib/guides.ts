@@ -349,7 +349,7 @@ export const GUIDES: Guide[] = [
         heading: 'Retired rarities worth knowing',
         paragraphs: [
           'Plenty of rarities live on only in older sets, and they include some of the hobby’s most treasured cards. Shining Pokémon (Neo era) and Gold Stars (EX era) are grails from the early 2000s, while Crystal types from sets like Skyridge command serious prices.',
-          'More recently, the Sword & Shield era gave us Amazing Rares with their rainbow paint-splash foil, Radiant Pokémon with reversed shiny colours, and the Trainer Gallery and Galarian Gallery subsets. Ripping older packs on PackRip is a free way to experience chasing them.',
+          'More recently, the Sword & Shield era gave us Amazing Rares with their rainbow paint-splash foil, Radiant Pokémon with reversed shiny colours, and the Trainer Gallery and Galarian Gallery subsets. Crown Zenith mixes its 70-card Galarian Gallery into regular boosters — about one in three packs, with the four gold VSTARs closer to one in 125. Ripping older packs on PackRip is a free way to experience chasing them.',
         ],
         exampleCards: [
           {
