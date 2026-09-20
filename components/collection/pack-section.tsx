@@ -52,7 +52,10 @@ export function PackSection({
     summary.poolTotal > 0 ? Math.round(summary.completion * 100) : 0
 
   return (
-    <section className="rounded-2xl border border-border bg-card/40 p-4 sm:p-5">
+    <section
+      id={`collection-set-${pack.id}`}
+      className="rounded-2xl border border-border bg-card/40 p-4 sm:p-5"
+    >
       <div className="flex flex-wrap items-center gap-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

@@ -8,12 +8,21 @@ export const metadata: Metadata = {
   robots: { index: false },
 }
 
-export default async function CollectionPage() {
+export default async function CollectionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ set?: string }>
+}) {
   const packs = await ensurePacksLoaded()
+  const { set } = await searchParams
 
   return (
     <PageShell>
-      <PackSimulator packs={packs} initialView="collection" />
+      <PackSimulator
+        packs={packs}
+        initialView="collection"
+        initialCollectionSet={set}
+      />
     </PageShell>
   )
 }
