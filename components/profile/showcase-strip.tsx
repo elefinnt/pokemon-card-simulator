@@ -14,11 +14,13 @@ export function ShowcaseStrip({
   cards,
   emptyLabel = 'No cards showcased yet.',
   showPlaceholders = true,
+  showNames = false,
   className,
 }: {
   cards: ShowcaseCard[]
   emptyLabel?: string
   showPlaceholders?: boolean
+  showNames?: boolean
   className?: string
 }) {
   if (cards.length === 0 && !showPlaceholders) {
@@ -34,7 +36,7 @@ export function ShowcaseStrip({
     : Math.min(cards.length, SHOWCASE_MAX)
 
   return (
-    <div className={cn('grid grid-cols-3 gap-2.5', className)}>
+    <div className={cn('grid grid-cols-3 items-start gap-2.5', className)}>
       {Array.from({ length: slots }).map((_, i) => {
         const card = cards[i]
         if (!card) {
@@ -47,7 +49,16 @@ export function ShowcaseStrip({
             </div>
           )
         }
-        return <TradeCardThumb key={card.id} card={card} />
+        return (
+          <div key={card.id} className="min-w-0">
+            <TradeCardThumb card={card} />
+            {showNames && (
+              <p className="mt-1.5 truncate text-center text-[0.7rem] font-semibold text-foreground">
+                {card.name}
+              </p>
+            )}
+          </div>
+        )
       })}
     </div>
   )
