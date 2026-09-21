@@ -10,6 +10,12 @@ import {
   CROWN_ZENITH_SET_ID,
   GALARIAN_GALLERY_SET_ID,
 } from './crown-zenith'
+import {
+  hasIllustrationRares,
+  partitionByHitClass,
+  rollArtSlot,
+  rollRareSlot,
+} from './pack-odds'
 import { sortByCardNumber } from './card-order'
 import { BINDER_COMPANION_SETS } from './set-companions'
 import {
@@ -163,6 +169,10 @@ function buildStandardCards(
   size: number,
   boostHit = false,
 ): PokemonCard[] {
+  if (hasIllustrationRares(pool.ultra)) {
+    return buildModernCards(pool, size, boostHit)
+  }
+
   const commonCount = Math.max(1, size - 4)
   const uncommonCount = 3
 
@@ -176,6 +186,33 @@ function buildStandardCards(
     ? draw(1, pool.ultra, pool.rare, pool.uncommon)[0]
     : draw(1, pool.rare, pool.ultra, pool.uncommon, pool.common)[0]
 
+  if (hit) cards.push(hit)
+  return cards
+}
+
+/**
+ * SV / Mega Evolution style pack: fillers, a reverse/art slot that can upgrade
+ * to IR / SIR / Hyper Rare, then a rare slot that can upgrade to Double Rare
+ * or Ultra Rare. Pack size stays the same.
+ */
+function buildModernCards(
+  pool: Pool,
+  size: number,
+  boostHit = false,
+): PokemonCard[] {
+  const commonCount = Math.max(1, size - 5)
+  const uncommonCount = 3
+  const groups = partitionByHitClass(pool.ultra)
+  const fillers = [...pool.uncommon, ...pool.common]
+
+  const cards: PokemonCard[] = []
+  cards.push(...draw(commonCount, pool.common, pool.uncommon, pool.rare))
+  cards.push(...draw(uncommonCount, pool.uncommon, pool.common, pool.rare))
+
+  const art = rollArtSlot(groups, fillers)
+  if (art) cards.push(art)
+
+  const hit = rollRareSlot(groups, pool.rare, boostHit)
   if (hit) cards.push(hit)
   return cards
 }
