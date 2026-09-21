@@ -105,7 +105,7 @@ export function CardReveal({
 
   return (
     <div className="flex w-full flex-col items-center gap-6">
-      <GodPackBanner packType={packType} />
+      <GodPackBanner packType={packType} setId={pack.id} />
       <div className="flex w-full max-w-md items-center justify-between">
         <span className="text-sm font-semibold text-muted-foreground">
           Card {index + 1} <span className="opacity-50">/ {total}</span>

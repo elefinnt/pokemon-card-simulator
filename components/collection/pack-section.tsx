@@ -22,6 +22,7 @@ import {
 } from '@/lib/set-card-filters'
 import {
   binderGroupsForPack,
+  cardMatchesBinderGroup,
   type BinderGroup,
 } from '@/lib/set-companions'
 
@@ -108,9 +109,14 @@ export function PackSection({
             <BinderGroupGrid
               key={group.setId}
               group={group}
+              packName={pack.name}
               cardView={cardView}
-              ownedCards={ownedCards.filter((card) => card.setId === group.setId)}
-              binderCards={binderCards.filter((card) => card.setId === group.setId)}
+              ownedCards={ownedCards.filter((card) =>
+                cardMatchesBinderGroup(card, group, pack.id),
+              )}
+              binderCards={binderCards.filter((card) =>
+                cardMatchesBinderGroup(card, group, pack.id),
+              )}
               loading={loading}
               error={error}
               collection={collection}
@@ -180,6 +186,7 @@ function SingleSetGrid({
 
 function BinderGroupGrid({
   group,
+  packName,
   cardView,
   ownedCards,
   binderCards,
@@ -189,6 +196,7 @@ function BinderGroupGrid({
   onSelectCard,
 }: {
   group: BinderGroup
+  packName: string
   cardView: PackCardView
   ownedCards: CollectedCard[]
   binderCards: BinderCard[]
@@ -240,7 +248,7 @@ function BinderGroupGrid({
             ? `${ownedCards.length} obtained`
             : `${uniqueOwned} / ${poolTotal || '?'} in set`
         }
-        emptyObtained={`No ${group.label} cards yet. Open 30th Celebration packs to hunt them.`}
+        emptyObtained={`No ${group.label} cards yet. Open ${packName} packs to hunt them.`}
         onSelectCard={onSelectCard}
       />
     </div>

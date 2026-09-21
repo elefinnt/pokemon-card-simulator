@@ -5,7 +5,7 @@ import { PokeCardFace } from '@/components/poke-card'
 import { CardZoomModal } from '@/components/card-zoom-modal'
 import { packLogo } from '@/lib/packs'
 import { TIER_META } from '@/lib/rarity'
-import { PACK_TYPE_META, detectPackType } from '@/lib/god-pack'
+import { detectPackType, getPackTypeMeta } from '@/lib/god-pack'
 import type { PokemonCard } from '@/lib/pokemon'
 import type { FeedEvent, ReactionKey } from '@/lib/community/types'
 import { FeedAvatar } from './feed-avatar'
@@ -33,7 +33,8 @@ export function FeedEventCard({
   const [active, setActive] = useState<PokemonCard | null>(null)
   const bestMeta = TIER_META[event.bestTier]
   const packType = detectPackType(event.cards, event.packId)
-  const packTypeMeta = packType === 'normal' ? null : PACK_TYPE_META[packType]
+  const packTypeMeta =
+    packType === 'normal' ? null : getPackTypeMeta(packType, event.packId)
   const sorted = [...event.cards].sort(
     (a, b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier),
   )

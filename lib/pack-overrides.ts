@@ -83,7 +83,15 @@ export const CURATED_SET_IDS = [
 export type CuratedSetId = (typeof CURATED_SET_IDS)[number]
 
 /** API subsets that feed a curated pack but are not ripped on their own. */
-export const COMPANION_SET_IDS = ['me55c', 'swsh12pt5gg'] as const
+export const COMPANION_SET_IDS = [
+  'swsh9tg',
+  'swsh10tg',
+  'swsh11tg',
+  'swsh12tg',
+  'swsh12pt5gg',
+  'cel25c',
+  'me55c',
+] as const
 export type CompanionSetId = (typeof COMPANION_SET_IDS)[number]
 
 export function isCompanionSetId(id: string): id is CompanionSetId {
@@ -155,7 +163,7 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
     slug: 'generations',
     accentFrom: '#ef4444',
     accentTo: '#1e40af',
-    blurb: 'Twenty years of Pokémon — with the shining Radiant Collection.',
+    blurb: 'Twenty years of Pokémon. Every pack has two Radiant Collection cards.',
   },
   xy12: {
     slug: 'evolutions',
@@ -234,7 +242,9 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
     accentFrom: '#eab308',
     accentTo: '#713f12',
     blurb:
-      'Twenty-five years of Pokémon — packed with iconic reprints and gold chase cards.',
+      '25 years of Pokémon, with Classic Collection reprints in about two packs in five.',
+    packSize: 4,
+    total: 50,
   },
   swsh8: {
     slug: 'fusion-strike',
@@ -246,13 +256,17 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
     slug: 'brilliant-stars',
     accentFrom: '#f59e0b',
     accentTo: '#7c2d12',
-    blurb: 'Brilliant Stars — Charizard VSTAR and the loved Trainer Gallery.',
+    blurb:
+      'Brilliant Stars. Charizard VSTAR leads the chase, with a Trainer Gallery card in about one pack in eight.',
+    total: 216,
   },
   swsh10: {
     slug: 'astral-radiance',
     accentFrom: '#67e8f9',
     accentTo: '#164e63',
-    blurb: 'Astral Radiance — Origin Dialga and Palkia rule the Hisui era.',
+    blurb:
+      'Astral Radiance. Origin Dialga and Palkia lead the chase, with a Trainer Gallery card in about one pack in eight.',
+    total: 246,
   },
   pgo: {
     slug: 'pokemon-go',
@@ -264,13 +278,17 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
     slug: 'lost-origin',
     accentFrom: '#c084fc',
     accentTo: '#1e1b4b',
-    blurb: 'Lost Origin — the legendary Giratina VSTAR alt art lurks here.',
+    blurb:
+      'Lost Origin. Giratina VSTAR leads the chase, with a Trainer Gallery card in about one pack in eight.',
+    total: 247,
   },
   swsh12: {
     slug: 'silver-tempest',
     accentFrom: '#94a3b8',
     accentTo: '#0c4a6e',
-    blurb: 'Silver Tempest — Lugia VSTAR and one of the great modern alt arts.',
+    blurb:
+      'Silver Tempest. Lugia VSTAR leads the chase, with a Trainer Gallery card in about one pack in eight.',
+    total: 245,
   },
   swsh12pt5: {
     slug: 'crown-zenith',
