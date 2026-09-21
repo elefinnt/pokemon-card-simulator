@@ -1,17 +1,19 @@
 import { Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { PACK_TYPE_META, type PackType } from '@/lib/god-pack'
+import { getPackTypeMeta, type PackType } from '@/lib/god-pack'
 
 /** Celebratory banner shown for demigod / god packs. Renders nothing otherwise. */
 export function GodPackBanner({
   packType,
+  setId,
   className,
 }: {
   packType: PackType
+  setId: string
   className?: string
 }) {
   if (packType === 'normal') return null
-  const meta = PACK_TYPE_META[packType]
+  const meta = getPackTypeMeta(packType, setId)
 
   return (
     <div

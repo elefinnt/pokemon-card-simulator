@@ -1,65 +1,37 @@
 /**
- * God Pack / Demigod Pack logic for Prismatic Evolutions (sv8pt5).
+ * God pack / demigod pack logic.
  *
- * A real Prismatic Evolutions "God Pack" is a fabled ~1-in-2,000 booster that
- * contains the Master Ball Eevee plus one of every Eeveelution ex Special
- * Illustration Rare, finishing on the Eevee ex SIR. A "Demigod Pack" is a
- * softer version that contains three Special Illustration Rares.
- *
- * This module is client-safe — it only imports card *types* and does no
- * network / server work — so the same helpers can classify a pack on the
- * server (when opening) and in the browser (community feed badges).
+ * Prismatic Evolutions (sv8pt5) and Ascended Heroes (me2pt5) can roll a god
+ * pack or a demigod pack. Line-ups live in `god-pack-lineups.ts`. This module
+ * is client-safe — it only imports card *types* and does no network / server
+ * work — so the same helpers can classify a pack on the server (when opening)
+ * and in the browser (community feed badges).
  */
 
 import type { PokemonCard } from './pokemon'
+import {
+  godPackLineup,
+  MASTER_BALL_EEVEE_ID,
+  PRISMATIC_GOD_PACK_CARD_IDS,
+  PRISMATIC_SET_ID,
+  SIR_RARITY,
+  type GodPackLineup,
+} from './god-pack-lineups'
 
 export type PackType = 'normal' | 'demigod' | 'god'
 
-/**
- * God / Demigod pack odds.
- *
- * ⚠️ TESTING VALUES — deliberately generous so the feature is easy to trigger.
- * Swap back to the community-estimated production values before shipping:
- *   GOD_PACK_ODDS     = 1 / 2000   // ~0.05%, the widely cited figure
- *   DEMIGOD_PACK_ODDS = 1 / 350    // rough community estimate
- */
-export const GOD_PACK_ODDS = 1 / 2000// TESTING: guaranteed god pack every open
+export {
+  MASTER_BALL_EEVEE_ID,
+  PRISMATIC_GOD_PACK_CARD_IDS as GOD_PACK_CARD_IDS,
+  PRISMATIC_SET_ID as GOD_PACK_SET_ID,
+}
+
+/** Live rates, shared by every god-pack set. God is checked first. */
+export const GOD_PACK_ODDS = 1 / 2000
 export const DEMIGOD_PACK_ODDS = 1 / 350
 
-/** Prismatic Evolutions is currently the only set with god packs. */
-export const GOD_PACK_SET_ID = 'sv8pt5'
-
-/** The Pokémon TCG API rarity label for the set's chase alt-arts. */
-const SIR_RARITY = 'Special Illustration Rare'
-
-/** How many SIRs a demigod pack contains. */
-const DEMIGOD_SIR_COUNT = 3
-
-/**
- * The Master Ball Eevee opener. The API has no distinct "Master Ball" printing,
- * so we use the common Eevee (#74) and flag it as a Master Ball foil in the sim.
- */
-export const MASTER_BALL_EEVEE_ID = `${GOD_PACK_SET_ID}-74`
-
-/**
- * The fixed god-pack line-up, in reveal order: Master Ball Eevee, then one of
- * each Eeveelution ex SIR, building to the Eevee ex SIR finale.
- */
-export const GOD_PACK_CARD_IDS: readonly string[] = [
-  MASTER_BALL_EEVEE_ID, // Eevee (Master Ball opener)
-  `${GOD_PACK_SET_ID}-149`, // Vaporeon ex
-  `${GOD_PACK_SET_ID}-153`, // Jolteon ex
-  `${GOD_PACK_SET_ID}-146`, // Flareon ex
-  `${GOD_PACK_SET_ID}-155`, // Espeon ex
-  `${GOD_PACK_SET_ID}-161`, // Umbreon ex
-  `${GOD_PACK_SET_ID}-144`, // Leafeon ex
-  `${GOD_PACK_SET_ID}-150`, // Glaceon ex
-  `${GOD_PACK_SET_ID}-156`, // Sylveon ex
-  `${GOD_PACK_SET_ID}-167`, // Eevee ex (finale)
-]
-
 export function isGodPackSet(setId: string): boolean {
-  return setId === GOD_PACK_SET_ID
+  return godPackLineup(setId) !== undefined
 }
 
 /** Roll the pack type for a set. Only god-pack sets can return god / demigod. */
@@ -71,9 +43,22 @@ export function rollPackType(setId: string): PackType {
   return 'normal'
 }
 
+/** Collapse API labels so `MEGA_ATTACK_RARE` matches "Mega Attack Rare". */
+function rarityKey(rarity: string): string {
+  return rarity.toLowerCase().trim().replace(/_/g, ' ')
+}
+
+function sameRarity(cardRarity: string, expected: string): boolean {
+  return rarityKey(cardRarity) === rarityKey(expected)
+}
+
+function cardsWithRarity(cards: PokemonCard[], rarity: string): PokemonCard[] {
+  return cards.filter((card) => sameRarity(card.rarity, rarity))
+}
+
 /** Every Special Illustration Rare in a mapped card list. */
 export function specialIllustrationRares(cards: PokemonCard[]): PokemonCard[] {
-  return cards.filter((c) => c.rarity === SIR_RARITY)
+  return cardsWithRarity(cards, SIR_RARITY)
 }
 
 /** Pick `count` distinct random items from `items` (non-mutating). */
@@ -87,19 +72,17 @@ function pickDistinct<T>(items: T[], count: number): T[] {
   return out
 }
 
-/**
- * Build the fixed god-pack card list from the set's full card catalogue.
- * Returns null if any signature card is missing (API data drift) so the caller
- * can gracefully fall back to a demigod or normal pack.
- */
-export function buildGodPack(allCards: PokemonCard[]): PokemonCard[] | null {
-  const byId = new Map(allCards.map((c) => [c.id, c]))
+function buildFixedGodPack(
+  lineup: Extract<GodPackLineup, { kind: 'fixed' }>,
+  allCards: PokemonCard[],
+): PokemonCard[] | null {
+  const byId = new Map(allCards.map((card) => [card.id, card]))
   const cards: PokemonCard[] = []
-  for (const id of GOD_PACK_CARD_IDS) {
+  for (const id of lineup.cardIds) {
     const card = byId.get(id)
     if (!card) return null
     cards.push(
-      id === MASTER_BALL_EEVEE_ID
+      id === lineup.masterBallId
         ? { ...card, foil: true, masterBall: true }
         : card,
     )
@@ -107,31 +90,69 @@ export function buildGodPack(allCards: PokemonCard[]): PokemonCard[] | null {
   return cards
 }
 
+function buildComposedGodPack(
+  lineup: Extract<GodPackLineup, { kind: 'composed' }>,
+  allCards: PokemonCard[],
+): PokemonCard[] | null {
+  const cards: PokemonCard[] = []
+  for (const slot of lineup.slots) {
+    const pool = cardsWithRarity(allCards, slot.rarity)
+    if (pool.length < slot.count) return null
+    cards.push(...pickDistinct(pool, slot.count))
+  }
+  return cards
+}
+
+/**
+ * Build a god pack from the set's catalogue.
+ * Returns null if any signature card or rarity pool is missing, so the caller
+ * can fall back to a normal pack.
+ */
+export function buildGodPack(
+  setId: string,
+  allCards: PokemonCard[],
+): PokemonCard[] | null {
+  const lineup = godPackLineup(setId)
+  if (!lineup) return null
+  if (lineup.kind === 'fixed') return buildFixedGodPack(lineup, allCards)
+  return buildComposedGodPack(lineup, allCards)
+}
+
 /**
  * Build a demigod pack: a standard pack whose final slots are replaced with
- * three distinct random Special Illustration Rares (kept last for the reveal
- * crescendo). Returns null if the set lacks enough SIRs.
+ * three distinct chase cards (Special Illustration Rares for both current
+ * sets), kept last for the reveal. Returns null if the set lacks enough.
  */
 export function buildDemigodCards(
+  setId: string,
   base: PokemonCard[],
   allCards: PokemonCard[],
 ): PokemonCard[] | null {
-  const sirs = specialIllustrationRares(allCards)
-  if (sirs.length < DEMIGOD_SIR_COUNT) return null
-  const picks = pickDistinct(sirs, DEMIGOD_SIR_COUNT)
+  const lineup = godPackLineup(setId)
+  if (!lineup) return null
+  const chase = cardsWithRarity(allCards, lineup.chaseRarity)
+  if (chase.length < lineup.demigodCount) return null
+  const picks = pickDistinct(chase, lineup.demigodCount)
   const kept = base.slice(0, Math.max(0, base.length - picks.length))
   return [...kept, ...picks]
 }
 
 /**
- * Infer a pack's type purely from its card list — used by the community feed,
- * which only has the stored cards to work from (no persisted pack type).
+ * Infer a pack's type from its card list. The community feed only has the
+ * stored cards (no persisted pack type).
+ *
+ * God: 6+ chase cards (Prismatic god packs have 9 SIRs, Ascended Heroes god
+ * packs have 7). Demigod: 3+ chase cards. A normal modern pack tops out at
+ * two SIRs, so this does not flag ordinary opens.
  */
 export function detectPackType(cards: PokemonCard[], setId: string): PackType {
-  if (!isGodPackSet(setId)) return 'normal'
-  const sirCount = cards.filter((c) => c.rarity === SIR_RARITY).length
-  if (sirCount >= 6) return 'god'
-  if (sirCount >= DEMIGOD_SIR_COUNT) return 'demigod'
+  const lineup = godPackLineup(setId)
+  if (!lineup) return 'normal'
+  const chaseCount = cards.filter((card) =>
+    sameRarity(card.rarity, lineup.chaseRarity),
+  ).length
+  if (chaseCount >= lineup.godChaseMin) return 'god'
+  if (chaseCount >= lineup.demigodCount) return 'demigod'
   return 'normal'
 }
 
@@ -142,14 +163,15 @@ export interface PackTypeMeta {
   gradient: string
 }
 
-/** Display copy + styling for the special pack types. */
+/** Shared banner chrome. Taglines are set-specific via `getPackTypeMeta`. */
 export const PACK_TYPE_META: Record<
   Exclude<PackType, 'normal'>,
   PackTypeMeta
 > = {
   god: {
     label: 'GOD PACK',
-    tagline: 'Every Eeveelution SIR in one pack — a one-in-a-thousand miracle.',
+    tagline:
+      'Every Eeveelution SIR in one pack — a one-in-a-thousand miracle.',
     gradient: 'linear-gradient(120deg,#fbbf24,#f472b6,#a855f7,#38bdf8)',
   },
   demigod: {
@@ -157,4 +179,18 @@ export const PACK_TYPE_META: Record<
     tagline: 'Three Special Illustration Rares in a single pack.',
     gradient: 'linear-gradient(120deg,#a855f7,#ec4899)',
   },
+}
+
+/** Banner copy for a special pack. Unknown sets keep the shared defaults. */
+export function getPackTypeMeta(
+  packType: Exclude<PackType, 'normal'>,
+  setId: string,
+): PackTypeMeta {
+  const lineup = godPackLineup(setId)
+  const base = PACK_TYPE_META[packType]
+  if (!lineup) return base
+  return {
+    ...base,
+    tagline: packType === 'god' ? lineup.godTagline : lineup.demigodTagline,
+  }
 }

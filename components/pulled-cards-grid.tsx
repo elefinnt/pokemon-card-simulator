@@ -58,7 +58,7 @@ export function PulledCardsGrid({
 
   return (
     <div className="flex w-full flex-col items-center gap-6">
-      <GodPackBanner packType={packType} />
+      <GodPackBanner packType={packType} setId={pack.id} />
       <div className="text-center">
         <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
           {pack.name} · {cards.length} cards

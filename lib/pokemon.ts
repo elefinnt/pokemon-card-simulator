@@ -16,8 +16,26 @@ import {
   rollArtSlot,
   rollRareSlot,
 } from './pack-odds'
+import {
+  buildCelebrationsCards,
+  CELEBRATIONS_CLASSIC_SET_ID,
+  CELEBRATIONS_SET_ID,
+} from './celebrations'
 import { sortByCardNumber } from './card-order'
-import { BINDER_COMPANION_SETS } from './set-companions'
+import {
+  buildGenerationsCards,
+  GENERATIONS_SET_ID,
+  RADIANT_COLLECTION_PREFIX,
+} from './generations'
+import {
+  BINDER_COMPANION_SETS,
+  cardHasNumberPrefix,
+  setIdFromCardId,
+} from './set-companions'
+import {
+  buildTrainerGalleryCards,
+  trainerGalleryCompanionId,
+} from './trainer-gallery'
 import {
   buildDemigodCards,
   buildGodPack,
@@ -68,18 +86,33 @@ export interface OpenedPack {
   packType: PackType
 }
 
-/** 30th Celebration boosters are all-foil, including Energy and commons. */
+/**
+ * All-foil sets. 30th Celebration boosters are holographic throughout, and
+ * Celebrations Classic Collection reprints are foil even though their rarity
+ * label is not a holo.
+ */
 const ALL_FOIL_SET_IDS = new Set([
   CELEBRATION_30TH_SET_ID,
   CLASSIC_COLLECTION_SET_ID,
+  CELEBRATIONS_CLASSIC_SET_ID,
 ])
+
+/** Radiant Collection cards are holographic even when listed as Common. */
+function isRadiantCollection(raw: RawCard): boolean {
+  if (setIdFromCardId(raw.id) !== GENERATIONS_SET_ID) return false
+  return cardHasNumberPrefix(
+    { id: raw.id, number: raw.number ?? '' },
+    RADIANT_COLLECTION_PREFIX,
+  )
+}
 
 function toCard(raw: RawCard, allFoil = false): PokemonCard {
   const rgb = RGB_MEW_IDS.has(raw.id)
   const rarity = rgb ? RGB_RARE_LABEL : (raw.rarity ?? 'Common')
   const tier = rgb ? 'ultra' : classifyTier(rarity, raw.subtypes ?? [])
   const rainbow = rgb || isRainbowCard(rarity, tier)
-  const foil = allFoil || rgb || isFoilCard(rarity, tier, rainbow)
+  const radiant = isRadiantCollection(raw)
+  const foil = allFoil || rgb || radiant || isFoilCard(rarity, tier, rainbow)
   return {
     id: raw.id,
     name: raw.name,
@@ -256,13 +289,14 @@ export async function openPack(
 
   const packType = rollPackType(setId)
 
-  // God pack — a fixed, set-specific miracle line-up. Falls through to the
-  // standard build if the signature cards aren't in the API data.
+  // God pack — a set-specific miracle line-up. Falls through to a normal
+  // pack if the signature cards aren't in the catalogue.
   if (packType === 'god') {
-    const god = buildGodPack(allCards)
+    const god = buildGodPack(setId, allCards)
     if (god) return finalisePack(setId, god, poolTotal, 'god')
   }
 
+  const galleryId = trainerGalleryCompanionId(setId)
   let cards: PokemonCard[]
   if (setId === CELEBRATION_30TH_SET_ID) {
     cards = buildCelebration30thCards(
@@ -278,13 +312,29 @@ export async function openPack(
       def.packSize,
       options.boostHit,
     )
+  } else if (setId === GENERATIONS_SET_ID) {
+    cards = buildGenerationsCards(allCards, def.packSize, options.boostHit)
+  } else if (setId === CELEBRATIONS_SET_ID) {
+    cards = buildCelebrationsCards(
+      allCards,
+      await mapSetCards(CELEBRATIONS_CLASSIC_SET_ID),
+      def.packSize,
+      options.boostHit,
+    )
+  } else if (galleryId) {
+    cards = buildTrainerGalleryCards(
+      allCards,
+      await mapSetCards(galleryId),
+      def.packSize,
+      options.boostHit,
+    )
   } else {
     cards = buildStandardCards(pool, def.packSize, options.boostHit)
   }
 
-  // Demigod pack — a standard pack salted with three Special Illustration Rares.
+  // Demigod pack — a standard pack whose last three slots are chase rares.
   if (packType === 'demigod') {
-    const demigod = buildDemigodCards(cards, allCards)
+    const demigod = buildDemigodCards(setId, cards, allCards)
     if (demigod) return finalisePack(setId, demigod, poolTotal, 'demigod')
   }
 
