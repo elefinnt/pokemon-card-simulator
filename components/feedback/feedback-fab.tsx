@@ -17,7 +17,7 @@ export function FeedbackFab() {
         openFeedback({ source: 'fab' })
       }}
       aria-label="Send feedback"
-      className="fixed z-40 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-2.5 text-sm font-semibold text-foreground shadow-lg transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="fixed z-40 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-2.5 text-sm font-semibold text-foreground shadow-lg transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring max-md:[body[data-pack-summary-bar]_&]:hidden"
       style={{
         right: 'max(1rem, env(safe-area-inset-right))',
         bottom: 'max(1rem, env(safe-area-inset-bottom))',
