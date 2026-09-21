@@ -3,10 +3,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { ArrowLeft, AlertCircle } from 'lucide-react'
+import { ArrowLeft, AlertCircle, LibraryBig } from 'lucide-react'
 import posthog from 'posthog-js'
 import { findPackBySlug, type PackDef } from '@/lib/packs'
-import { packPath, packSlugFromPath, pathForView, viewForPath } from '@/lib/nav'
+import {
+  collectionPath,
+  collectionSetFromSearch,
+  packPath,
+  packSlugFromPath,
+  pathForView,
+  viewForPath,
+} from '@/lib/nav'
+import { firstCopyIds } from '@/lib/collection-new'
 import type { OpenedPack } from '@/lib/pokemon'
 import { useCollection } from '@/lib/collection'
 import { useFreePacks, recordFreePackOpened } from '@/lib/free-packs'
@@ -44,12 +52,15 @@ export function PackSimulator({
   packs,
   initialPack = null,
   initialView = 'packs',
+  initialCollectionSet,
 }: {
   packs: PackDef[]
   /** Pre-selected pack when the visitor lands on a /pack/[slug] page. */
   initialPack?: PackDef | null
   /** Active tab when the visitor lands on a tab route like /community. */
   initialView?: View
+  /** Pack id from `/collection?set=` so the binder can open filtered. */
+  initialCollectionSet?: string
 }) {
   const [view, setView] = useState<View>(initialView)
   const [stage, setStage] = useState<Stage>(initialPack ? 'sealed' : 'select')
@@ -59,6 +70,10 @@ export function PackSimulator({
   const [prefetching, setPrefetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lastBoosted, setLastBoosted] = useState(false)
+  const [newCardIds, setNewCardIds] = useState<Set<string>>(new Set())
+  const [collectionSetId, setCollectionSetId] = useState<string | null>(
+    () => initialCollectionSet ?? null,
+  )
   const { data: collection, record, reset, isAuthenticated } = useCollection()
   const { status: authStatus } = useSession()
   const free = useFreePacks()
@@ -69,12 +84,25 @@ export function PackSimulator({
   // pathname alone and only fire on actual navigations.
   const stateRef = useRef({ pack, stage })
   stateRef.current = { pack, stage }
+  const ownedIdsRef = useRef<Set<string>>(new Set())
+
+  useEffect(() => {
+    const ids = Object.keys(collection.cards)
+    if (ids.length === 0) {
+      ownedIdsRef.current = new Set()
+      return
+    }
+    for (const id of ids) ownedIdsRef.current.add(id)
+  }, [collection.cards])
 
   /** Push a new URL without a server round-trip. Next.js picks this up and
    *  PostHog records it as a $pageview, giving us journey tracking for free. */
   const navigate = useCallback((path: string) => {
-    if (window.location.pathname !== path) {
-      window.history.pushState(null, '', path)
+    const next = new URL(path, window.location.origin)
+    const current = window.location.pathname + window.location.search
+    const target = next.pathname + next.search
+    if (current !== target) {
+      window.history.pushState(null, '', target)
       // pushState keeps the previous scroll position, which strands visitors
       // mid-page on the new view — treat it like a real page load instead.
       window.scrollTo(0, 0)
@@ -100,6 +128,9 @@ export function PackSimulator({
         setOpened(null)
       }
       setView(viewForPath(pathname))
+      if (pathname === '/collection') {
+        setCollectionSetId(collectionSetFromSearch(window.location.search))
+      }
     }
   }, [pathname, packs])
 
@@ -141,16 +172,36 @@ export function PackSimulator({
     (v: View) => {
       posthog.capture('tab_changed', { tab: v })
       setView(v)
+      if (v === 'collection') setCollectionSetId(null)
       navigate(pathForView(v))
     },
     [navigate],
   )
+
+  const changeCollectionFilter = useCallback((setId: string) => {
+    const next = setId === 'all' ? null : setId
+    setCollectionSetId(next)
+    const path = collectionPath(next)
+    const current = window.location.pathname + window.location.search
+    if (current !== path) {
+      window.history.replaceState(null, '', path)
+    }
+  }, [])
 
   const backToSelect = useCallback(() => {
     setStage('select')
     setOpened(null)
     navigate(pathForView(view))
   }, [navigate, view])
+
+  const goToCollection = useCallback(() => {
+    const setId = pack?.id ?? null
+    setStage('select')
+    setOpened(null)
+    setView('collection')
+    setCollectionSetId(setId)
+    navigate(collectionPath(setId))
+  }, [navigate, pack])
 
   const selectPack = useCallback(
     (p: PackDef) => {
@@ -196,11 +247,15 @@ export function PackSimulator({
     const started = Date.now()
     // The final free pack rolls with boosted odds to reward signing in.
     const boosted = !isAuthenticated && free.isLastFree
+    const preOwned = new Set(ownedIdsRef.current)
     try {
       const res = isAuthenticated
         ? await fetch(`/api/open/${pack.id}`, { method: 'POST' })
         : await fetch(`/api/open/${pack.id}${boosted ? '?boost=1' : ''}`)
       const data = await readOpenedPack(res)
+      const fresh = firstCopyIds(preOwned, data.cards.map((c) => c.id))
+      setNewCardIds(fresh)
+      for (const id of data.cards.map((c) => c.id)) ownedIdsRef.current.add(id)
       await delay(Math.max(0, 1200 - (Date.now() - started)))
       // Signed-in analytics are captured server-side as `pack_opened`; guests
       // are tracked here since their opens never hit the authenticated route.
@@ -284,6 +339,8 @@ export function PackSimulator({
                 onOpenPack={selectPack}
                 onReset={reset}
                 requiresSignIn={!isAuthenticated && free.exhausted}
+                setFilter={collectionSetId ?? 'all'}
+                onSetFilter={changeCollectionFilter}
               />
             </div>
           )}
@@ -310,7 +367,7 @@ export function PackSimulator({
 
       {stage === 'sealed' && pack && (
         <section className="flex flex-col items-center pt-8">
-          <div className="mb-8 w-full">
+          <div className="mb-8 flex w-full items-center justify-between gap-2">
             <Button
               variant="ghost"
               onClick={backToSelect}
@@ -318,6 +375,14 @@ export function PackSimulator({
             >
               <ArrowLeft className="size-4" />
               All packs
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={goToCollection}
+              className="text-muted-foreground"
+            >
+              <LibraryBig className="size-4" />
+              Collection
             </Button>
           </div>
 
@@ -369,7 +434,9 @@ export function PackSimulator({
             cards={opened.cards}
             pack={pack}
             packType={opened.packType}
+            newCardIds={newCardIds}
             onDone={() => setStage('summary')}
+            onViewCollection={goToCollection}
           />
         </section>
       )}
@@ -381,6 +448,7 @@ export function PackSimulator({
             pack={pack}
             bestTier={opened.bestTier}
             packType={opened.packType}
+            newCardIds={newCardIds}
             guestGate={
               isAuthenticated
                 ? undefined
@@ -392,11 +460,13 @@ export function PackSimulator({
             }
             onOpenAnother={() => {
               setOpened(null)
+              setNewCardIds(new Set())
               setStage('sealed')
               // Same URL, new view — start at the top of the sealed pack.
               window.scrollTo(0, 0)
             }}
             onChangePack={backToSelect}
+            onViewCollection={goToCollection}
           />
         </section>
       )}

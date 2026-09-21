@@ -11,6 +11,8 @@ import { TIER_META, isHit } from '@/lib/rarity'
 import { playSound } from '@/lib/sounds'
 import { PokeCardFace, PokeCardBack } from './poke-card'
 import { GodPackBanner } from './god-pack-banner'
+import { isFirstCopyInPack } from '@/lib/collection-new'
+import { NewCardBadge } from './new-card-badge'
 import { Button } from '@/components/ui/button'
 
 function celebrate(tier: PokemonCard['tier']) {
@@ -51,12 +53,16 @@ export function CardReveal({
   cards,
   pack,
   packType = 'normal',
+  newCardIds,
   onDone,
+  onViewCollection,
 }: {
   cards: PokemonCard[]
   pack: PackDef
   packType?: PackType
+  newCardIds?: Set<string>
   onDone: () => void
+  onViewCollection?: () => void
 }) {
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
@@ -66,6 +72,7 @@ export function CardReveal({
   const meta = TIER_META[card.tier]
   const last = index === total - 1
   const special = packType !== 'normal'
+  const isNew = isFirstCopyInPack(newCardIds, cards, index)
 
   // Kick off a big celebration the moment a special pack starts revealing.
   useEffect(() => {
@@ -122,31 +129,34 @@ export function CardReveal({
       </div>
 
       {/* Flip card */}
-      <div className="flip-scene w-[280px] max-w-[78vw]">
-        <button
-          type="button"
-          onClick={handleTap}
-          aria-label={flipped ? `${card.name}, ${meta.label}` : 'Flip card'}
-          className="block w-full cursor-pointer rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <div
-            key={index}
-            className={cn(
-              'flip-inner aspect-[2.5/3.5] w-full',
-              flipped && 'is-flipped',
-            )}
+      <div className="relative w-[280px] max-w-[78vw]">
+        {flipped && isNew && <NewCardBadge className="-top-3" />}
+        <div className="flip-scene w-full">
+          <button
+            type="button"
+            onClick={handleTap}
+            aria-label={flipped ? `${card.name}, ${meta.label}` : 'Flip card'}
+            className="block w-full cursor-pointer rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <div className="flip-face">
-              <PokeCardBack
-                accentFrom={pack.accentFrom}
-                accentTo={pack.accentTo}
-              />
+            <div
+              key={index}
+              className={cn(
+                'flip-inner aspect-[2.5/3.5] w-full',
+                flipped && 'is-flipped',
+              )}
+            >
+              <div className="flip-face">
+                <PokeCardBack
+                  accentFrom={pack.accentFrom}
+                  accentTo={pack.accentTo}
+                />
+              </div>
+              <div className="flip-face flip-back">
+                <PokeCardFace card={card} />
+              </div>
             </div>
-            <div className="flip-face flip-back">
-              <PokeCardFace card={card} />
-            </div>
-          </div>
-        </button>
+          </button>
+        </div>
       </div>
 
       {/* Card meta */}
@@ -170,9 +180,20 @@ export function CardReveal({
         )}
       </div>
 
-      <Button size="lg" onClick={handleTap} className="min-w-[160px] font-semibold">
-        {!flipped ? 'Reveal' : last ? 'See all pulls' : 'Next card'}
-      </Button>
+      <div className="flex flex-col items-center gap-2">
+        <Button size="lg" onClick={handleTap} className="min-w-[160px] font-semibold">
+          {!flipped ? 'Reveal' : last ? 'See all pulls' : 'Next card'}
+        </Button>
+        {onViewCollection && (
+          <button
+            type="button"
+            onClick={onViewCollection}
+            className="text-sm font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+          >
+            View collection
+          </button>
+        )}
+      </div>
 
       {/* Filmstrip of revealed cards */}
       <div className="flex flex-wrap items-center justify-center gap-1.5">

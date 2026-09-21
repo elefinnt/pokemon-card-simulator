@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { RotateCw, LayoutGrid } from 'lucide-react'
+import { RotateCw, LayoutGrid, LibraryBig } from 'lucide-react'
 import type { PokemonCard } from '@/lib/pokemon'
 import type { PackDef } from '@/lib/packs'
 import type { PackType } from '@/lib/god-pack'
@@ -10,6 +10,8 @@ import { PokeCardFace } from './poke-card'
 import { GodPackBanner } from './god-pack-banner'
 import { CardZoomModal } from './card-zoom-modal'
 import { SignInPrompt } from './sign-in-prompt'
+import { isFirstCopyInPack } from '@/lib/collection-new'
+import { NewCardBadge } from './new-card-badge'
 import { Button } from '@/components/ui/button'
 
 const TIER_ORDER = ['ultra', 'rare', 'uncommon', 'common'] as const
@@ -27,25 +29,32 @@ export function PulledCardsGrid({
   pack,
   bestTier,
   packType = 'normal',
+  newCardIds,
   guestGate,
   onOpenAnother,
   onChangePack,
+  onViewCollection,
 }: {
   cards: PokemonCard[]
   pack: PackDef
   bestTier: PokemonCard['tier']
   packType?: PackType
+  newCardIds?: Set<string>
   guestGate?: GuestGate
   onOpenAnother: () => void
   onChangePack: () => void
+  onViewCollection?: () => void
 }) {
   const [active, setActive] = useState<PokemonCard | null>(null)
   const bestMeta = TIER_META[bestTier]
 
-  // Sort so the good pulls come first.
-  const sorted = [...cards].sort(
-    (a, b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier),
-  )
+  // Sort so the good pulls come first. Keep the pack index so a second
+  // copy of a new card does not also get the New badge.
+  const sorted = cards
+    .map((card, packIndex) => ({ card, packIndex }))
+    .sort(
+      (a, b) => TIER_ORDER.indexOf(a.card.tier) - TIER_ORDER.indexOf(b.card.tier),
+    )
 
   return (
     <div className="flex w-full flex-col items-center gap-6">
@@ -78,16 +87,19 @@ export function PulledCardsGrid({
         />
       )}
 
-      <div className="grid w-full grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
-        {sorted.map((card, i) => (
+      <div className="grid w-full grid-cols-3 gap-3 pt-3 sm:grid-cols-4 md:grid-cols-5">
+        {sorted.map(({ card, packIndex }, i) => (
           <button
             key={card.id + i}
             type="button"
             onClick={() => setActive(card)}
             aria-label={`View ${card.name}`}
-            className="animate-card-in rounded-xl transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="relative animate-card-in rounded-xl transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             style={{ animationDelay: `${i * 45}ms` }}
           >
+            {isFirstCopyInPack(newCardIds, cards, packIndex) && (
+              <NewCardBadge className="-top-2" />
+            )}
             <PokeCardFace card={card} showShine={card.tier === 'ultra'} />
           </button>
         ))}
@@ -98,6 +110,17 @@ export function PulledCardsGrid({
           <RotateCw className="size-4" />
           Open another {pack.name}
         </Button>
+        {onViewCollection && (
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={onViewCollection}
+            className="font-semibold"
+          >
+            <LibraryBig className="size-4" />
+            View collection
+          </Button>
+        )}
         <Button
           size="lg"
           variant="secondary"

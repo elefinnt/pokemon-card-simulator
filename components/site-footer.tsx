@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Mail } from 'lucide-react'
 import { Pokeball } from '@/components/poke-card'
 import { CURATED_SET_IDS, PACK_OVERRIDES } from '@/lib/pack-overrides'
 import { FALLBACK_SET_META } from '@/lib/pack-fallback-meta'
@@ -90,6 +91,13 @@ export function SiteFooter() {
               the holos and track your collection.
             </p>
             <FeedbackButton />
+            <a
+              href="mailto:hello@packrip.org"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none"
+            >
+              <Mail className="size-4" />
+              hello@packrip.org
+            </a>
           </div>
 
           <FooterColumn title="Explore" links={explore} />

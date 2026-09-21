@@ -103,6 +103,13 @@ export default function AboutPage() {
               >
                 frequently asked questions
               </Link>
+              , email{' '}
+              <a
+                href="mailto:hello@packrip.org"
+                className="text-primary underline-offset-4 hover:underline"
+              >
+                hello@packrip.org
+              </a>
               , send feedback with the button in the corner, or head back to the{' '}
               <Link
                 href="/"

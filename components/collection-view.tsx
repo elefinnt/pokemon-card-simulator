@@ -7,13 +7,15 @@ import {
   type CollectionData,
   type CollectedCard,
   searchCards,
+  summarizeSet,
 } from '@/lib/collection'
 import { Button } from '@/components/ui/button'
 import { CardDetailModal } from './card-detail-modal'
 import { SignInPrompt } from './sign-in-prompt'
 import { PackSection } from './collection/pack-section'
 import { CollectionCardThumb } from './collection/collection-card-thumb'
-import { BINDER_COMPANION_SETS } from '@/lib/set-companions'
+import { CollectionSetFilter } from './collection/collection-set-filter'
+import { BINDER_COMPANION_SETS, binderSetIds } from '@/lib/set-companions'
 import { setLabel } from '@/lib/showcase-filters'
 
 export function CollectionView({
@@ -22,16 +24,23 @@ export function CollectionView({
   onOpenPack,
   onReset,
   requiresSignIn = false,
+  setFilter = 'all',
+  onSetFilter,
 }: {
   packs: PackDef[]
   collection: CollectionData
   onOpenPack: (pack: PackDef) => void
   onReset: () => void | Promise<void>
   requiresSignIn?: boolean
+  setFilter?: string
+  onSetFilter?: (setId: string) => void
 }) {
   const [confirmReset, setConfirmReset] = useState(false)
   const [selectedCard, setSelectedCard] = useState<CollectedCard | null>(null)
   const [query, setQuery] = useState('')
+  const [localFilter, setLocalFilter] = useState(setFilter)
+  const activeFilter = onSetFilter ? setFilter : localFilter
+  const changeFilter = onSetFilter ?? setLocalFilter
 
   const packById = useMemo(
     () => new Map(packs.map((p) => [p.id, p])),
@@ -39,10 +48,12 @@ export function CollectionView({
   )
 
   const uniqueOwned = Object.keys(collection.cards).length
-  const searchResults = useMemo(
-    () => searchCards(collection, query),
-    [collection, query],
-  )
+  const searchResults = useMemo(() => {
+    const results = searchCards(collection, query)
+    if (activeFilter === 'all') return results
+    const ids = new Set(binderSetIds(activeFilter))
+    return results.filter((c) => ids.has(c.setId))
+  }, [collection, query, activeFilter])
   const isSearching = query.trim().length > 0
 
   // Show a set if any pack was opened from it OR the user owns a card in it
@@ -59,6 +70,31 @@ export function CollectionView({
         ownedSetIds.has(id) || (collection.sets[id]?.packsOpened ?? 0) > 0,
     )
   })
+
+  const setOptions = collectedPacks.map((pack) => ({
+    pack,
+    uniqueOwned: summarizeSet(collection, pack.id, pack.total).uniqueOwned,
+  }))
+  if (
+    activeFilter !== 'all' &&
+    !setOptions.some((o) => o.pack.id === activeFilter)
+  ) {
+    const extra = packs.find((p) => p.id === activeFilter)
+    if (extra) {
+      setOptions.unshift({
+        pack: extra,
+        uniqueOwned: summarizeSet(collection, extra.id, extra.total)
+          .uniqueOwned,
+      })
+    }
+  }
+
+  const visiblePacks =
+    activeFilter === 'all'
+      ? collectedPacks
+      : collectedPacks.filter((p) => p.id === activeFilter)
+
+  const filteredPack = packs.find((p) => p.id === activeFilter)
 
   if (uniqueOwned === 0) {
     if (requiresSignIn) {
@@ -86,15 +122,22 @@ export function CollectionView({
 
   return (
     <div className="space-y-8">
-      <div className="relative mx-auto max-w-md">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search your collection…"
-          aria-label="Search collection"
-          className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      <div className="mx-auto max-w-md space-y-3">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search your collection…"
+            aria-label="Search collection"
+            className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        </div>
+        <CollectionSetFilter
+          options={setOptions}
+          value={activeFilter}
+          onChange={changeFilter}
         />
       </div>
 
@@ -127,8 +170,8 @@ export function CollectionView({
           packById={packById}
           onSelectCard={setSelectedCard}
         />
-      ) : (
-        collectedPacks.map((pack) => (
+      ) : visiblePacks.length > 0 ? (
+        visiblePacks.map((pack) => (
           <PackSection
             key={pack.id}
             pack={pack}
@@ -138,6 +181,17 @@ export function CollectionView({
             requiresSignIn={requiresSignIn}
           />
         ))
+      ) : (
+        <EmptySetFilter
+          packName={
+            filteredPack?.name ??
+            (activeFilter !== 'all' ? activeFilter : undefined)
+          }
+          onShowAll={() => changeFilter('all')}
+          onOpenPack={
+            filteredPack ? () => onOpenPack(filteredPack) : undefined
+          }
+        />
       )}
 
       <div className="flex items-center justify-center pt-4">
@@ -202,6 +256,39 @@ function StatCard({
       </div>
       <div className="mt-1 font-display text-2xl font-black text-foreground">
         {value.toLocaleString()}
+      </div>
+    </div>
+  )
+}
+
+function EmptySetFilter({
+  packName,
+  onShowAll,
+  onOpenPack,
+}: {
+  packName?: string
+  onShowAll: () => void
+  onOpenPack?: () => void
+}) {
+  return (
+    <div className="mx-auto max-w-md rounded-2xl border border-dashed border-border bg-card/50 px-6 py-12 text-center">
+      <LibraryBig className="mx-auto size-9 text-muted-foreground" />
+      <h3 className="mt-4 font-display text-lg font-extrabold text-foreground">
+        Nothing from {packName ?? 'this set'} yet
+      </h3>
+      <p className="mt-2 text-sm text-muted-foreground">
+        You have not collected any cards from this set. Open a pack or switch
+        back to all sets.
+      </p>
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+        {onOpenPack && (
+          <Button size="sm" onClick={onOpenPack}>
+            Open a pack
+          </Button>
+        )}
+        <Button size="sm" variant="secondary" onClick={onShowAll}>
+          Show all sets
+        </Button>
       </div>
     </div>
   )

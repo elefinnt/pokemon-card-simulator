@@ -35,3 +35,16 @@ export function packSlugFromPath(pathname: string): string | null {
   const match = /^\/pack\/([^/]+)\/?$/.exec(pathname)
   return match ? decodeURIComponent(match[1]) : null
 }
+
+/** Collection binder, optionally filtered to one pack id. */
+export function collectionPath(setId?: string | null): string {
+  if (!setId || setId === 'all') return '/collection'
+  return `/collection?set=${encodeURIComponent(setId)}`
+}
+
+/** Read `?set=` from a query string. Returns null for "all" or missing. */
+export function collectionSetFromSearch(search: string): string | null {
+  const raw = search.startsWith('?') ? search.slice(1) : search
+  const set = new URLSearchParams(raw).get('set')
+  return set && set !== 'all' ? set : null
+}
