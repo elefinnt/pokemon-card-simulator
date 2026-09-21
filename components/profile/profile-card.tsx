@@ -64,6 +64,7 @@ export function ProfileCard({ profile }: { profile: PublicProfile }) {
           </p>
           <ShowcaseStrip
             cards={profile.showcase}
+            showNames
             emptyLabel={
               profile.isSelf
                 ? 'Add up to three favourite cards to your showcase.'
