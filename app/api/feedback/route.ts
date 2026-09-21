@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { FeedbackError, createFeedback } from '@/lib/feedback-db'
 import { isFeedbackCategory } from '@/lib/feedback-types'
+import { notifyFeedbackSubmitted } from '@/lib/telegram'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,6 +23,8 @@ export async function POST(request: Request) {
   }
 
   const contactOk = body.contactOk === true
+  const category = isFeedbackCategory(body.category) ? body.category : 'other'
+  const page = typeof body.page === 'string' ? body.page : null
 
   // The account email always wins so signed-in feedback can't spoof a contact
   // address; anonymous visitors supply one themselves when they opt in.
@@ -35,9 +38,17 @@ export async function POST(request: Request) {
       userId: session?.user?.id ?? null,
       email,
       contactOk,
-      category: isFeedbackCategory(body.category) ? body.category : 'other',
+      category,
       message: body.message,
-      page: typeof body.page === 'string' ? body.page : null,
+      page,
+    })
+    await notifyFeedbackSubmitted({
+      category,
+      message: body.message,
+      page,
+      contactOk,
+      email,
+      userName: session?.user?.name ?? null,
     })
     return NextResponse.json({ ok: true })
   } catch (err) {
