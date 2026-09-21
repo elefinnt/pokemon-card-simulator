@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { RotateCw, LayoutGrid, LibraryBig } from 'lucide-react'
 import type { PokemonCard } from '@/lib/pokemon'
 import type { PackDef } from '@/lib/packs'
 import type { PackType } from '@/lib/god-pack'
@@ -12,7 +11,7 @@ import { CardZoomModal } from './card-zoom-modal'
 import { SignInPrompt } from './sign-in-prompt'
 import { isFirstCopyInPack } from '@/lib/collection-new'
 import { NewCardBadge } from './new-card-badge'
-import { Button } from '@/components/ui/button'
+import { PulledCardsActions } from './pulled-cards-actions'
 
 const TIER_ORDER = ['ultra', 'rare', 'uncommon', 'common'] as const
 
@@ -57,7 +56,7 @@ export function PulledCardsGrid({
     )
 
   return (
-    <div className="flex w-full flex-col items-center gap-6">
+    <div className="flex w-full flex-col items-center gap-6 max-md:pb-40">
       <GodPackBanner packType={packType} setId={pack.id} />
       <div className="text-center">
         <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
@@ -105,32 +104,12 @@ export function PulledCardsGrid({
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <Button size="lg" onClick={onOpenAnother} className="font-semibold">
-          <RotateCw className="size-4" />
-          Open another {pack.name}
-        </Button>
-        {onViewCollection && (
-          <Button
-            size="lg"
-            variant="outline"
-            onClick={onViewCollection}
-            className="font-semibold"
-          >
-            <LibraryBig className="size-4" />
-            View collection
-          </Button>
-        )}
-        <Button
-          size="lg"
-          variant="secondary"
-          onClick={onChangePack}
-          className="font-semibold"
-        >
-          <LayoutGrid className="size-4" />
-          Choose different pack
-        </Button>
-      </div>
+      <PulledCardsActions
+        packName={pack.name}
+        onOpenAnother={onOpenAnother}
+        onChangePack={onChangePack}
+        onViewCollection={onViewCollection}
+      />
 
       <CardZoomModal card={active} onClose={() => setActive(null)} />
     </div>
