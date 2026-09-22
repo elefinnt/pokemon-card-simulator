@@ -412,24 +412,32 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
     accentTo: '#6d28d9',
     blurb:
       'Ascended Heroes — Mega Evolution Pokémon ex and Mega Attack Rares headline the biggest English set yet.',
+    logo: '/set-logos/ascended-heroes-logo.png',
+    symbol: '/set-logos/ascended-heroes-symbol.png',
   },
   me3: {
     slug: 'perfect-order',
     accentFrom: '#e5e7eb',
     accentTo: '#1e3a8a',
     blurb: 'Perfect Order — precision, power and pristine chase cards.',
+    logo: '/set-logos/perfect-order-logo.png',
+    symbol: '/set-logos/perfect-order-symbol.png',
   },
   me4: {
     slug: 'chaos-rising',
     accentFrom: '#dc2626',
     accentTo: '#0f172a',
     blurb: 'Chaos Rising — the Mega era erupts with wild, powerful pulls.',
+    logo: '/set-logos/chaos-rising-logo.png',
+    symbol: '/set-logos/chaos-rising-symbol.png',
   },
   me5: {
     slug: 'pitch-black',
     accentFrom: '#1e1b4b',
     accentTo: '#0f172a',
     blurb: 'Pitch Black — Mega Evolution returns, with shadowy chase cards lurking in every pack.',
+    logo: '/set-logos/pitch-black-logo.png',
+    symbol: '/set-logos/pitch-black-symbol.png',
   },
   me55: {
     slug: '30th-celebration',
