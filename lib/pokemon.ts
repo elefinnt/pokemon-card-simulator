@@ -51,6 +51,7 @@ import {
   TIER_RANK,
   type CardTier,
 } from './pokemontcg/rarity'
+import { correctedRarity } from './rarity-corrections'
 import type { RawCard } from './pokemontcg/types'
 
 export type { CardTier }
@@ -108,7 +109,9 @@ function isRadiantCollection(raw: RawCard): boolean {
 
 function toCard(raw: RawCard, allFoil = false): PokemonCard {
   const rgb = RGB_MEW_IDS.has(raw.id)
-  const rarity = rgb ? RGB_RARE_LABEL : (raw.rarity ?? 'Common')
+  const rarity = rgb
+    ? RGB_RARE_LABEL
+    : correctedRarity(raw.id, raw.rarity ?? 'Common')
   const tier = rgb ? 'ultra' : classifyTier(rarity, raw.subtypes ?? [])
   const rainbow = rgb || isRainbowCard(rarity, tier)
   const radiant = isRadiantCollection(raw)

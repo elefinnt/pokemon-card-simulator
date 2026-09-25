@@ -23,6 +23,7 @@ const ULTRA_RARITY_KEYS = [
   'amazing',
   'double rare',
   'hyper',
+  'black white',
   'shiny',
   'full art',
   'radiant',

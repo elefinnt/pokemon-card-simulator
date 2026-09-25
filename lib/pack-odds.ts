@@ -47,6 +47,9 @@ export function classifyHit(rarity: string): HitClass {
   if (r.includes('special illustration')) return 'specialIllustration'
   if (r.includes('illustration')) return 'illustration'
   if (r.includes('hyper')) return 'hyper'
+  // Black White Rare is scarcer than a Special Illustration Rare. The table
+  // has no rarer band, so it uses the Hyper Rare art-slot rate (1 in 70).
+  if (r.includes('black white')) return 'hyper'
   if (r.includes('double rare')) return 'doubleRare'
   if (r.includes('ace spec')) return 'aceSpec'
   return 'otherUltra'
