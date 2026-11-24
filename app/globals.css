@@ -447,11 +447,19 @@
   }
 }
 
-[data-theme='gen1'] .theme-select {
+[data-theme='gen1'] .theme-select,
+[data-theme='gen1'] .theme-select-popup {
   font-family: var(--font-press-start), 'Courier New', monospace;
   font-size: 0.5rem;
   font-weight: 400;
   text-transform: uppercase;
+  border: 2px solid #181010;
+  border-radius: 0;
+  box-shadow: 2px 2px 0 #181010;
+}
+
+[data-theme='gen1'] .theme-select-popup [role='option'] {
+  border-radius: 0;
 }
 
 [data-theme='gen3'] {
@@ -650,6 +658,14 @@
   box-shadow: 0 0 0 1px #484058;
 }
 
-[data-theme='gen3'] .theme-select {
+[data-theme='gen3'] .theme-select,
+[data-theme='gen3'] .theme-select-popup {
   color: #606060;
+  background-color: #f8f8f8;
+  border: 3px solid;
+  border-color: #8b8bcd #626294 #4a4a6a #7373ac;
+  border-radius: 6px;
+  box-shadow:
+    0 0 0 2px #293131,
+    inset 0 0 0 2px #ded5de;
 }
