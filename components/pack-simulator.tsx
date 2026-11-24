@@ -300,7 +300,7 @@ export function PackSimulator({
     <div className="mx-auto w-full max-w-6xl px-4 pb-20">
       {stage === 'select' && (
         <section>
-          <div className="mx-auto max-w-2xl pt-10 text-center sm:pt-16">
+          <div className="theme-hero mx-auto max-w-2xl pt-10 text-center sm:pt-16">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Free &amp; Unlimited
             </span>

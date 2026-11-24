@@ -39,7 +39,7 @@ export function TradeCardThumb({
       disabled={!interactive}
       aria-pressed={interactive ? selected : undefined}
       className={cn(
-        'group relative block aspect-[2.5/3.5] w-full overflow-hidden rounded-lg bg-muted transition-all',
+        'tcg-card group relative block aspect-[2.5/3.5] w-full overflow-hidden rounded-lg bg-muted transition-all',
         interactive && 'cursor-pointer hover:-translate-y-0.5',
         selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
         dimmed && 'opacity-45 grayscale',

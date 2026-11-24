@@ -20,7 +20,7 @@ export function PokeCardFace({
   return (
     <div
       className={cn(
-        'relative aspect-[2.5/3.5] w-full overflow-hidden rounded-xl bg-muted shadow-lg',
+        'tcg-card relative aspect-[2.5/3.5] w-full overflow-hidden rounded-xl bg-muted shadow-lg',
         className,
       )}
       style={{
@@ -60,7 +60,7 @@ export function PokeCardBack({
   return (
     <div
       className={cn(
-        'relative aspect-[2.5/3.5] w-full overflow-hidden rounded-xl shadow-lg',
+        'tcg-card relative aspect-[2.5/3.5] w-full overflow-hidden rounded-xl shadow-lg',
         className,
       )}
       style={{

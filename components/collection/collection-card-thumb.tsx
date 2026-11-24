@@ -21,7 +21,7 @@ export function CollectionCardThumb({
     <>
       <div
         className={cn(
-          'relative overflow-hidden rounded-lg border bg-muted transition-transform duration-200',
+          'tcg-card relative overflow-hidden rounded-lg border bg-muted transition-transform duration-200',
           owned && 'group-hover:-translate-y-1 group-hover:shadow-lg',
         )}
         style={{

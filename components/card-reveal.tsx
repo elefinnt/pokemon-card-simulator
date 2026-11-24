@@ -203,7 +203,7 @@ export function CardReveal({
             <div
               key={c.id + i}
               className={cn(
-                'aspect-[2.5/3.5] w-8 overflow-hidden rounded-sm border transition-all',
+                'tcg-card aspect-[2.5/3.5] w-8 overflow-hidden rounded-sm border transition-all',
                 i === index ? 'border-primary' : 'border-border',
               )}
               style={

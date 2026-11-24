@@ -79,7 +79,7 @@ export function TiltCard({
       <div
         ref={cardRef}
         className={cn(
-          'relative aspect-[2.5/3.5] w-full overflow-hidden rounded-2xl bg-muted',
+          'tcg-card relative aspect-[2.5/3.5] w-full overflow-hidden rounded-2xl bg-muted',
           !interacting && 'transition-transform duration-500 ease-out',
         )}
         style={{
