@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { PageShell } from '@/components/page-shell'
 import { ContentPage } from '@/components/content/content-page'
 import { FREE_PACK_LIMIT } from '@/lib/free-packs-config'
+import { DISCOVERY_PACKS } from '@/lib/site-discovery'
 
 const title = 'About — PackRip'
 const description =
@@ -29,7 +30,7 @@ export default function AboutPage() {
         eyebrow="About"
         title="About PackRip"
         intro={[
-          'PackRip is a free Pokémon booster pack opening simulator. Pick a set, tear open a pack and reveal every card one at a time — holo shine, sparkles and rare-hit celebrations included.',
+          'PackRip at packrip.org is a free Pokémon booster pack opening simulator for your web browser. Pick a set, tear open a pack and reveal every card one at a time — holo shine, sparkles and rare-hit celebrations included.',
         ]}
       >
         <div className="space-y-8 leading-relaxed text-muted-foreground">
@@ -45,8 +46,17 @@ export default function AboutPage() {
             </p>
             <p>
               Every visitor can open {FREE_PACK_LIMIT} free packs. Signing in is
-              free and unlocks unlimited packs plus permanent collection
-              tracking, so the cards you pull are saved to your profile.
+              free and removes the guest allowance, with permanent collection
+              tracking across devices. Very rapid or sustained opening may
+              trigger a short cooldown.
+            </p>
+            <p>
+              Browse{' '}
+              <Link href="/packs" prefetch={false} className="text-primary underline-offset-4 hover:underline">
+                all {DISCOVERY_PACKS.length} supported Pokémon sets
+              </Link>
+              , including classic releases, Scarlet &amp; Violet and Mega Evolution.
+              There is no app to install and no payment required to play.
             </p>
           </section>
 

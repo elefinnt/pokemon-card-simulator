@@ -54,6 +54,7 @@ function FooterColumn({
 export function SiteFooter() {
   const explore: FooterLink[] = [
     { href: '/', label: 'Open packs' },
+    { href: '/packs', label: 'All Pokémon sets' },
     { href: '/community', label: 'Community pulls' },
     { href: '/guides', label: 'TCG guides' },
     { href: '/faq', label: 'FAQ' },

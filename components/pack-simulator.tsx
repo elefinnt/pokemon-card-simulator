@@ -24,6 +24,7 @@ import { prefetchPool } from '@/lib/prefetch-pool'
 import { useTrades } from '@/lib/trades'
 import { PackBrowser } from './home/pack-browser'
 import { BoosterPack } from './booster-pack'
+import { PackDetails } from './pack-details'
 import { CardReveal } from './card-reveal'
 import { PulledCardsGrid } from './pulled-cards-grid'
 import { CollectionView } from './collection-view'
@@ -430,6 +431,7 @@ export function PackSimulator({
               {error}
             </div>
           )}
+          <PackDetails pack={pack} />
         </section>
       )}
 
