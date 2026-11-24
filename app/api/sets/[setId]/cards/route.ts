@@ -19,7 +19,9 @@ export async function GET(
 
   try {
     const cards = await getSetCatalogue(setId)
-    return NextResponse.json({ setId, cards })
+    return NextResponse.json({ setId, cards }, {
+      headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800' },
+    })
   } catch (err) {
     console.log('[sets/cards] fetch failed:', err instanceof Error ? err.message : err)
 

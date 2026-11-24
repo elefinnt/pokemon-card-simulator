@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation'
 import { CURATED_SET_IDS, PACK_OVERRIDES } from '@/lib/pack-overrides'
 import { ensurePacksLoaded, findPackBySlug, type PackDef } from '@/lib/packs'
 import { packPath } from '@/lib/nav'
-import { warmCuratedPools } from '@/lib/pokemontcg/warm'
 import { PackSimulator } from '@/components/pack-simulator'
 import { PageShell } from '@/components/page-shell'
 
@@ -82,8 +81,6 @@ export default async function PackPage({
   const packs = await ensurePacksLoaded()
   const pack = findPackBySlug(packs, slug)
   if (!pack) notFound()
-
-  warmCuratedPools().catch(() => {})
 
   return (
     <PageShell>

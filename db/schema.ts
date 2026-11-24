@@ -13,6 +13,16 @@ import {
 import type { PokemonCard } from '@/lib/pokemon'
 import type { ShowcaseCard } from '@/lib/profile-types'
 
+// Shared across serverless instances and tabs. Keys are HMACs, never raw IPs.
+export const packOpenLimits = mysqlTable('pack_open_limits', {
+  subject: varchar('subject', { length: 64 }).primaryKey(),
+  minuteBucket: int('minute_bucket').notNull(),
+  minuteCount: int('minute_count').notNull(),
+  hourBucket: int('hour_bucket').notNull(),
+  hourCount: int('hour_count').notNull(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
+}, (t) => ({ updated: index('pack_open_limits_updated_at_idx').on(t.updatedAt) }))
+
 // ---- Auth.js tables --------------------------------------------------------
 
 export const users = mysqlTable('user', {

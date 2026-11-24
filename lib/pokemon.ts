@@ -22,6 +22,7 @@ import {
   CELEBRATIONS_SET_ID,
 } from './celebrations'
 import { sortByCardNumber } from './card-order'
+import { buildShinyVaultCards, SHINY_VAULT_COMPANIONS } from './shiny-vault'
 import {
   buildGenerationsCards,
   GENERATIONS_SET_ID,
@@ -321,6 +322,13 @@ export async function openPack(
     cards = buildCelebrationsCards(
       allCards,
       await mapSetCards(CELEBRATIONS_CLASSIC_SET_ID),
+      def.packSize,
+      options.boostHit,
+    )
+  } else if (SHINY_VAULT_COMPANIONS[setId]) {
+    cards = buildShinyVaultCards(
+      allCards,
+      await mapSetCards(SHINY_VAULT_COMPANIONS[setId]),
       def.packSize,
       options.boostHit,
     )

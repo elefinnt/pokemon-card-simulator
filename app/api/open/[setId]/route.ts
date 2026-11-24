@@ -6,6 +6,8 @@ import { RateLimitError } from '@/lib/pokemontcg/client'
 import { recordPackForUser } from '@/lib/collection-db'
 import { recordPackOpening } from '@/lib/community/community-db'
 import { getPostHogClient } from '@/lib/posthog-server'
+import { PACK_OVERRIDES } from '@/lib/pack-overrides'
+import { enforcePackOpenLimit, packOpeningPauseResponse } from '@/lib/pack-open-limits'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,7 +19,7 @@ async function openPackForSet(setId: string, boostHit = false) {
 
   try {
     const pack = await openPack(setId, { boostHit })
-    return NextResponse.json(pack)
+    return NextResponse.json(pack, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (err) {
     console.log('[open] failed:', err instanceof Error ? err.message : err)
 
@@ -47,22 +49,32 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ setId: string }> },
 ) {
+  const paused = packOpeningPauseResponse()
+  if (paused) return paused
   const { setId } = await params
+  if (!Object.hasOwn(PACK_OVERRIDES, setId)) return NextResponse.json({ error: 'Unknown pack' }, { status: 404 })
+  const limited = await enforcePackOpenLimit(request)
+  if (limited) return limited
   const boostHit = new URL(request.url).searchParams.get('boost') === '1'
   return openPackForSet(setId, boostHit)
 }
 
 /** Signed-in pack open — cards are persisted to the account. */
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ setId: string }> },
 ) {
+  const paused = packOpeningPauseResponse()
+  if (paused) return paused
   const session = await auth()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Sign in to open packs' }, { status: 401 })
   }
 
   const { setId } = await params
+  if (!Object.hasOwn(PACK_OVERRIDES, setId)) return NextResponse.json({ error: 'Unknown pack' }, { status: 404 })
+  const limited = await enforcePackOpenLimit(request, session.user.id)
+  if (limited) return limited
 
   await ensurePacksLoaded()
   const def = getPack(setId)
@@ -89,22 +101,28 @@ export async function POST(
       )
     }
 
-    const posthog = getPostHogClient()
-    posthog.capture({
-      distinctId: session.user.id,
-      event: 'pack_opened',
-      properties: {
-        set_id: setId,
-        pack_name: def.name,
-        series: def.series,
-        pack_type: pack.packType,
-        best_tier: pack.bestTier,
-        card_count: pack.cards.length,
-      },
-    })
-    await posthog.flush()
+    // Analytics failures must not turn an already-saved opening into an error
+    // that encourages a retry and duplicate work.
+    try {
+      const posthog = getPostHogClient()
+      posthog.capture({
+        distinctId: session.user.id,
+        event: 'pack_opened',
+        properties: {
+          set_id: setId,
+          pack_name: def.name,
+          series: def.series,
+          pack_type: pack.packType,
+          best_tier: pack.bestTier,
+          card_count: pack.cards.length,
+        },
+      })
+      await posthog.flush()
+    } catch (analyticsError) {
+      console.warn('[open] analytics failed:', analyticsError instanceof Error ? analyticsError.message : 'Unknown error')
+    }
 
-    return NextResponse.json(pack)
+    return NextResponse.json(pack, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (err) {
     console.log('[open] POST failed:', err instanceof Error ? err.message : err)
 

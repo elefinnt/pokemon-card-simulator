@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 import { useSession } from 'next-auth/react'
 import type { OpenedPack } from './pokemon'
+import { mergePackIntoCollection } from './collection-merge'
 import {
   type CollectionData,
   emptyCollection,
@@ -36,6 +37,7 @@ const SERVER_SNAPSHOT: CollectionData = Object.freeze(emptyCollection())
 // ---- Remote collection state -----------------------------------------------
 
 let remoteCache: CollectionData | null = null
+let remoteRevision = 0
 const remoteListeners = new Set<() => void>()
 
 function notifyRemote() {
@@ -95,8 +97,9 @@ export function useCollection() {
   const [syncError, setSyncError] = useState<string | null>(null)
 
   const refreshRemote = useCallback(async () => {
+    const revision = remoteRevision
     const data = await fetchRemoteCollection()
-    if (data) {
+    if (data && revision === remoteRevision) {
       remoteCache = data
       notifyRemote()
     }
@@ -105,6 +108,7 @@ export function useCollection() {
 
   useEffect(() => {
     if (!isAuthenticated) {
+      remoteRevision++
       remoteCache = null
       notifyRemote()
       return
@@ -142,7 +146,14 @@ export function useCollection() {
   const record = useCallback(
     async (opened: OpenedPack) => {
       if (isAuthenticated) {
-        await refreshRemote()
+        if (!remoteCache) {
+          // The successful opening is already included by the server.
+          await refreshRemote()
+          return
+        }
+        remoteCache = mergePackIntoCollection(remoteCache, opened)
+        remoteRevision++
+        notifyRemote()
         return
       }
       recordLocalPack(opened)
@@ -154,6 +165,7 @@ export function useCollection() {
     if (isAuthenticated) {
       const res = await fetch('/api/collection', { method: 'DELETE' })
       if (res.ok) {
+        remoteRevision++
         remoteCache = emptyCollection()
         notifyRemote()
       }
@@ -168,6 +180,7 @@ export function useCollection() {
     data,
     record,
     reset,
+    refresh: refreshRemote,
     loading: isAuthenticated && loading,
     syncError,
     isAuthenticated,

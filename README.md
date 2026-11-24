@@ -74,6 +74,9 @@ Share your friend code to build your crew, then send and receive trade offers to
 | **Scarlet & Violet** | 151, Paldean Fates, Prismatic Evolutions, Destined Rivals & more |
 | **Mega Evolution** | Mega Evolution, Phantasmal Flames, 30th Celebration, Pitch Black & more |
 
+Delta Reign is included, and Hidden Fates and Shining Fates each include their
+Shiny Vault in both pack pulls and the collection binder.
+
 ---
 
 ## Run it locally
@@ -88,6 +91,10 @@ pnpm dev
 Open [http://localhost:3000](http://localhost:3000) and start ripping.
 
 For Discord sign-in, cloud collection saving, friends, and trading, copy `.env.example` to `.env` and fill in your credentials (Discord OAuth + a MySQL `DATABASE_URL`). A Pokémon TCG API key is optional but recommended for higher rate limits.
+
+Before deploying, run `pnpm db:setup-pack-limits` to create the shared cooldown
+counter table. See [usage controls](./docs/usage-controls.md) for limits, Vercel
+firewall recommendations, and the opening-only pause switch.
 
 ---
 

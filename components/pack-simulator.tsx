@@ -20,6 +20,7 @@ import { useCollection } from '@/lib/collection'
 import { useFreePacks, recordFreePackOpened } from '@/lib/free-packs'
 import { openFreeTrial } from '@/lib/free-trial-dialog'
 import { maybeShowFeedbackNudge } from '@/lib/feedback-prompt'
+import { prefetchPool } from '@/lib/prefetch-pool'
 import { useTrades } from '@/lib/trades'
 import { PackBrowser } from './home/pack-browser'
 import { BoosterPack } from './booster-pack'
@@ -74,7 +75,7 @@ export function PackSimulator({
   const [collectionSetId, setCollectionSetId] = useState<string | null>(
     () => initialCollectionSet ?? null,
   )
-  const { data: collection, record, reset, isAuthenticated } = useCollection()
+  const { data: collection, record, reset, refresh: refreshCollection, isAuthenticated } = useCollection()
   const { status: authStatus } = useSession()
   const free = useFreePacks()
   const { data: trades } = useTrades()
@@ -172,10 +173,13 @@ export function PackSimulator({
     (v: View) => {
       posthog.capture('tab_changed', { tab: v })
       setView(v)
-      if (v === 'collection') setCollectionSetId(null)
+      if (v === 'collection') {
+        setCollectionSetId(null)
+        if (isAuthenticated) void refreshCollection().catch(() => {})
+      }
       navigate(pathForView(v))
     },
-    [navigate],
+    [navigate, isAuthenticated, refreshCollection],
   )
 
   const changeCollectionFilter = useCallback((setId: string) => {
@@ -191,8 +195,9 @@ export function PackSimulator({
   const backToSelect = useCallback(() => {
     setStage('select')
     setOpened(null)
-    navigate(pathForView(view))
-  }, [navigate, view])
+    setView('packs')
+    navigate(pathForView('packs'))
+  }, [navigate])
 
   const goToCollection = useCallback(() => {
     const setId = pack?.id ?? null
@@ -200,8 +205,9 @@ export function PackSimulator({
     setOpened(null)
     setView('collection')
     setCollectionSetId(setId)
+    if (isAuthenticated) void refreshCollection().catch(() => {})
     navigate(collectionPath(setId))
-  }, [navigate, pack])
+  }, [navigate, pack, isAuthenticated, refreshCollection])
 
   const selectPack = useCallback(
     (p: PackDef) => {
@@ -227,8 +233,7 @@ export function PackSimulator({
     if (!pack || stage !== 'sealed') return
     let cancelled = false
     setPrefetching(true)
-    fetch(`/api/pool/${pack.id}`)
-      .catch(() => {})
+    prefetchPool(pack.id)
       .finally(() => {
         if (!cancelled) setPrefetching(false)
       })

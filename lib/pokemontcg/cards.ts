@@ -87,11 +87,14 @@ async function fetchAllCardsForSet(setId: string): Promise<RawCard[]> {
 }
 
 /**
- * Cached card pool for a set. A cold cache is seeded instantly from the
- * committed snapshot (see `snapshot.ts`) and refreshed from the API in the
- * background, so the first open of a set never blocks on the external API.
+ * Committed card pools are served directly; missing pools use the cached API.
+ * LIVE_POOL_REFRESH opts in to background refresh of committed snapshots.
  */
 export function getCardsForSet(setId: string): Promise<RawCard[]> {
+  const snapshot = getSnapshotForSet(setId)
+  // Released card pools are static. Refresh at snapshot-generation time rather
+  // than doing background API work on every new serverless instance.
+  if (snapshot && process.env.LIVE_POOL_REFRESH !== 'true') return Promise.resolve(snapshot)
   return cached(`cards:${setId}`, () => fetchAllCardsForSet(setId), {
     seed: () => getSnapshotForSet(setId),
   })

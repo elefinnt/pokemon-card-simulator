@@ -12,7 +12,7 @@ import {
   type CollectedCard,
   emptyCollection,
 } from './collection-types'
-import { mergeCollections, mergePackIntoCollection } from './collection-merge'
+import { mergeCollections } from './collection-merge'
 import { setIdFromCardId } from './set-companions'
 
 function rowToCard(row: typeof collectedCards.$inferSelect): CollectedCard {
@@ -79,18 +79,22 @@ export async function getUserCollection(
 export async function recordPackForUser(
   userId: string,
   opened: OpenedPack,
-): Promise<CollectionData> {
+): Promise<void> {
   const db = requireDb()
   const now = new Date()
-  const current = await getUserCollection(userId)
-  const next = mergePackIntoCollection(current, opened, now.getTime())
+  // Count duplicates within this pack before the single atomic upsert. Avoid
+  // loading the player's entire binder on every opening.
+  const cards = new Map<string, { card: OpenedPack['cards'][number]; count: number }>()
+  for (const card of opened.cards) {
+    const existing = cards.get(card.id)
+    cards.set(card.id, { card, count: (existing?.count ?? 0) + 1 })
+  }
 
   await db.transaction(async (tx) => {
-    for (const card of opened.cards) {
-      const merged = next.cards[card.id]
+    if (cards.size > 0) {
       await tx
         .insert(collectedCards)
-        .values({
+        .values([...cards.values()].sort((a, b) => a.card.id.localeCompare(b.card.id)).map(({ card, count }) => ({
           userId,
           cardId: card.id,
           setId: setIdFromCardId(card.id),
@@ -102,30 +106,29 @@ export async function recordPackForUser(
           rainbow: card.rainbow,
           imageSmall: card.imageSmall,
           imageLarge: card.imageLarge,
-          count: merged.count,
-          firstPulledAt: new Date(merged.firstPulledAt),
-          lastPulledAt: new Date(merged.lastPulledAt),
-        })
+          count,
+          firstPulledAt: now,
+          lastPulledAt: now,
+        })))
         .onDuplicateKeyUpdate({
           set: {
-            count: sql`${collectedCards.count} + 1`,
+            count: sql`${collectedCards.count} + VALUES(count)`,
             lastPulledAt: now,
           },
         })
     }
 
-    const set = next.sets[opened.setId]
     await tx
       .insert(setProgress)
       .values({
         userId,
         setId: opened.setId,
-        poolTotal: set.poolTotal,
-        packsOpened: set.packsOpened,
+        poolTotal: opened.poolTotal,
+        packsOpened: 1,
       })
       .onDuplicateKeyUpdate({
         set: {
-          poolTotal: set.poolTotal,
+          poolTotal: opened.poolTotal,
           packsOpened: sql`${setProgress.packsOpened} + 1`,
         },
       })
@@ -144,8 +147,6 @@ export async function recordPackForUser(
         },
       })
   })
-
-  return next
 }
 
 export async function resetUserCollection(userId: string): Promise<void> {

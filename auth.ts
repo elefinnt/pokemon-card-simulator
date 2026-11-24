@@ -14,6 +14,8 @@ import { db } from '@/db'
 function buildProviders(): Provider[] {
   const providers: Provider[] = [
     Discord({
+      // Discord includes this issuer in OAuth callbacks (RFC 9207).
+      issuer: 'https://discord.com',
       clientId: process.env.AUTH_DISCORD_ID,
       clientSecret: process.env.AUTH_DISCORD_SECRET,
       // Link to an existing account with the same verified email (see note on
