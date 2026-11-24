@@ -135,8 +135,6 @@ export function TradeBuilder({
     }
   }
 
-  const activeCollection = side === 'from' ? myCollection : friendCollection
-
   return (
     <TradeModalShell
       title={initial?.replacesId ? 'Modify trade' : `Trade with ${friend.name ?? 'player'}`}

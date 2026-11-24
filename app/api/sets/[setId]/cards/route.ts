@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
+import { jsonError, upstreamError } from '@/lib/api-route'
 import { ensurePacksLoaded, getPack } from '@/lib/packs'
 import { getSetCatalogue } from '@/lib/pokemon'
-import { RateLimitError } from '@/lib/pokemontcg/client'
 
 export const dynamic = 'force-dynamic'
 
-/** Card catalogue for a set — powers the collection binder grid. */
+/** Card catalogue for a set - powers the collection binder grid. */
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ setId: string }> },
@@ -13,9 +13,7 @@ export async function GET(
   const { setId } = await params
 
   await ensurePacksLoaded()
-  if (!getPack(setId)) {
-    return NextResponse.json({ error: 'Unknown pack' }, { status: 404 })
-  }
+  if (!getPack(setId)) return jsonError('Unknown pack', 404)
 
   try {
     const cards = await getSetCatalogue(setId)
@@ -23,18 +21,9 @@ export async function GET(
       headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800' },
     })
   } catch (err) {
-    console.log('[sets/cards] fetch failed:', err instanceof Error ? err.message : err)
-
-    if (err instanceof RateLimitError) {
-      return NextResponse.json(
-        { error: 'Rate limited. Please try again shortly.' },
-        { status: 429 },
-      )
-    }
-
-    return NextResponse.json(
-      { error: 'Failed to load set cards.' },
-      { status: 502 },
-    )
+    return upstreamError(err, {
+      label: '[sets/cards] fetch',
+      fallback: 'Failed to load set cards.',
+    })
   }
 }

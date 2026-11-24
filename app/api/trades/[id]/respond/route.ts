@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import {
+  invalidJson,
+  jsonError,
+  parseIntegerParam,
+  readJson,
+  routeError,
+  sessionUserId,
+  unauthorised,
+} from '@/lib/api-route'
 import { FriendError } from '@/lib/friends-db'
 import { TradeError, respondToTrade } from '@/lib/trades-db'
 import { isTradeResponseAction } from '@/lib/trades-types'
@@ -11,34 +19,23 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+  const userId = await sessionUserId()
+  if (!userId) return unauthorised()
 
-  const { id } = await params
-  const offerId = Number(id)
-  if (!Number.isInteger(offerId)) {
-    return NextResponse.json({ error: 'Invalid trade id' }, { status: 400 })
-  }
+  const offerId = parseIntegerParam((await params).id)
+  if (offerId === null) return jsonError('Invalid trade id', 400)
 
-  let body: unknown
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
-  }
+  const body = await readJson(request)
+  if (body === undefined) return invalidJson()
 
   const action = (body as { action?: unknown } | null)?.action
-  if (!isTradeResponseAction(action)) {
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
-  }
+  if (!isTradeResponseAction(action)) return jsonError('Invalid action', 400)
 
   try {
-    await respondToTrade(session.user.id, offerId, action)
+    await respondToTrade(userId, offerId, action)
     const posthog = getPostHogClient()
     posthog.capture({
-      distinctId: session.user.id,
+      distinctId: userId,
       event: 'trade_responded',
       properties: {
         trade_id: offerId,
@@ -48,13 +45,10 @@ export async function POST(
     await posthog.flush()
     return NextResponse.json({ ok: true })
   } catch (err) {
-    if (err instanceof TradeError || err instanceof FriendError) {
-      return NextResponse.json({ error: err.message }, { status: err.status })
-    }
-    console.log('[trades] respond failed:', err instanceof Error ? err.message : err)
-    return NextResponse.json(
-      { error: 'Failed to respond to trade' },
-      { status: 500 },
-    )
+    return routeError(err, {
+      label: '[trades] respond',
+      fallback: 'Failed to respond to trade',
+      expected: [TradeError, FriendError],
+    })
   }
 }

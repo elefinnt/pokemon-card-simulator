@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { openPack } from '@/lib/pokemon'
 import { ensurePacksLoaded, getPack } from '@/lib/packs'
-import { RateLimitError } from '@/lib/pokemontcg/client'
+import { jsonError, upstreamError } from '@/lib/api-route'
 import { recordPackForUser } from '@/lib/collection-db'
 import { recordPackOpening } from '@/lib/community/community-db'
 import { getPostHogClient } from '@/lib/posthog-server'
@@ -11,32 +11,21 @@ import { enforcePackOpenLimit, packOpeningPauseResponse } from '@/lib/pack-open-
 
 export const dynamic = 'force-dynamic'
 
+const OPEN_ERRORS = {
+  rateLimited:
+    'The card service is busy right now (rate limited). Please try again in a moment.',
+  fallback: 'Failed to open pack. Please try again.',
+}
+
 async function openPackForSet(setId: string, boostHit = false) {
   await ensurePacksLoaded()
-  if (!getPack(setId)) {
-    return NextResponse.json({ error: 'Unknown pack' }, { status: 404 })
-  }
+  if (!getPack(setId)) return jsonError('Unknown pack', 404)
 
   try {
     const pack = await openPack(setId, { boostHit })
     return NextResponse.json(pack, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (err) {
-    console.log('[open] failed:', err instanceof Error ? err.message : err)
-
-    if (err instanceof RateLimitError) {
-      return NextResponse.json(
-        {
-          error:
-            'The card service is busy right now (rate limited). Please try again in a moment.',
-        },
-        { status: 429 },
-      )
-    }
-
-    return NextResponse.json(
-      { error: 'Failed to open pack. Please try again.' },
-      { status: 502 },
-    )
+    return upstreamError(err, { label: '[open]', ...OPEN_ERRORS })
   }
 }
 
@@ -124,28 +113,10 @@ export async function POST(
 
     return NextResponse.json(pack, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (err) {
-    console.log('[open] POST failed:', err instanceof Error ? err.message : err)
-
-    if (err instanceof RateLimitError) {
-      return NextResponse.json(
-        {
-          error:
-            'The card service is busy right now (rate limited). Please try again in a moment.',
-        },
-        { status: 429 },
-      )
-    }
-
     if (err instanceof Error && err.message === 'DATABASE_URL is not configured') {
-      return NextResponse.json(
-        { error: 'Database is not configured' },
-        { status: 503 },
-      )
+      console.log('[open] POST failed:', err.message)
+      return jsonError('Database is not configured', 503)
     }
-
-    return NextResponse.json(
-      { error: 'Failed to open pack. Please try again.' },
-      { status: 502 },
-    )
+    return upstreamError(err, { label: '[open] POST', ...OPEN_ERRORS })
   }
 }

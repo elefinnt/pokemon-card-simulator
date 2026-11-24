@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import {
+  invalidJson,
+  jsonError,
+  readJson,
+  routeError,
+  sessionUserId,
+  unauthorised,
+} from '@/lib/api-route'
 import { FriendError } from '@/lib/friends-db'
 import { TradeError, createTradeOffer, getTradeOverview } from '@/lib/trades-db'
 import { sanitiseItemInputs, sanitiseMessage } from '@/lib/trades-types'
@@ -8,32 +15,26 @@ import { getPostHogClient } from '@/lib/posthog-server'
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+  const userId = await sessionUserId()
+  if (!userId) return unauthorised()
 
   try {
-    const overview = await getTradeOverview(session.user.id)
+    const overview = await getTradeOverview(userId)
     return NextResponse.json(overview)
   } catch (err) {
-    console.log('[trades] GET failed:', err instanceof Error ? err.message : err)
-    return NextResponse.json({ error: 'Failed to load trades' }, { status: 500 })
+    return routeError(err, {
+      label: '[trades] GET',
+      fallback: 'Failed to load trades',
+    })
   }
 }
 
 export async function POST(request: Request) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+  const userId = await sessionUserId()
+  if (!userId) return unauthorised()
 
-  let body: unknown
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
-  }
+  const body = await readJson(request)
+  if (body === undefined) return invalidJson()
 
   const payload = body as {
     toUserId?: unknown
@@ -45,19 +46,14 @@ export async function POST(request: Request) {
 
   const toUserId = payload?.toUserId
   if (typeof toUserId !== 'string' || toUserId.length === 0) {
-    return NextResponse.json({ error: 'Missing recipient' }, { status: 400 })
+    return jsonError('Missing recipient', 400)
   }
 
   const fromItems = sanitiseItemInputs(payload?.fromItems ?? [])
   const toItems = sanitiseItemInputs(payload?.toItems ?? [])
-  if (!fromItems || !toItems) {
-    return NextResponse.json({ error: 'Invalid card selection' }, { status: 400 })
-  }
+  if (!fromItems || !toItems) return jsonError('Invalid card selection', 400)
   if (fromItems.length === 0 && toItems.length === 0) {
-    return NextResponse.json(
-      { error: 'An offer needs at least one card' },
-      { status: 400 },
-    )
+    return jsonError('An offer needs at least one card', 400)
   }
 
   const replacesRaw = payload?.replacesId
@@ -67,7 +63,7 @@ export async function POST(request: Request) {
       : null
 
   try {
-    const id = await createTradeOffer(session.user.id, {
+    const id = await createTradeOffer(userId, {
       toUserId,
       fromItems,
       toItems,
@@ -76,7 +72,7 @@ export async function POST(request: Request) {
     })
     const posthog = getPostHogClient()
     posthog.capture({
-      distinctId: session.user.id,
+      distinctId: userId,
       event: 'trade_offer_created',
       properties: {
         trade_id: id,
@@ -89,16 +85,10 @@ export async function POST(request: Request) {
     await posthog.flush()
     return NextResponse.json({ ok: true, id })
   } catch (err) {
-    if (err instanceof TradeError || err instanceof FriendError) {
-      return NextResponse.json({ error: err.message }, { status: err.status })
-    }
-    console.log(
-      '[trades] create failed:',
-      err instanceof Error ? err.message : err,
-    )
-    return NextResponse.json(
-      { error: 'Failed to send trade offer' },
-      { status: 500 },
-    )
+    return routeError(err, {
+      label: '[trades] create',
+      fallback: 'Failed to send trade offer',
+      expected: [TradeError, FriendError],
+    })
   }
 }

@@ -34,7 +34,7 @@ import { SignInPrompt } from './sign-in-prompt'
 import { FreePacksIndicator } from './free-packs-indicator'
 import { ViewTabs, type View } from './view-tabs'
 import { Button } from '@/components/ui/button'
-import { playSound, primeAudio } from '@/lib/sounds'
+import { primeAudio } from '@/lib/sounds'
 
 type Stage = 'select' | 'sealed' | 'revealing' | 'summary'
 

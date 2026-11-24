@@ -11,6 +11,18 @@ function card(raw) {
   return { ...raw, number: raw.number ?? '', rarity: raw.rarity ?? 'Common', tier: classifyTier(raw.rarity ?? 'Common', raw.subtypes), foil: false, rainbow: false, imageSmall: raw.images.small, imageLarge: raw.images.large, types: raw.types ?? [], artist: raw.artist ?? null }
 }
 
+test('special pack builders cover every set with a companion pool', () => {
+  const { specialPackBuilder } = require('../lib/pack-builders.ts')
+  const { BINDER_COMPANION_SETS } = require('../lib/set-companions.ts')
+  for (const [setId, companions] of Object.entries(BINDER_COMPANION_SETS)) {
+    assert.deepEqual([specialPackBuilder(setId)?.companionSetId], companions, setId)
+  }
+  assert.equal(typeof specialPackBuilder('g1')?.build, 'function')
+  assert.equal(specialPackBuilder('g1').companionSetId, undefined)
+  assert.equal(specialPackBuilder('base1'), undefined)
+  assert.equal(specialPackBuilder('constructor'), undefined)
+})
+
 test('both Shiny Vaults are complete and appear in their parent binder', async () => {
   const originalFetch = global.fetch
   global.fetch = async () => Response.json({ data: [] })

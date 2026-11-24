@@ -1,42 +1,24 @@
 import {
-  buildCelebration30thCards,
   CELEBRATION_30TH_SET_ID,
   CLASSIC_COLLECTION_SET_ID,
   RGB_MEW_IDS,
   RGB_RARE_LABEL,
 } from './celebration-30th'
-import {
-  buildCrownZenithCards,
-  CROWN_ZENITH_SET_ID,
-  GALARIAN_GALLERY_SET_ID,
-} from './crown-zenith'
+import { specialPackBuilder } from './pack-builders'
 import {
   hasIllustrationRares,
   partitionByHitClass,
   rollArtSlot,
   rollRareSlot,
 } from './pack-odds'
-import {
-  buildCelebrationsCards,
-  CELEBRATIONS_CLASSIC_SET_ID,
-  CELEBRATIONS_SET_ID,
-} from './celebrations'
+import { CELEBRATIONS_CLASSIC_SET_ID } from './celebrations'
 import { sortByCardNumber } from './card-order'
-import { buildShinyVaultCards, SHINY_VAULT_COMPANIONS } from './shiny-vault'
-import {
-  buildGenerationsCards,
-  GENERATIONS_SET_ID,
-  RADIANT_COLLECTION_PREFIX,
-} from './generations'
+import { GENERATIONS_SET_ID, RADIANT_COLLECTION_PREFIX } from './generations'
 import {
   BINDER_COMPANION_SETS,
   cardHasNumberPrefix,
   setIdFromCardId,
 } from './set-companions'
-import {
-  buildTrainerGalleryCards,
-  trainerGalleryCompanionId,
-} from './trainer-gallery'
 import {
   buildDemigodCards,
   buildGodPack,
@@ -300,45 +282,13 @@ export async function openPack(
     if (god) return finalisePack(setId, god, poolTotal, 'god')
   }
 
-  const galleryId = trainerGalleryCompanionId(setId)
+  const special = specialPackBuilder(setId)
   let cards: PokemonCard[]
-  if (setId === CELEBRATION_30TH_SET_ID) {
-    cards = buildCelebration30thCards(
-      allCards,
-      await mapSetCards(CLASSIC_COLLECTION_SET_ID),
-      def.packSize,
-      options.boostHit,
-    )
-  } else if (setId === CROWN_ZENITH_SET_ID) {
-    cards = buildCrownZenithCards(
-      allCards,
-      await mapSetCards(GALARIAN_GALLERY_SET_ID),
-      def.packSize,
-      options.boostHit,
-    )
-  } else if (setId === GENERATIONS_SET_ID) {
-    cards = buildGenerationsCards(allCards, def.packSize, options.boostHit)
-  } else if (setId === CELEBRATIONS_SET_ID) {
-    cards = buildCelebrationsCards(
-      allCards,
-      await mapSetCards(CELEBRATIONS_CLASSIC_SET_ID),
-      def.packSize,
-      options.boostHit,
-    )
-  } else if (SHINY_VAULT_COMPANIONS[setId]) {
-    cards = buildShinyVaultCards(
-      allCards,
-      await mapSetCards(SHINY_VAULT_COMPANIONS[setId]),
-      def.packSize,
-      options.boostHit,
-    )
-  } else if (galleryId) {
-    cards = buildTrainerGalleryCards(
-      allCards,
-      await mapSetCards(galleryId),
-      def.packSize,
-      options.boostHit,
-    )
+  if (special) {
+    const companion = special.companionSetId
+      ? await mapSetCards(special.companionSetId)
+      : []
+    cards = special.build(allCards, companion, def.packSize, options.boostHit)
   } else {
     cards = buildStandardCards(pool, def.packSize, options.boostHit)
   }

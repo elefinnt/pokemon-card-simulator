@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import {
+  invalidJson,
+  jsonError,
+  readJson,
+  routeError,
+  sessionUserId,
+  unauthorised,
+} from '@/lib/api-route'
 import { FriendError, respondToRequest } from '@/lib/friends-db'
 import { isRequestAction } from '@/lib/friends-types'
 
@@ -9,39 +16,25 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ requesterId: string }> },
 ) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+  const userId = await sessionUserId()
+  if (!userId) return unauthorised()
 
   const { requesterId } = await params
 
-  let body: unknown
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
-  }
+  const body = await readJson(request)
+  if (body === undefined) return invalidJson()
 
   const action = (body as { action?: unknown } | null)?.action
-  if (!isRequestAction(action)) {
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
-  }
+  if (!isRequestAction(action)) return jsonError('Invalid action', 400)
 
   try {
-    await respondToRequest(session.user.id, requesterId, action)
+    await respondToRequest(userId, requesterId, action)
     return NextResponse.json({ ok: true })
   } catch (err) {
-    if (err instanceof FriendError) {
-      return NextResponse.json({ error: err.message }, { status: err.status })
-    }
-    console.log(
-      '[friends] respond failed:',
-      err instanceof Error ? err.message : err,
-    )
-    return NextResponse.json(
-      { error: 'Failed to respond to request' },
-      { status: 500 },
-    )
+    return routeError(err, {
+      label: '[friends] respond',
+      fallback: 'Failed to respond to request',
+      expected: [FriendError],
+    })
   }
 }

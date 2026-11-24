@@ -1,26 +1,20 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
 import { deleteUserAccount } from '@/lib/account-db'
+import { routeError, sessionUserId, unauthorised } from '@/lib/api-route'
 
 export const dynamic = 'force-dynamic'
 
 export async function DELETE() {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+  const userId = await sessionUserId()
+  if (!userId) return unauthorised()
 
   try {
-    await deleteUserAccount(session.user.id)
+    await deleteUserAccount(userId)
     return NextResponse.json({ ok: true })
   } catch (err) {
-    console.log(
-      '[account] DELETE failed:',
-      err instanceof Error ? err.message : err,
-    )
-    return NextResponse.json(
-      { error: 'Failed to delete account' },
-      { status: 500 },
-    )
+    return routeError(err, {
+      label: '[account] DELETE',
+      fallback: 'Failed to delete account',
+    })
   }
 }

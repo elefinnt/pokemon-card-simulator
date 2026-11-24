@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import {
+  jsonError,
+  routeError,
+  sessionUserId,
+  unauthorised,
+} from '@/lib/api-route'
 import {
   ProfileError,
   getMyProfile,
@@ -15,24 +20,24 @@ import {
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+  const userId = await sessionUserId()
+  if (!userId) return unauthorised()
 
   try {
-    const profile = await getMyProfile(session.user.id)
+    const profile = await getMyProfile(userId)
     return NextResponse.json(profile)
   } catch (err) {
-    return handleError(err, 'load')
+    return routeError(err, {
+      label: '[profile] load',
+      fallback: 'Failed to load your profile',
+      expected: [ProfileError],
+    })
   }
 }
 
 export async function PUT(request: Request) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+  const userId = await sessionUserId()
+  if (!userId) return unauthorised()
 
   const body = (await request.json().catch(() => null)) as {
     displayName?: unknown
@@ -40,12 +45,10 @@ export async function PUT(request: Request) {
     accent?: unknown
   } | null
 
-  if (!body) {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
-  }
+  if (!body) return jsonError('Invalid request body', 400)
 
   try {
-    const profile = await updateProfileDetails(session.user.id, {
+    const profile = await updateProfileDetails(userId, {
       displayName: sanitiseText(body.displayName, DISPLAY_NAME_MAX_LENGTH),
       bio: sanitiseText(body.bio, BIO_MAX_LENGTH),
       accent: normaliseAccent(
@@ -54,20 +57,10 @@ export async function PUT(request: Request) {
     })
     return NextResponse.json(profile)
   } catch (err) {
-    return handleError(err, 'update')
+    return routeError(err, {
+      label: '[profile] update',
+      fallback: 'Failed to update your profile',
+      expected: [ProfileError],
+    })
   }
-}
-
-function handleError(err: unknown, action: string) {
-  if (err instanceof ProfileError) {
-    return NextResponse.json({ error: err.message }, { status: err.status })
-  }
-  console.log(
-    `[profile] ${action} failed:`,
-    err instanceof Error ? err.message : err,
-  )
-  return NextResponse.json(
-    { error: 'Failed to load your profile' },
-    { status: 500 },
-  )
 }

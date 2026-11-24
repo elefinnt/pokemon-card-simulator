@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
+import { jsonError, upstreamError } from '@/lib/api-route'
 import { isCompanionSetId } from '@/lib/pack-overrides'
 import { ensurePacksLoaded, getPack } from '@/lib/packs'
 import { getCardsForSet } from '@/lib/pokemontcg/cards'
-import { RateLimitError } from '@/lib/pokemontcg/client'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,9 +15,7 @@ export async function GET(
 
   await ensurePacksLoaded()
   const pack = getPack(setId)
-  if (!pack && !isCompanionSetId(setId)) {
-    return NextResponse.json({ error: 'Unknown pack' }, { status: 404 })
-  }
+  if (!pack && !isCompanionSetId(setId)) return jsonError('Unknown pack', 404)
 
   try {
     const cards = await getCardsForSet(setId)
@@ -30,18 +28,9 @@ export async function GET(
       headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800' },
     })
   } catch (err) {
-    console.log('[pool] prefetch failed:', err instanceof Error ? err.message : err)
-
-    if (err instanceof RateLimitError) {
-      return NextResponse.json(
-        { error: 'Rate limited. Please try again shortly.' },
-        { status: 429 },
-      )
-    }
-
-    return NextResponse.json(
-      { error: 'Failed to load card pool.' },
-      { status: 502 },
-    )
+    return upstreamError(err, {
+      label: '[pool] prefetch',
+      fallback: 'Failed to load card pool.',
+    })
   }
 }

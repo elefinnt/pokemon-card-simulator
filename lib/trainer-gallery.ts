@@ -33,15 +33,11 @@ type GalleryKind = keyof typeof GALLERY_MIX
 
 const GALLERY_ORDER: GalleryKind[] = ['secret', 'vmax', 'trainer', 'v', 'holo']
 
-const TRAINER_GALLERY_SET_IDS: Record<string, string> = {
+export const TRAINER_GALLERY_COMPANIONS: Record<string, string> = {
   swsh9: 'swsh9tg',
   swsh10: 'swsh10tg',
   swsh11: 'swsh11tg',
   swsh12: 'swsh12tg',
-}
-
-export function trainerGalleryCompanionId(setId: string): string | undefined {
-  return TRAINER_GALLERY_SET_IDS[setId]
 }
 
 function rarityKey(card: PokemonCard): string {
