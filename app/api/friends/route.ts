@@ -1,23 +1,20 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { routeError, sessionUserId, unauthorised } from '@/lib/api-route'
 import { getFriendsOverview } from '@/lib/friends-db'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
+  const userId = await sessionUserId()
+  if (!userId) return unauthorised()
 
   try {
-    const overview = await getFriendsOverview(session.user.id)
+    const overview = await getFriendsOverview(userId)
     return NextResponse.json(overview)
   } catch (err) {
-    console.log('[friends] GET failed:', err instanceof Error ? err.message : err)
-    return NextResponse.json(
-      { error: 'Failed to load friends' },
-      { status: 500 },
-    )
+    return routeError(err, {
+      label: '[friends] GET',
+      fallback: 'Failed to load friends',
+    })
   }
 }

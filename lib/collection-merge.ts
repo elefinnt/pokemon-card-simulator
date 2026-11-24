@@ -75,7 +75,7 @@ export function mergeCollections(
   base: CollectionData,
   incoming: CollectionData,
 ): CollectionData {
-  let next = { ...base, cards: { ...base.cards }, sets: { ...base.sets } }
+  const next = { ...base, cards: { ...base.cards }, sets: { ...base.sets } }
 
   for (const card of Object.values(incoming.cards)) {
     const existing = next.cards[card.id]

@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react'
 import type { CollectionData } from './collection-types'
 import {
   type CreateTradeInput,
-  type TradeOffer,
   type TradeOverview,
   type TradeResponseAction,
   emptyTradeOverview,

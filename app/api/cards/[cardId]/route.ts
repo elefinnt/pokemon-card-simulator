@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
+import { upstreamError } from '@/lib/api-route'
 import { getCardById } from '@/lib/pokemontcg/cards'
-import { RateLimitError } from '@/lib/pokemontcg/client'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,18 +15,9 @@ export async function GET(
     const card = await getCardById(cardId)
     return NextResponse.json(card)
   } catch (err) {
-    console.log('[card] fetch failed:', err instanceof Error ? err.message : err)
-
-    if (err instanceof RateLimitError) {
-      return NextResponse.json(
-        { error: 'Rate limited. Please try again shortly.' },
-        { status: 429 },
-      )
-    }
-
-    return NextResponse.json(
-      { error: 'Failed to load card details.' },
-      { status: 502 },
-    )
+    return upstreamError(err, {
+      label: '[card] fetch',
+      fallback: 'Failed to load card details.',
+    })
   }
 }

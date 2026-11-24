@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
+import { routeError } from '@/lib/api-route'
 import { FeedbackError, createFeedback } from '@/lib/feedback-db'
 import { isFeedbackCategory } from '@/lib/feedback-types'
 import { notifyFeedbackSubmitted } from '@/lib/telegram'
@@ -52,16 +53,10 @@ export async function POST(request: Request) {
     })
     return NextResponse.json({ ok: true })
   } catch (err) {
-    if (err instanceof FeedbackError) {
-      return NextResponse.json({ error: err.message }, { status: err.status })
-    }
-    console.log(
-      '[feedback] submit failed:',
-      err instanceof Error ? err.message : err,
-    )
-    return NextResponse.json(
-      { error: 'Failed to send your feedback' },
-      { status: 500 },
-    )
+    return routeError(err, {
+      label: '[feedback] submit',
+      fallback: 'Failed to send your feedback',
+      expected: [FeedbackError],
+    })
   }
 }
