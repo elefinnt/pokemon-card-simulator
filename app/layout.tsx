@@ -1,6 +1,6 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Inter, Rubik } from 'next/font/google'
+import { Inter, Jersey_10, Press_Start_2P, Rubik } from 'next/font/google'
 import { AuthProvider } from '@/components/auth-provider'
 import { StructuredData } from '@/components/structured-data'
 import { applicationSchema } from '@/lib/site-discovery'
@@ -16,6 +16,23 @@ const rubik = Rubik({
   weight: ['500', '600', '700', '800', '900'],
   variable: '--font-rubik',
 })
+
+const pressStart = Press_Start_2P({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-press-start',
+  preload: false,
+})
+
+const jersey = Jersey_10({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-jersey',
+  preload: false,
+})
+
+const themeScript =
+  "try{var t=localStorage.getItem('packrip-theme');if(t==='gen1'||t==='gen3')document.documentElement.dataset.theme=t}catch(e){}"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://packrip.org'
 
@@ -77,9 +94,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${rubik.variable} bg-background`}
+      className={`${inter.variable} ${rubik.variable} ${pressStart.variable} ${jersey.variable} bg-background`}
       suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="font-sans antialiased" suppressHydrationWarning>
         <StructuredData data={siteJsonLd} />
         <AuthProvider>{children}</AuthProvider>

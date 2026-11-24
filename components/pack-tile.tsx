@@ -41,7 +41,7 @@ export function PackTile({
     >
       {/* Pack art */}
       <div
-        className="relative flex aspect-[4/5] items-center justify-center overflow-hidden rounded-xl p-4"
+        className="tcg-card relative flex aspect-[4/5] items-center justify-center overflow-hidden rounded-xl p-4"
         style={{
           background: `linear-gradient(150deg, ${pack.accentFrom}, ${pack.accentTo})`,
         }}

@@ -54,7 +54,7 @@ export function BoosterPack({
 
         {/* Wrapper */}
         <div
-          className="relative flex aspect-[2.6/4] flex-col items-center justify-between overflow-hidden rounded-[1.75rem] border border-white/15 p-5 shadow-2xl"
+          className="tcg-card relative flex aspect-[2.6/4] flex-col items-center justify-between overflow-hidden rounded-[1.75rem] border border-white/15 p-5 shadow-2xl"
           style={{
             background: `linear-gradient(160deg, ${pack.accentFrom}, ${pack.accentTo})`,
           }}
