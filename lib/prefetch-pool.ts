@@ -1,13 +1,17 @@
 import { BINDER_COMPANION_SETS } from '@/lib/set-companions'
 
-const prefetched = new Set<string>()
+const prefetched = new Map<string, Promise<void>>()
 
-function warm(setId: string): void {
-  if (prefetched.has(setId)) return
-  prefetched.add(setId)
-  fetch(`/api/pool/${setId}`).catch(() => {
+function warm(setId: string): Promise<void> {
+  const existing = prefetched.get(setId)
+  if (existing) return existing
+  const pending = fetch(`/api/pool/${setId}`).then(res => {
+    if (!res.ok) throw new Error('Card pool unavailable')
+  }).catch(() => {
     prefetched.delete(setId)
   })
+  prefetched.set(setId, pending)
+  return pending
 }
 
 /**
@@ -17,9 +21,6 @@ function warm(setId: string): void {
  * hover / focus handlers. A failed warm-up is forgotten so a later hover can
  * retry.
  */
-export function prefetchPool(setId: string): void {
-  warm(setId)
-  for (const extra of BINDER_COMPANION_SETS[setId] ?? []) {
-    warm(extra)
-  }
+export async function prefetchPool(setId: string): Promise<void> {
+  await Promise.all([setId, ...(BINDER_COMPANION_SETS[setId] ?? [])].map(warm))
 }

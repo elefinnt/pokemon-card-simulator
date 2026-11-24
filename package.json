@@ -7,10 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "test": "node --require ./scripts/register-typescript.cjs --test tests/*.test.cjs",
     "snapshot": "node scripts/generate-pool-snapshot.mjs",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:setup-pack-limits": "node scripts/setup-pack-limits.mjs"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.2",

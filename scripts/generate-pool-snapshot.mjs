@@ -77,7 +77,7 @@ async function fetchPage(setId, page, headers, orderBy = 'number') {
   let lastError
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
-      const res = await fetch(url, { headers })
+      const res = await fetch(url, { headers, signal: AbortSignal.timeout(20000) })
       if (res.ok) return res.json()
       lastError = new Error(
         `API responded with ${res.status} for ${setId} page ${page}`,
@@ -103,6 +103,9 @@ function mergeCardsById(pages) {
 
 async function fetchSet(setId, headers) {
   const first = await fetchPage(setId, 1, headers)
+  if (!first.data?.length || !first.totalCount) {
+    throw new Error(`No cards returned for ${setId}; refusing to replace a usable snapshot`)
+  }
   const pages = [first.data]
   const pageCount = Math.ceil(first.totalCount / (first.pageSize || PAGE_SIZE))
   for (let page = 2; page <= pageCount; page++) {

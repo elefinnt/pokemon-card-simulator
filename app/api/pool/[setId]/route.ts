@@ -26,6 +26,8 @@ export async function GET(
       ready: true,
       count: cards.length,
       total: pack?.total ?? cards.length,
+    }, {
+      headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800' },
     })
   } catch (err) {
     console.log('[pool] prefetch failed:', err instanceof Error ? err.message : err)

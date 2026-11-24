@@ -14,6 +14,14 @@ export interface BinderGroup {
 }
 
 const BINDER_GROUP_DEFS: Record<string, readonly BinderGroup[]> = {
+  sm115: [
+    { setId: 'sm115', label: 'Main set', total: 69 },
+    { setId: 'sma', label: 'Shiny Vault', total: 94 },
+  ],
+  swsh45: [
+    { setId: 'swsh45', label: 'Main set', total: 73 },
+    { setId: 'swsh45sv', label: 'Shiny Vault', total: 122 },
+  ],
   g1: [
     { setId: 'g1', label: 'Main set', total: 85 },
     {

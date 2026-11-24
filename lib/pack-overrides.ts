@@ -84,6 +84,7 @@ export const CURATED_SET_IDS = [
   'me4',
   'me5',
   'me55',
+  'me6',
 ] as const
 
 export type CuratedSetId = (typeof CURATED_SET_IDS)[number]
@@ -97,6 +98,8 @@ export const COMPANION_SET_IDS = [
   'swsh12pt5gg',
   'cel25c',
   'me55c',
+  'sma',
+  'swsh45sv',
 ] as const
 export type CompanionSetId = (typeof COMPANION_SET_IDS)[number]
 
@@ -227,12 +230,14 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
   },
   sm10: {
     slug: 'unbroken-bonds',
+    total: 238,
     accentFrom: '#f43f5e',
     accentTo: '#0f172a',
     blurb: 'Unbroken Bonds — Reshiram & Charizard GX headline the Tag Teams.',
   },
   sm115: {
     slug: 'hidden-fates',
+    total: 163,
     accentFrom: '#eab308',
     accentTo: '#78350f',
     blurb: 'Hidden Fates — the Shiny Vault and the legendary shiny Charizard GX.',
@@ -263,6 +268,7 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
   },
   swsh45: {
     slug: 'shining-fates',
+    total: 195,
     accentFrom: '#ec4899',
     accentTo: '#831843',
     blurb: 'A sea of Shiny Pokémon and dazzling foils.',
@@ -491,6 +497,14 @@ export const PACK_OVERRIDES: Record<CuratedSetId, PackOverride> = {
     total: 191,
     logo: '/set-logos/30th-celebration-logo.png',
     symbol: '/set-logos/30th-celebration-symbol.jpg',
+  },
+  me6: {
+    slug: 'delta-reign',
+    accentFrom: '#16a34a',
+    accentTo: '#172554',
+    blurb: 'Delta Reign — Mega Rayquaza ex returns with stormy skies and dazzling Mega Evolution chase cards.',
+    logo: 'https://images.scrydex.com/pokemon/me6-logo/logo',
+    symbol: 'https://images.scrydex.com/pokemon/me6-symbol/symbol',
   },
 }
 

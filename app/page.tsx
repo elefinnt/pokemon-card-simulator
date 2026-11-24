@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { ensurePacksLoaded } from '@/lib/packs'
-import { warmCuratedPools } from '@/lib/pokemontcg/warm'
 import { PackSimulator } from '@/components/pack-simulator'
 import { PageShell } from '@/components/page-shell'
 import { HomeCta } from '@/components/home/home-cta'
@@ -12,9 +11,6 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const packs = await ensurePacksLoaded()
-
-  // Fire-and-forget: warm card pools in the background after the page renders.
-  warmCuratedPools().catch(() => {})
 
   return (
     <PageShell>

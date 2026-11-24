@@ -70,7 +70,8 @@ export function summarizeSet(
   const cards = Object.values(data.cards).filter((c) => ids.has(c.setId))
   const uniqueOwned = cards.length
   const totalPulled = cards.reduce((n, c) => n + c.count, 0)
-  const poolTotal = set?.poolTotal || fallbackTotal || 0
+  // Current catalogue totals take precedence over totals saved by older packs.
+  const poolTotal = fallbackTotal || set?.poolTotal || 0
   return {
     setId,
     poolTotal,

@@ -36,6 +36,11 @@ export const FAQ_ITEMS: FaqItem[] = [
     answer: `No account is needed to get started — every visitor can rip ${FREE_PACK_LIMIT} free packs. Signing in is also free and unlocks unlimited packs plus permanent collection tracking, so the cards you pull are saved to your profile.`,
   },
   {
+    question: 'Is there a limit to how quickly I can open packs?',
+    answer:
+      'Signing in removes the guest pack allowance. There is no daily pack allowance for signed-in collectors, but very rapid or sustained opening can trigger a short cooldown to keep PackRip available for everyone. If that happens, the message tells you when to try again. Your saved cards are unaffected.',
+  },
+  {
     question: 'Are the pull rates realistic?',
     answer:
       'Each set is modelled on its real rarity structure, so commons, uncommons, rare holos and the modern ultra-rare and secret-rare slots appear at rates that approximate genuine booster odds. Chasing a specific alt-art still takes plenty of packs, just like the real thing.',
