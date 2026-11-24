@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import Link from 'next/link'
 import { Sparkles } from 'lucide-react'
 import posthog from 'posthog-js'
 import { type PackDef } from '@/lib/packs'
@@ -102,6 +103,12 @@ export function PackBrowser({
       />
 
       <RequestPackCta />
+      <p className="text-center text-base text-muted-foreground">
+        Looking for another era?{' '}
+        <Link prefetch={false} href="/packs" className="font-semibold text-primary underline-offset-4 hover:underline">
+          Browse all {packs.length} Pokémon sets
+        </Link>
+      </p>
     </div>
   )
 }

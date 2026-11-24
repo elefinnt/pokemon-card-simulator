@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, Rubik } from 'next/font/google'
 import { AuthProvider } from '@/components/auth-provider'
 import { StructuredData } from '@/components/structured-data'
+import { applicationSchema } from '@/lib/site-discovery'
 import './globals.css'
 
 const inter = Inter({
@@ -52,16 +53,19 @@ const siteJsonLd = {
   '@graph': [
     {
       '@type': 'Organization',
+      '@id': `${siteUrl}/#organization`,
       name: 'PackRip',
       url: siteUrl,
       description,
     },
     {
       '@type': 'WebSite',
+      '@id': `${siteUrl}/#website`,
       name: 'PackRip',
       url: siteUrl,
       description,
     },
+    applicationSchema(),
   ],
 }
 
